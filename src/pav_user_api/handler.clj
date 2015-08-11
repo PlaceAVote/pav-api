@@ -6,7 +6,7 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-            [pav-user-api.models.user :refer [list-users]]))
+            [pav-user-api.models.user :refer [list-users create]]))
 
 (defn init []
   (println "pav-user-api is starting"))
@@ -16,6 +16,7 @@
 
 (defroutes app-routes
   (GET "/user" [] list-users)
+  (POST "/user" user create)
   (route/resources "/")
   (route/not-found "Not Found"))
 

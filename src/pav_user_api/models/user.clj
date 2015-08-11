@@ -1,7 +1,14 @@
 (ns pav-user-api.models.user
   (:require [liberator.core :refer [resource defresource]]
-            [pav-user-api.services.users :as service]))
+            [pav-user-api.services.users :as service]
+            [pav-user-api.utils.utils :refer [record-in-ctx retrieve-params]]))
 
 (defresource list-users
  :available-media-types ["application/json"]
  :handle-ok (service/get-users))
+
+(defresource create [payload]
+ :allowed-methods [:post]
+ :available-media-types ["application/json"]
+ :post (service/create-user (retrieve-params payload))
+ :handle-created record-in-ctx)
