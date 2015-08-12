@@ -18,7 +18,7 @@
 (defroutes app-routes
   (GET "/user/:email" [email] (user email))
   (GET "/user" [] list-users)
-  (POST "/user" user create)
+  (PUT "/user" user create)
   (route/resources "/")
   (route/not-found "Not Found"))
 

@@ -8,12 +8,13 @@
  :handle-ok (service/get-users))
 
 (defresource create [payload]
- :allowed-methods [:post]
+ :allowed-methods [:put]
  :available-media-types ["application/json"]
- :post! (service/create-user (retrieve-params payload))
+ :put! (service/create-user (retrieve-params payload))
  :handle-created :record)
 
 (defresource user [email]
  :allowed-methods [:get]
  :available-media-types ["application/json"]
- :handle-ok (service/get-user email))
+ :exists? {:record (service/get-user email)}
+ :handle-ok record-in-ctx)

@@ -12,11 +12,15 @@
            (:status response) => 200
            (:body response) => (contains (ch/generate-string test-user) :in-any-order)))
    (fact "Create a new user"
-         (let [response (app (content-type (request :post "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))]
+         (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))]
            (:status response) => 201
            (:body response) => (contains (ch/generate-string {:email "john@stuff.com" :password "stuff2"}))))
    (fact "Retrieve a user by email"
          (let [response (app (request :get "/user/johnny@stuff.com"))]
            (:status response) => 200
-           (:body response) => (contains (ch/generate-string test-user) :in-any-order)))))
+           (:body response) => (contains (ch/generate-string test-user) :in-any-order)))
+  (fact "Retrieve a user by email that doesn't exist"
+        (let [response (app (request :get "/user/peter@stuff.com"))]
+          (:status response) => 200
+          (:body response) => "null"))))
 
