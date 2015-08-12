@@ -15,5 +15,8 @@
          (let [response (app (request :post "/user" {:email "john@stuff.com" :password "stuff2"}))]
            (:status response) => 201
            (:body response) (contains (ch/generate-string {:email "john@stuff.com" :password "stuff2"}))))
-   (fact "Retrieve a user by email")))
+   (fact "Retrieve a user by email"
+         (let [response (app (request :get "/user/johnny@stuff.com"))]
+           (:status response) => 200
+           (:body response) => (contains (ch/generate-string test-user) :in-any-order)))))
 

@@ -13,3 +13,7 @@
 
 (defn get-users []
   (ch/generate-string (cy/tquery connection "MATCH (u:User) RETURN u.email AS email, u.password AS password")))
+
+(defn get-user [email]
+  (ch/generate-string
+    (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email, u.password AS password" {:email email}))))

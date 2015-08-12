@@ -12,3 +12,8 @@
  :available-media-types ["application/json"]
  :post (service/create-user (retrieve-params payload))
  :handle-created record-in-ctx)
+
+(defresource user [email]
+ :allowed-methods [:get]
+ :available-media-types ["application/json"]
+ :handle-ok (service/get-user email))
