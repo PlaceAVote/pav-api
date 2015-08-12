@@ -1,6 +1,7 @@
 (ns pav-user-api.handler
   (:require [compojure.core :refer [defroutes routes]]
             [ring.middleware.resource :refer [wrap-resource]]
+            [ring.middleware.json :refer [wrap-json-body wrap-json-params wrap-json-response]]
             [ring.middleware.file-info :refer [wrap-file-info]]
             [hiccup.middleware :refer [wrap-base-url]]
             [compojure.handler :as handler]
@@ -23,5 +24,7 @@
 
 (def app
   (-> (routes app-routes)
+      (wrap-json-body {:keywords? true})
+      (wrap-json-response)
       (handler/site)
       (wrap-base-url)))

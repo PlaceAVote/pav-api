@@ -9,7 +9,8 @@
 (def connection (nr/connect (:neo-url env) (:neo-username env) (:neo-password env)))
 
 (defn create-user [user]
-  (nl/add connection (nn/create connection user) "User"))
+  (nl/add connection (nn/create connection user) "User")
+  {:record user})
 
 (defn get-users []
   (ch/generate-string (cy/tquery connection "MATCH (u:User) RETURN u.email AS email, u.password AS password")))

@@ -10,8 +10,8 @@
 (defresource create [payload]
  :allowed-methods [:post]
  :available-media-types ["application/json"]
- :post (service/create-user (retrieve-params payload))
- :handle-created record-in-ctx)
+ :post! (service/create-user (retrieve-params payload))
+ :handle-created :record)
 
 (defresource user [email]
  :allowed-methods [:get]
