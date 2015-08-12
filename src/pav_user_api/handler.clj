@@ -7,7 +7,8 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-            [pav-user-api.models.user :refer [list-users create user]]))
+            [pav-user-api.models.user :refer [list-users create user]]
+            [liberator.dev :refer [wrap-trace]]))
 
 (defn init []
   (println "pav-user-api is starting"))
@@ -27,4 +28,5 @@
       (wrap-json-body {:keywords? true})
       (wrap-json-response)
       (handler/site)
-      (wrap-base-url)))
+      (wrap-base-url)
+      (wrap-trace :header :ui)))

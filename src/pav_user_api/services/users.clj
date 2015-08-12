@@ -18,3 +18,8 @@
 (defn get-user [email]
   (ch/generate-string
     (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email, u.password AS password" {:email email}))))
+
+(defn user-exist? [user]
+  (if-not (= "null" (get-user (get-in user [:email])))
+    true
+    false))

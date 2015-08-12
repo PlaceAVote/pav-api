@@ -10,7 +10,10 @@
 (defresource create [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :put! (service/create-user (retrieve-params payload))
+ :conflict? (service/user-exist? (retrieve-params payload))
+ :handle-conflict {::exists "This user already exists"}
+ :put! (fn [ctx] (if-not (contains? ctx ::exists)
+                   (service/create-user (retrieve-params payload))))
  :handle-created :record)
 
 (defresource user [email]
