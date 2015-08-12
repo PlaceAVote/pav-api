@@ -27,5 +27,5 @@
   (fact "Retrieve a user by email that doesn't exist"
         (let [response (app (request :get "/user/peter@stuff.com"))]
           (:status response) => 200
-          (:body response) => "null"))))
+          (:body response) => ""))))
 

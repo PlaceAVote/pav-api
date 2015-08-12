@@ -9,17 +9,18 @@
 (def connection (nr/connect (:neo-url env) (:neo-username env) (:neo-password env)))
 
 (defn create-user [user]
-  (nl/add connection (nn/create connection user) "User")
-  {:record user})
+  (try
+    (nl/add connection (nn/create connection user) "User")
+    {:record user}
+  (catch Exception e (println e))))
 
 (defn get-users []
-  (ch/generate-string (cy/tquery connection "MATCH (u:User) RETURN u.email AS email, u.password AS password")))
+  (cy/tquery connection "MATCH (u:User) RETURN u.email AS email, u.password AS password"))
 
 (defn get-user [email]
-  (ch/generate-string
-    (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email, u.password AS password" {:email email}))))
+    (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email, u.password AS password" {:email email})))
 
 (defn user-exist? [user]
-  (if-not (= "null" (get-user (get-in user [:email])))
-    true
-    false))
+  (if (empty? (get-user (get-in user [:email])))
+    false
+    true))

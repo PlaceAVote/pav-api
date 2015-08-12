@@ -11,10 +11,11 @@
  :allowed-methods [:put]
  :available-media-types ["application/json"]
  :conflict? (service/user-exist? (retrieve-params payload))
- :handle-conflict {::exists "This user already exists"}
  :put! (fn [ctx] (if-not (contains? ctx ::exists)
-                   (service/create-user (retrieve-params payload))))
- :handle-created :record)
+                   (service/create-user (retrieve-params payload))
+                   {:record nil}))
+ :handle-created :record
+ :handle-conflict {::exists "This user already exists"})
 
 (defresource user [email]
  :allowed-methods [:get]
