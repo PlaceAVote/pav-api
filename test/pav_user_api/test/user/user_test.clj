@@ -13,7 +13,7 @@
          (let [response (app (request :get "/user"))]
            (:status response) => 200
            (:body response) => (contains (ch/generate-string test-user-result) :in-any-order)))
-        
+
    (fact "Create a new user, will return 201 status and newly created user"
          (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))]
            (:status response) => 201

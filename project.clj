@@ -26,5 +26,6 @@
                    [midje "1.7.0"]]
     :env {:neo-url "http:localhost:7474/db/data"
           :neo-username "neo4j"
-          :neo-password "password"}}
+          :neo-password "password"
+          :auth-priv-key "test-resources/pav_auth_privkey.pem"}}
    :plugins [[lein-midje "3.1.3"]]})
