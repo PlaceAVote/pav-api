@@ -1,4 +1,25 @@
-main:
+web:
   build: .
+  environment:
+    - RACK_ENV=development
+    - :neo-url=http:localhost:7474/db/data
+    - :neo-username=neo4j
+    - :neo-password=password
+    - :redis-url=http://localhost:6379
+    - :auth-priv-key=test-resources/pav_auth_privkey.pem
+    - :auth-priv-key-pwd=password
+    - PORT=8080
+    - SSLPORT=8443
+    - LEIN_ROOT=1
   ports:
-  - 5000:3000
+    - 8080:8080
+    - 8443:8443
+  volumes:
+    - .:/app
+  links:
+    - neo4j
+    - redis
+redis:
+  image: redis
+neo4j:
+  image: tpires/neo4j
