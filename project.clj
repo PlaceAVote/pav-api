@@ -11,7 +11,8 @@
                  [cheshire "5.5.0"]
                  [liberator "0.13"]
                  [environ "1.0.0"]
-                 [buddy "0.6.1"]]
+                 [buddy "0.6.0"]
+                 [com.taoensso/carmine "2.11.1"]]
   :plugins [[lein-ring "0.8.12"] [lein-environ "1.0.0"]]
   :ring {:handler pav-user-api.handler/app
          :init pav-user-api.handler/init
@@ -27,5 +28,7 @@
     :env {:neo-url "http:localhost:7474/db/data"
           :neo-username "neo4j"
           :neo-password "password"
-          :auth-priv-key "test-resources/pav_auth_privkey.pem"}}
+          :redis-url "http://localhost:6379"
+          :auth-priv-key "test-resources/pav_auth_privkey.pem"
+          :auth-priv-key-pwd "password"}}
    :plugins [[lein-midje "3.1.3"]]})

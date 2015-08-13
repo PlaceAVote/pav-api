@@ -4,6 +4,7 @@
             [pav-user-api.test.utils.utils :refer [test-user bootstrap-users bootstrap-constraints test-user-result]]
             [ring.mock.request :refer [request body content-type]]
             [pav-user-api.models.user :refer [existing-user-error-msg]]
+            [pav-user-api.services.users :refer [create-auth-token]]
             [cheshire.core :as ch]))
 
 (against-background [(before :facts (do (bootstrap-constraints)
@@ -17,7 +18,7 @@
    (fact "Create a new user, will return 201 status and newly created user"
          (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))]
            (:status response) => 201
-           (:body response) => (contains (ch/generate-string {:email "john@stuff.com"}))))
+           (keys (ch/parse-string (:body response) true)) => (contains [:token :email] :in-any-order)))
 
   (fact "Create a new user, with an existing email, should return 409"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))
