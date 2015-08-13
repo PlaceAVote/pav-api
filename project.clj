@@ -10,7 +10,8 @@
                  [clojurewerkz/neocons "3.1.0-beta3"]
                  [cheshire "5.5.0"]
                  [liberator "0.13"]
-                 [environ "1.0.0"]]
+                 [environ "1.0.0"]
+                 [buddy "0.6.1"]]
   :plugins [[lein-ring "0.8.12"] [lein-environ "1.0.0"]]
   :ring {:handler pav-user-api.handler/app
          :init pav-user-api.handler/init

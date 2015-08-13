@@ -8,6 +8,8 @@
 (def connection (nr/connect (:neo-url env) (:neo-username env) (:neo-password env)))
 
 (def test-user {:email "johnny@stuff.com" :password "stuff"})
+(def test-user-result {:email "johnny@stuff.com"})
+
 (defn create-user-accounts []
   (create-user test-user))
 
