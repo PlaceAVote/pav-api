@@ -3,6 +3,8 @@
             [pav-user-api.services.users :as service]
             [pav-user-api.utils.utils :refer [record-in-ctx retrieve-params]]))
 
+(def existing-user-error-msg {:error "A User already exists with this email"})
+
 (defresource list-users
  :available-media-types ["application/json"]
  :handle-ok (service/get-users))
@@ -10,12 +12,10 @@
 (defresource create [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :conflict? (service/user-exist? (retrieve-params payload))
- :put! (fn [ctx] (if-not (contains? ctx ::exists)
-                   (service/create-user (retrieve-params payload))
-                   {:record nil}))
+ :conflict? (fn [ctx] (service/user-exist? (retrieve-params payload)))
+ :put! (fn [ctx] (service/create-user (retrieve-params payload)))
  :handle-created :record
- :handle-conflict {::exists "This user already exists"})
+ :handle-conflict existing-user-error-msg)
 
 (defresource user [email]
  :allowed-methods [:get]

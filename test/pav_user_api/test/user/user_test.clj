@@ -3,6 +3,7 @@
   (:require [pav-user-api.handler :refer [app]]
             [pav-user-api.test.utils.utils :refer [test-user bootstrap-users bootstrap-constraints]]
             [ring.mock.request :refer [request body content-type]]
+            [pav-user-api.models.user :refer [existing-user-error-msg]]
             [cheshire.core :as ch]))
 
 (against-background [(before :facts (do (bootstrap-constraints)
@@ -19,7 +20,8 @@
   (fact "Create a new user, with an existing email, should return 409"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))
               response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))]
-          (:status response) => 409))
+          (:status response) => 409
+          (:body response ) => (ch/generate-string existing-user-error-msg)))
    (fact "Retrieve a user by email"
          (let [response (app (request :get "/user/johnny@stuff.com"))]
            (:status response) => 200
