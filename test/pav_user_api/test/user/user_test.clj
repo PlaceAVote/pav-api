@@ -22,7 +22,15 @@
               response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))]
           (:status response) => 409
           (:body response ) => (ch/generate-string existing-user-error-msg)))
-   (fact "Retrieve a user by email"
+  (fact "Create a new user, when the payload is missing an email, return 400 with appropriate error message"
+        (let [response (app (content-type (request :put "/user" (ch/generate-string {:password "stuff2"})) "application/json"))]
+          (:status response) => 400
+          (:body response ) => (ch/generate-string {:errors [{:email "Email address is a required field"}]})))
+  (fact "Create a new user, when the payload is missing an email, return 400 with appropriate error message"
+        (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com"})) "application/json"))]
+          (:status response) => 400
+          (:body response ) => (ch/generate-string {:errors [{:password "Password is a required field"}]})))
+  (fact "Retrieve a user by email"
          (let [response (app (request :get "/user/johnny@stuff.com"))]
            (:status response) => 200
            (:body response) => (contains (ch/generate-string test-user) :in-any-order)))

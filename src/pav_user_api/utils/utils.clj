@@ -3,5 +3,5 @@
 (defn record-in-ctx [ctx]
   (get ctx :record))
 
-(defn retrieve-params [payload]
+(defn retrieve-body [payload]
   (or (get-in payload [:body]) {}))
