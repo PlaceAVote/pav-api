@@ -1,4 +1,3 @@
-# pav-user-api
 
 FIXME
 
@@ -17,3 +16,4 @@ To start a web server for the application, run:
 ## License
 
 Copyright © 2015 FIXME
+This repository contains the User API.
