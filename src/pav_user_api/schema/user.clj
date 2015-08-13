@@ -3,8 +3,8 @@
             [schema.utils :as su]))
 
 (def User
-  {:email #"^[^@]+@[^@\\.]+[\\.].+"
-          :password s/Str})
+  {:email    (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+   :password (s/both (s/pred (complement empty?)) s/Str)})
 
 (defn validate [user]
   (s/check User user))

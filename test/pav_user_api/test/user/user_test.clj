@@ -36,9 +36,14 @@
           (:body response ) => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}
                                                               {:password "Password is a required field"}]}) :in-any-order)))
   (fact "Create a new user, when the email is invalid, return 400 with appropriate error message"
-  (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "johnstuffcom" :password "stuff2"})) "application/json"))]
-    (:status response) => 400
-    (:body response ) => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}]}) :in-any-order)))
+    (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "johnstuffcom" :password "stuff2"})) "application/json"))]
+      (:status response) => 400
+      (:body response ) => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}]}) :in-any-order)))
+
+  (fact "Create a new user, when the password is invalid, return 400 with appropriate error message"
+      (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password ""})) "application/json"))]
+        (:status response) => 400
+        (:body response ) => (contains (ch/generate-string {:errors [{:password "Password is a required field"}]}) :in-any-order)))
   (fact "Retrieve a user by email"
          (let [response (app (request :get "/user/johnny@stuff.com"))]
            (:status response) => 200
