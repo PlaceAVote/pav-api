@@ -1,11 +1,11 @@
 FROM clojure
 
-ENV :neo-url "http:localhost:7474/db/data"
-ENV :neo-username "neo4j"
-ENV :neo-password "password"
-ENV :redis-url "http://localhost:6379"
-ENV :auth-priv-key "test-resources/pav_auth_privkey.pem"
-ENV :auth-priv-key-pwd "password"
+ENV NEO_URL "http:localhost:7474/db/data"
+ENV NEO_USERNAME "neo4j"
+ENV NEO_PASSWORD "password"
+ENV REDIS_URL "http://localhost:6379"
+ENV AUTH_PRIV_KEY "test-resources/pav_auth_privkey.pem"
+ENV AUTH_PRIV_KEY_PWD "password"
 ENV PORT 8080
 ENV SSLPORT 8443
 ENV LEIN_ROOT 1

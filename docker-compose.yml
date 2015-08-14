@@ -2,12 +2,12 @@ web:
   build: .
   environment:
     - RACK_ENV=development
-    - :neo-url=http:localhost:7474/db/data
-    - :neo-username=neo4j
-    - :neo-password=password
-    - :redis-url=http://localhost:6379
-    - :auth-priv-key=test-resources/pav_auth_privkey.pem
-    - :auth-priv-key-pwd=password
+    - NEO_URL=http:localhost:7474/db/data
+    - NEO_USERNAME=neo4j
+    - NEO_PASSWORD=password
+    - REDIS_URL=http://localhost:6379
+    - AUTH_PRIV_KEY=test-resources/pav_auth_privkey.pem
+    - AUTH_PRIV_KEY_PWD=password
     - PORT=8080
     - SSLPORT=8443
     - LEIN_ROOT=1
