@@ -13,6 +13,7 @@
             [clj-time.core :as t]
             [clojure.java.io :as io]))
 
+
 (defmacro wcar* [& body] `(car/wcar {:pool {} :spec {}} ~@body))
 (def connection (nr/connect (:neo-url env) (:neo-username env) (:neo-password env)))
 

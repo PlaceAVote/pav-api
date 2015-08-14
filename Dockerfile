@@ -1,6 +1,6 @@
 FROM clojure
 
-ENV NEO_URL "http:localhost:7474/db/data"
+ENV NEO_URL "http://localhost:7474/db/data"
 ENV NEO_USERNAME "neo4j"
 ENV NEO_PASSWORD "password"
 ENV REDIS_URL "http://localhost:6379"

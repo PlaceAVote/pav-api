@@ -2,7 +2,7 @@ web:
   build: .
   environment:
     - RACK_ENV=development
-    - NEO_URL=http:localhost:7474/db/data
+    - NEO_URL=http://localhost:7474/db/data
     - NEO_USERNAME=neo4j
     - NEO_PASSWORD=password
     - REDIS_URL=http://localhost:6379
