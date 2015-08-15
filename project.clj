@@ -25,10 +25,14 @@
    :dev
    {:dependencies [[ring-mock "0.1.5"] [ring/ring-devel "1.3.1"]
                    [midje "1.7.0"]]
-    :env {:neo-url "http:localhost:7474/db/data"
-          :neo-username "neo4j"
-          :neo-password "password"
-          :redis-url "http://localhost:6379"
-          :auth-priv-key "test-resources/pav_auth_privkey.pem"
-          :auth-priv-key-pwd "password"}}
+    :env {:neo-username "neo4j"
+                :neo-password "password"
+                :neo4j-port-7474-tcp-addr "localhost"
+                :neo4j-port-7474-tcp-port 7474
+                :redis-port-6379-tcp-addr "localhost"
+                :redis-port-6379-tcp-port 6379
+                :auth-priv-key "test-resources/pav_auth_privkey.pem"
+                :auth-priv-key-pwd "password"}}
    :plugins [[lein-midje "3.1.3"]]})
+
+

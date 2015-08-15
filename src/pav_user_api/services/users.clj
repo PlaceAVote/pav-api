@@ -10,12 +10,10 @@
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
-            [clj-time.core :as t]
-            [clojure.java.io :as io]))
+            [clj-time.core :as t]))
 
-
-(defmacro wcar* [& body] `(car/wcar {:pool {} :spec {}} ~@body))
-(def connection (nr/connect (:neo-url env) (:neo-username env) (:neo-password env)))
+(def red-conn {:pool {} :spec {:host (str (:redis-port-6379-tcp-addr env)) :port (read-string (:redis-port-6379-tcp-port env))}})
+(def connection (nr/connect (str "http://" (:neo4j-port-7474-tcp-addr env) ":" (:neo4j-port-7474-tcp-port env) "/db/data") (:neo-username env) (:neo-password env)))
 
 (defn- pkey []
   (ks/private-key (:auth-priv-key env) (:auth-priv-key-pwd env)))
@@ -26,7 +24,7 @@
                      :exp (-> (t/plus (t/now) (t/days 1)) (u/to-timestamp))})})
 
 (defn associate-token-with-user [user token]
-  (wcar* (car/set (get-in user [:email]) (get-in token [:token])))
+  (car/wcar red-conn (car/set (get-in user [:email]) (get-in token [:token])))
   (merge user token))
 
 (defn create-user [user]

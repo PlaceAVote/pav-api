@@ -5,7 +5,7 @@
            [pav-user-api.services.users :refer [create-user]]
            [environ.core :refer [env]]))
 
-(def connection (nr/connect (:neo-url env) (:neo-username env) (:neo-password env)))
+(def connection (nr/connect (str "http://" (:neo4j-port-7474-tcp-addr env) ":" (:neo4j-port-7474-tcp-port env) "/db/data") (:neo-username env) (:neo-password env)))
 
 (def test-user {:email "johnny@stuff.com" :password "stuff"})
 (def test-user-result {:email "johnny@stuff.com" })
