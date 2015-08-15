@@ -5,6 +5,7 @@
             [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
+(def login-error-msg "Invalid Login credientials")
 
 (defresource list-users
  :available-media-types ["application/json"]
@@ -18,6 +19,16 @@
  :put! (fn [ctx] (service/create-user (retrieve-body payload)))
  :handle-created :record
  :handle-conflict existing-user-error-msg
+ :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
+
+(defresource authenticate [payload]
+ :allowed-methods [:post]
+ :malformed? (fn [ctx] (service/bind-any-errors? (retrieve-body payload)))
+ :authorized? (fn [ctx] (service/valid-user? (retrieve-body payload)))
+ :available-media-types ["application/json"]
+ :post! (fn [ctx] (service/authenticate-user (retrieve-body payload)))
+ :handle-created :record
+ :handle-unauthorized login-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
 (defresource user [email]

@@ -3,7 +3,7 @@
   (:require [pav-user-api.handler :refer [app]]
             [pav-user-api.test.utils.utils :refer [test-user bootstrap-users bootstrap-constraints test-user-result]]
             [ring.mock.request :refer [request body content-type]]
-            [pav-user-api.models.user :refer [existing-user-error-msg]]
+            [pav-user-api.models.user :refer [existing-user-error-msg login-error-msg]]
             [pav-user-api.services.users :refer [create-auth-token]]
             [cheshire.core :as ch]))
 
@@ -60,5 +60,23 @@
   (fact "Retrieve a user by email that doesn't exist"
         (let [response (app (request :get "/user/peter@stuff.com"))]
           (:status response) => 200
-          (:body response) => ""))))
+          (:body response) => ""))
+
+  (fact "Create token for user when logging on"
+        (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))
+              login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))]
+          (:status login-response) => 201
+          (keys (ch/parse-string (:body login-response) true)) => (contains [:token])))
+
+  (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
+        (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))
+              login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:email "john@stuff.com" :password "invalid"})) "application/json"))]
+          (:status login-response) => 401
+          (:body login-response) => login-error-msg))
+
+  (fact "Create token for user, when payload doesn't contain an email then returns 400 with suitable error message"
+        (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))
+              login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:password "stuff2"})) "application/json"))]
+          (:status login-response) => 400
+          (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))))
 

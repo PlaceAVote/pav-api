@@ -7,7 +7,7 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-            [pav-user-api.models.user :refer [list-users create user]]
+            [pav-user-api.models.user :refer [list-users create user authenticate]]
             [liberator.dev :refer [wrap-trace]]))
 
 (defn init []
@@ -20,6 +20,7 @@
   (GET "/user/:email" [email] (user email))
   (GET "/user" [] list-users)
   (PUT "/user" user create)
+  (POST "/user/authenticate" user authenticate)
   (route/resources "/")
   (route/not-found "Not Found"))
 

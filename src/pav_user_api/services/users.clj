@@ -41,6 +41,9 @@
 (defn get-user [email]
     (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email" {:email email})))
 
+(defn get-user-details [email]
+  (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email, u.password AS password" {:email email})))
+
 (defn bind-any-errors? [user]
   (let [result (validate user)]
     (if-not (nil? result)
@@ -50,3 +53,15 @@
   (if (empty? (get-user (get-in user [:email])))
     false
     true))
+
+(defn valid-user? [user]
+  (let [existing-user (get-user-details (get-in user [:email]))]
+    (if-not (nil? existing-user)
+      (if (h/check (:password user) (get-in existing-user ["password"]))
+        true
+        false)
+      false)))
+
+(defn authenticate-user [user]
+  {:record (dissoc (->> (create-auth-token user)
+                        (associate-token-with-user user)) :password :email)})

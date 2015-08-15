@@ -28,9 +28,9 @@
     :env {:neo-username "neo4j"
                 :neo-password "password"
                 :neo4j-port-7474-tcp-addr "localhost"
-                :neo4j-port-7474-tcp-port 7474
+                :neo4j-port-7474-tcp-port "7474"
                 :redis-port-6379-tcp-addr "localhost"
-                :redis-port-6379-tcp-port 6379
+                :redis-port-6379-tcp-port "6379"
                 :auth-priv-key "test-resources/pav_auth_privkey.pem"
                 :auth-priv-key-pwd "password"}}
    :plugins [[lein-midje "3.1.3"]]})
