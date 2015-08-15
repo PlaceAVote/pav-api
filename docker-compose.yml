@@ -5,7 +5,8 @@ web:
     - NEO_URL=http://localhost:7474/db/data
     - NEO_USERNAME=neo4j
     - NEO_PASSWORD=password
-    - REDIS_URL=http://localhost:6379
+    - REDIS_URL=localhost
+    - REDIS_PORT=6379
     - AUTH_PRIV_KEY=test-resources/pav_auth_privkey.pem
     - AUTH_PRIV_KEY_PWD=password
     - PORT=8080
@@ -16,10 +17,3 @@ web:
     - 8443:8443
   volumes:
     - .:/app
-  links:
-    - neo4j
-    - redis
-redis:
-  image: redis
-neo4j:
-  image: tpires/neo4j
