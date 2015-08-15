@@ -9,6 +9,10 @@ web:
     - PORT=8080
     - SSLPORT=8443
     - LEIN_ROOT=1
+    # - NEO4J-PORT-7474-TCP-PORT=7474
+    # - NEO4J-PORT-7474-TCP-ADDR=localhost
+    # - REDIS_PORT_6379_TCP_ADDR=localhost
+    # - REDIS_PORT_6379_TCP_PORT=6379
   ports:
     - 8080:8080
     - 8443:8443
