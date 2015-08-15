@@ -4,6 +4,7 @@ FIXME
 ## Prerequisites
 
 You will need [Leiningen][1] 1.7.0 or above installed.
+An instance of Redis and Neo4J Running.
 
 [1]: https://github.com/technomancy/leiningen
 
