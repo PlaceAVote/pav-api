@@ -58,14 +58,20 @@
         (:body response ) => (contains (ch/generate-string {:errors [{:password "Password is a required field"}]}) :in-any-order)))
 
   (fact "Retrieve a user by email"
-         (let [response (app (request :get "/user/johnny@stuff.com"))]
+         (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))) true)
+               response (app (header (request :get "/user/john@stuff.com") "PAV_AUTH_TOKEN" token))]
            (:status response) => 200
-           (:body response) => (contains (ch/generate-string test-user-result) :in-any-order)))
+           (:body response) => (contains (ch/generate-string {:email "john@stuff.com"}) :in-any-order)))
 
   (fact "Retrieve a user by email that doesn't exist"
-        (let [response (app (request :get "/user/peter@stuff.com"))]
+        (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))) true)
+              response (app (header (request :get "/user/peter@stuff.com") "PAV_AUTH_TOKEN" token))]
           (:status response) => 200
           (:body response) => ""))
+
+  (fact "Retrieve a user by email, without authentication token"
+        (let [response (app (request :get "/user/johnny@stuff.com"))]
+          (:status response) => 401))
 
   (fact "Create token for user when logging on"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))

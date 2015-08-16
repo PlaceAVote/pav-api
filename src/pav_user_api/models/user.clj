@@ -33,6 +33,7 @@
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
 (defresource user [email]
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-token (:request ctx))))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :exists? {:record (service/get-user email)}
