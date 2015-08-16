@@ -2,7 +2,7 @@
   (:use midje.sweet)
   (:require [pav-user-api.handler :refer [app]]
             [pav-user-api.test.utils.utils :refer [test-user bootstrap-users bootstrap-constraints test-user-result]]
-            [ring.mock.request :refer [request body content-type]]
+            [ring.mock.request :refer [request body content-type header]]
             [pav-user-api.models.user :refer [existing-user-error-msg login-error-msg]]
             [pav-user-api.services.users :refer [create-auth-token]]
             [cheshire.core :as ch]))
@@ -11,9 +11,14 @@
                                       (bootstrap-users)))]
  (facts "Test cases for users"
    (fact "Get a list of existing users"
-         (let [response (app (request :get "/user"))]
+         (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))) true)
+               response (app (header (request :get "/user") "PAV_AUTH_TOKEN" token))]
            (:status response) => 200
            (:body response) => (contains (ch/generate-string test-user-result) :in-any-order)))
+
+    (fact "Get a list of existing users, without auth token, should return a 401"
+        (let [response (app (request :get "/user"))]
+          (:status response) => 401))
 
    (fact "Create a new user, will return 201 status and newly created user"
          (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))]

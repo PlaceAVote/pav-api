@@ -1,13 +1,14 @@
 (ns pav-user-api.models.user
   (:require [liberator.core :refer [resource defresource]]
             [pav-user-api.services.users :as service]
-            [pav-user-api.utils.utils :refer [record-in-ctx retrieve-body]]
+            [pav-user-api.utils.utils :refer [record-in-ctx retrieve-body retrieve-token]]
             [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
 (def login-error-msg "Invalid Login credientials")
 
-(defresource list-users
+(defresource list-users [payload]
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-token payload)))
  :available-media-types ["application/json"]
  :handle-ok (service/get-users))
 

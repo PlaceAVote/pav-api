@@ -8,7 +8,15 @@
             [compojure.route :as route]
             [compojure.core :refer :all]
             [pav-user-api.models.user :refer [list-users create user authenticate]]
-            [liberator.dev :refer [wrap-trace]]))
+            [liberator.dev :refer [wrap-trace]]
+            [buddy.auth.backends.token :refer [jws-backend]]
+            [buddy.auth.middleware :refer [wrap-authentication]]
+            [buddy.core.keys :as ks]
+            [clojure.java.io :as io]
+            [environ.core :refer [env]]))
+
+(def auth-backend (jws-backend {:secret (ks/public-key (:auth-pub-key env))
+                                :token-name "PAV_AUTH_TOKEN"}))
 
 (defn init []
   (println "pav-user-api is starting"))
@@ -26,6 +34,7 @@
 
 (def app
   (-> (routes app-routes)
+      (wrap-authentication auth-backend)
       (wrap-json-body {:keywords? true})
       (wrap-json-response)
       (handler/site)

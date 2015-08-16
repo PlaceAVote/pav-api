@@ -21,7 +21,7 @@
 (defn create-auth-token [user]
   {:token (jws/sign user (pkey)
                     {:alg :rs256
-                     :exp (-> (t/plus (t/now) (t/days 1)) (u/to-timestamp))})})
+                     :exp (-> (t/plus (t/now) (t/days 30)) (u/to-timestamp))})})
 
 (defn associate-token-with-user [user token]
   (car/wcar red-conn (car/set (get-in user [:email]) (get-in token [:token])))
@@ -65,3 +65,8 @@
 (defn authenticate-user [user]
   {:record (dissoc (->> (create-auth-token user)
                         (associate-token-with-user user)) :password :email)})
+
+(defn is-authenticated? [token]
+  (if-not (nil? token)
+    true
+    false))

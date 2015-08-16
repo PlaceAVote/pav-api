@@ -32,7 +32,9 @@
                 :redis-port-6379-tcp-addr "localhost"
                 :redis-port-6379-tcp-port "6379"
                 :auth-priv-key "test-resources/pav_auth_privkey.pem"
-                :auth-priv-key-pwd "password"}}
+                :auth-priv-key-pwd "password"
+                :auth-pub-key "test-resources/pav_auth_pubkey.pem"
+                :auth-pub-key-pwd "password"}}
    :plugins [[lein-midje "3.1.3"]]})
 
 

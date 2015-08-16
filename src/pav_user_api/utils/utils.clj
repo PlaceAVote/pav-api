@@ -5,3 +5,6 @@
 
 (defn retrieve-body [payload]
   (or (get-in payload [:body]) {}))
+
+(defn retrieve-token [payload]
+  ((:headers payload) "pav_auth_token"))
