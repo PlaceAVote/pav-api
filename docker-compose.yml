@@ -3,10 +3,12 @@ web:
   environment:
     - RACK_ENV=development
     - NEO_USERNAME=neo4j
+    - PORT=8080
     - NEO_PASSWORD=password
     - AUTH_PRIV_KEY=test-resources/pav_auth_privkey.pem
     - AUTH_PRIV_KEY_PWD=password
-    - PORT=8080
+    - AUTH_PUB_KEY=test-resources/pav_auth_pubkey.pem
+    - AUTH_PUB_KEY_PWD=password
     - SSLPORT=8443
     - LEIN_ROOT=1
     # - NEO4J-PORT-7474-TCP-PORT=7474
