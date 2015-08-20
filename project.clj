@@ -16,7 +16,12 @@
   :plugins [[lein-ring "0.8.12"] [lein-environ "1.0.0"]]
   :ring {:handler pav-user-api.handler/app
          :init pav-user-api.handler/init
-         :destroy pav-user-api.handler/destroy}
+         :destroy pav-user-api.handler/destroy
+         :ssl? true
+         :port 8080
+         :ssl-port 8443
+         :keystore "pavpkcs12.keystore"
+         :key-password "password"}
   :profiles
   {:uberjar {:aot :all}
    :production

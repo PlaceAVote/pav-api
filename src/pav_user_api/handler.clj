@@ -12,7 +12,6 @@
             [buddy.auth.backends.token :refer [jws-backend]]
             [buddy.auth.middleware :refer [wrap-authentication]]
             [buddy.core.keys :as ks]
-            [clojure.java.io :as io]
             [environ.core :refer [env]]))
 
 (def auth-backend (jws-backend {:secret (ks/public-key (:auth-pub-key env))

@@ -26,7 +26,11 @@
                     :init init
                     :auto-reload? true
                     :destroy destroy
-                    :join true}))
+                    :join false
+                    :ssl? true
+                    :ssl-port 8443
+                    :keystore "pavpkcs12.keystore"
+                    :key-password "password"}))
     (println (str "You can view the site at http://localhost:" port))))
 
 (defn stop-server []
