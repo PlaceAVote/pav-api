@@ -6,6 +6,7 @@
                  [hiccup "1.0.5"]
                  [ring-server "0.3.1"]
                  [ring/ring-json "0.3.1"]
+                 [ring-cors "0.1.7"]
                  [prismatic/schema "0.4.3"]
                  [clojurewerkz/neocons "3.1.0-beta3"]
                  [cheshire "5.5.0"]

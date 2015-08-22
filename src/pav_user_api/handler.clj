@@ -3,6 +3,7 @@
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.json :refer [wrap-json-body wrap-json-params wrap-json-response]]
             [ring.middleware.file-info :refer [wrap-file-info]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [hiccup.middleware :refer [wrap-base-url]]
             [compojure.handler :as handler]
             [compojure.route :as route]
@@ -33,6 +34,8 @@
 
 (def app
   (-> (routes app-routes)
+      (wrap-cors :access-control-allow-origin [#".*"]
+                 :access-control-allow-methods [:get :put :post :delete])
       (wrap-authentication auth-backend)
       (wrap-json-body {:keywords? true})
       (wrap-json-response)
