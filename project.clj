@@ -13,7 +13,8 @@
                  [liberator "0.13"]
                  [environ "1.0.0"]
                  [buddy "0.6.0"]
-                 [com.taoensso/carmine "2.11.1"]]
+                 [com.taoensso/carmine "2.11.1"]
+                 [org.clojure/tools.logging "0.3.1"]]
   :plugins [[lein-ring "0.8.12"] [lein-environ "1.0.0"]]
   :ring {:handler pav-user-api.handler/app
          :init pav-user-api.handler/init

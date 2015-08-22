@@ -10,7 +10,8 @@
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
-            [clj-time.core :as t]))
+            [clj-time.core :as t]
+            [clojure.tools.logging :as log]))
 
 (def red-conn {:pool {} :spec {:host (str (:redis-port-6379-tcp-addr env)) :port (read-string (:redis-port-6379-tcp-port env))}})
 (defmacro wcar* [& body] `(car/wcar red-conn ~@body))
@@ -27,16 +28,17 @@
 (defn associate-token-with-user [user token]
   (try
     (wcar* (car/set (get-in user [:email]) (get-in token [:token])))
-  (catch Exception e (println "Exception writing to Redis at " red-conn e)))
+  (catch Exception e (log/info (str "Exception writing to Redis at " red-conn e))))
   (merge user token))
 
 (defn create-user [user]
+  (log/info (str "Creating user " user))
   (let [hashed-user (update-in user [:password] #(h/encrypt %))
         token (create-auth-token hashed-user)]
     (try
      (nl/add connection (nn/create connection hashed-user) "User")
      {:record (dissoc (associate-token-with-user hashed-user token) :password)}
-     (catch Exception e (println e)))))
+     (catch Exception e (log/info e)))))
 
 (defn get-users []
   (cy/tquery connection "MATCH (u:User) RETURN u.email AS email"))

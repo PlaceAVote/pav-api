@@ -13,7 +13,9 @@
             [buddy.auth.backends.token :refer [jws-backend]]
             [buddy.auth.middleware :refer [wrap-authentication]]
             [buddy.core.keys :as ks]
-            [environ.core :refer [env]]))
+            [environ.core :refer [env]]
+            [clojure.tools.logging :as log]
+            [cheshire.core :as c]))
 
 (def auth-backend (jws-backend {:secret (ks/public-key (:auth-pub-key env))
                                 :token-name "PAV_AUTH_TOKEN"}))
@@ -34,11 +36,11 @@
 
 (def app
   (-> (routes app-routes)
-      (wrap-cors :access-control-allow-origin [#".*"]
-                 :access-control-allow-methods [:get :put :post :delete])
       (wrap-authentication auth-backend)
       (wrap-json-body {:keywords? true})
       (wrap-json-response)
       (handler/site)
       (wrap-base-url)
-      (wrap-trace :header :ui)))
+      (wrap-trace :header :ui)
+      (wrap-cors :access-control-allow-origin [#".*"]
+                 :access-control-allow-methods [:get :put :post :delete :options])))

@@ -1,8 +1,10 @@
 (ns pav-user-api.models.user
-  (:require [liberator.core :refer [resource defresource]]
-            [pav-user-api.services.users :as service]
-            [pav-user-api.utils.utils :refer [record-in-ctx retrieve-body retrieve-token]]
-            [cheshire.core :as ch]))
+ (:require [liberator.core :refer [resource defresource]]
+           [liberator.representation :refer [ring-response]]
+           [pav-user-api.services.users :as service]
+           [pav-user-api.utils.utils :refer [record-in-ctx retrieve-body retrieve-token]]
+           [cheshire.core :as ch]
+           [clojure.tools.logging :as log]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
 (def login-error-msg "Invalid Login credientials")
