@@ -13,6 +13,7 @@
             [clj-time.core :as t]))
 
 (def red-conn {:pool {} :spec {:host (str (:redis-port-6379-tcp-addr env)) :port (read-string (:redis-port-6379-tcp-port env))}})
+(defmacro wcar* [& body] `(car/wcar red-conn ~@body))
 (def connection (nr/connect (str "http://" (:neo4j-port-7474-tcp-addr env) ":" (:neo4j-port-7474-tcp-port env) "/db/data") (:neo-username env) (:neo-password env)))
 
 (defn- pkey []
@@ -25,8 +26,8 @@
 
 (defn associate-token-with-user [user token]
   (try
-    (car/wcar red-conn (car/set (get-in user [:email]) (get-in token [:token])))
-  (catch Exception (println "Exception writing to Redis at " red-conn e)))
+    (wcar* (car/set (get-in user [:email]) (get-in token [:token])))
+  (catch Exception e (println "Exception writing to Redis at " red-conn e)))
   (merge user token))
 
 (defn create-user [user]
