@@ -24,7 +24,9 @@
                      :exp (-> (t/plus (t/now) (t/days 30)) (u/to-timestamp))})})
 
 (defn associate-token-with-user [user token]
-  (car/wcar red-conn (car/set (get-in user [:email]) (get-in token [:token])))
+  (try
+    (car/wcar red-conn (car/set (get-in user [:email]) (get-in token [:token])))
+  (catch Exception (println "Exception writing to Redis at " red-conn e)))
   (merge user token))
 
 (defn create-user [user]
