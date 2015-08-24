@@ -8,6 +8,7 @@
    :password (s/both (s/pred (complement empty?)) s/Str)
    :first_name s/Str
    :last_name s/Str
+   :dob #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
    :country-code s/Int})
 
 (def UserLogin
@@ -25,7 +26,8 @@
         (= :password k) {k "Password is a required field"}
         (= :country-code k) {k "Country Code is a required field.  Please Specify Country Code"}
         (= :first_name k) {k "First Name is a required field"}
-        (= :last_name k) {k "Last Name is a required field"}))
+        (= :last_name k) {k "Last Name is a required field"}
+        (= :dob k) {k "Date of birth is a required field"}))
 
 (defn construct-error-msg [errors]
   (log/error (str "An Error has occured " errors))
