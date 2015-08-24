@@ -26,7 +26,7 @@
 
 (defresource authenticate [payload]
  :allowed-methods [:post]
- :malformed? (fn [ctx] (service/bind-any-errors? (retrieve-body payload)))
+ :malformed? (fn [ctx] (service/validate-user-login (retrieve-body payload)))
  :authorized? (fn [ctx] (service/valid-user? (retrieve-body payload)))
  :available-media-types ["application/json"]
  :post! (fn [ctx] (service/authenticate-user (retrieve-body payload)))

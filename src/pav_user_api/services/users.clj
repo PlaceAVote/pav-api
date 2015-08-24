@@ -5,7 +5,7 @@
             [clojurewerkz.neocons.rest.cypher :as cy]
             [environ.core :refer [env]]
             [buddy.hashers :as h]
-            [pav-user-api.schema.user :refer [validate construct-error-msg]]
+            [pav-user-api.schema.user :refer [validate validate-login construct-error-msg]]
             [taoensso.carmine :as car :refer (wcar)]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
@@ -51,6 +51,11 @@
 
 (defn bind-any-errors? [user]
   (let [result (validate user)]
+    (if-not (nil? result)
+      {:errors (construct-error-msg result)})))
+
+(defn validate-user-login [user]
+  (let [result (validate-login user)]
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 

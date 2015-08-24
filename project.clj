@@ -41,7 +41,7 @@
                 :auth-priv-key "test-resources/pav_auth_privkey.pem"
                 :auth-priv-key-pwd "password"
                 :auth-pub-key "test-resources/pav_auth_pubkey.pem"
-                :auth-pub-key-pwd "password"}}
-   :plugins [[lein-midje "3.1.3"]]})
+                :auth-pub-key-pwd "password"}
+    :plugins [[lein-midje "3.1.3"]]}})
 
 
