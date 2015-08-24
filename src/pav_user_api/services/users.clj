@@ -41,10 +41,10 @@
      (catch Exception e (log/info e)))))
 
 (defn get-users []
-  (cy/tquery connection "MATCH (u:User) RETURN u.email AS email"))
+  (cy/tquery connection "MATCH (u:User) RETURN u.email AS email, u.first_name AS first_name, u.last_name AS last_name, u.dob AS dob, u.country_code AS country_code"))
 
 (defn get-user [email]
-    (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email" {:email email})))
+    (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email, u.first_name AS first_name, u.last_name AS last_name, u.dob AS dob, u.country_code AS country_code" {:email email})))
 
 (defn get-user-details [email]
   (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email, u.password AS password" {:email email})))

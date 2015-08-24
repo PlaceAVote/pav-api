@@ -13,10 +13,14 @@
    (fact "Get a list of existing users"
          (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                                                      :first_name "john" :last_name "stuff"
-                                                                                                                     :country-code 840})) "application/json"))) true)
+                                                                                                                     :country_code 840
+                                                                                                                     :dob "05/10/1984"})) "application/json"))) true)
                response (app (header (request :get "/user") "PAV_AUTH_TOKEN" token))]
            (:status response) => 200
-           (:body response) => (contains (ch/generate-string test-user-result) :in-any-order)))
+           (ch/parse-string (:body response) true) => (contains {:email "john@stuff.com"
+                                                              :first_name "john" :last_name "stuff"
+                                                              :country_code 840
+                                                              :dob "05/10/1984"} :in-any-order)))
 
     (fact "Get a list of existing users, without auth token, should return a 401"
         (let [response (app (request :get "/user"))]
@@ -26,19 +30,19 @@
          (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                       :first_name "john" :last_name "stuff"
                                                                                       :dob "05/10/1984"
-                                                                                      :country-code 840})) "application/json"))]
+                                                                                      :country_code 840})) "application/json"))]
            (:status response) => 201
-           (keys (ch/parse-string (:body response) true)) => (contains [:token :email :first_name :last_name :dob :country-code] :in-any-order)))
+           (keys (ch/parse-string (:body response) true)) => (contains [:token :email :first_name :last_name :dob :country_code] :in-any-order)))
 
   (fact "Create a new user, with an existing email, should return 409"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
-                                                                              :country-code 840})) "application/json"))
+                                                                              :country_code 840})) "application/json"))
               response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                      :first_name "john" :last_name "stuff"
                                                                                      :dob "05/10/1984"
-                                                                                     :country-code 840})) "application/json"))]
+                                                                                     :country_code 840})) "application/json"))]
           (:status response) => 409
           (:body response ) => (ch/generate-string existing-user-error-msg)))
 
@@ -46,7 +50,7 @@
         (let [response (app (content-type (request :put "/user" (ch/generate-string {:password "stuff2"
                                                                                      :first_name "john" :last_name "stuff"
                                                                                      :dob "05/10/1984"
-                                                                                     :country-code 840})) "application/json"))]
+                                                                                     :country_code 840})) "application/json"))]
           (:status response) => 400
           (:body response ) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
 
@@ -54,7 +58,7 @@
         (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com"
                                                                                      :first_name "john" :last_name "stuff"
                                                                                      :dob "05/10/1984"
-                                                                                     :country-code 840})) "application/json"))]
+                                                                                     :country_code 840})) "application/json"))]
           (:status response) => 400
           (:body response ) => (ch/generate-string {:errors [{:password "Password is a required field"}]})))
 
@@ -67,13 +71,13 @@
                                                               {:first_name "First Name is a required field"}
                                                               {:last_name "Last Name is a required field"}
                                                               {:dob "Date of birth is a required field"}
-                                                              {:country-code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
+                                                              {:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
 
   (fact "Create a new user, when the email is invalid, return 400 with appropriate error message"
     (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "johnstuffcom" :password "stuff2"
                                                                                  :first_name "john" :last_name "stuff"
                                                                                  :dob "05/10/1984"
-                                                                                 :country-code 840})) "application/json"))]
+                                                                                 :country_code 840})) "application/json"))]
       (:status response) => 400
       (:body response ) => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}]}) :in-any-order)))
 
@@ -81,15 +85,15 @@
         (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                      :first_name "john" :last_name "stuff"
                                                                                      :dob "05/10/1984"
-                                                                                     :country-code ""})) "application/json"))]
+                                                                                     :country_code ""})) "application/json"))]
           (:status response) => 400
-          (:body response ) => (contains (ch/generate-string {:errors [{:country-code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
+          (:body response ) => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
 
   (fact "Create a new user, when the password is invalid, return 400 with appropriate error message"
       (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password ""
                                                                                    :first_name "john" :last_name "stuff"
                                                                                    :dob "05/10/1984"
-                                                                                   :country-code 840})) "application/json"))]
+                                                                                   :country_code 840})) "application/json"))]
         (:status response) => 400
         (:body response ) => (contains (ch/generate-string {:errors [{:password "Password is a required field"}]}) :in-any-order)))
 
@@ -97,16 +101,19 @@
          (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                                                      :first_name "john" :last_name "stuff"
                                                                                                                      :dob "05/10/1984"
-                                                                                                                     :country-code 840})) "application/json"))) true)
+                                                                                                                     :country_code 840})) "application/json"))) true)
                response (app (header (request :get "/user/john@stuff.com") "PAV_AUTH_TOKEN" token))]
            (:status response) => 200
-           (:body response) => (contains (ch/generate-string {:email "john@stuff.com"}) :in-any-order)))
+           (ch/parse-string (:body response) true) => (contains {:email "john@stuff.com"
+                                                                 :first_name "john" :last_name "stuff"
+                                                                 :dob "05/10/1984"
+                                                                 :country_code 840} :in-any-order)))
 
   (fact "Retrieve a user by email that doesn't exist"
         (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                                                     :first_name "john" :last_name "stuff"
                                                                                                                     :dob "05/10/1984"
-                                                                                                                    :country-code 840})) "application/json"))) true)
+                                                                                                                    :country_code 840})) "application/json"))) true)
               response (app (header (request :get "/user/peter@stuff.com") "PAV_AUTH_TOKEN" token))]
           (:status response) => 200
           (:body response) => ""))
@@ -119,7 +126,7 @@
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
-                                                                              :country-code 840})) "application/json"))
+                                                                              :country_code 840})) "application/json"))
               login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))]
           (:status login-response) => 201
           (keys (ch/parse-string (:body login-response) true)) => (contains [:token])))
@@ -128,7 +135,7 @@
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
-                                                                              :country-code 840})) "application/json"))
+                                                                              :country_code 840})) "application/json"))
               login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:email "john@stuff.com" :password "invalid"})) "application/json"))]
           (:status login-response) => 401
           (:body login-response) => login-error-msg))
@@ -137,7 +144,7 @@
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
-                                                                              :country-code 840})) "application/json"))
+                                                                              :country_code 840})) "application/json"))
               login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:password "stuff2"})) "application/json"))]
           (:status login-response) => 400
           (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))))

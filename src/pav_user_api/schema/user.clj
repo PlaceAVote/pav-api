@@ -9,7 +9,7 @@
    :first_name s/Str
    :last_name s/Str
    :dob #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
-   :country-code s/Int})
+   :country_code s/Int})
 
 (def UserLogin
   {:email    (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
@@ -24,7 +24,7 @@
 (defn find-suitable-error [[k v]]
   (cond (= :email k) {k "A valid email address is a required"}
         (= :password k) {k "Password is a required field"}
-        (= :country-code k) {k "Country Code is a required field.  Please Specify Country Code"}
+        (= :country_code k) {k "Country Code is a required field.  Please Specify Country Code"}
         (= :first_name k) {k "First Name is a required field"}
         (= :last_name k) {k "Last Name is a required field"}
         (= :dob k) {k "Date of birth is a required field"}))
