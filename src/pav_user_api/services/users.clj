@@ -34,7 +34,7 @@
 (defn create-user [user]
   (log/info (str "Creating user " (dissoc user :password)))
   (let [hashed-user (update-in user [:password] #(h/encrypt %))
-        token (create-auth-token hashed-user)]
+        token (create-auth-token (dissoc hashed-user :password))]
     (try
      (nl/add connection (nn/create connection hashed-user) "User")
      {:record (dissoc (associate-token-with-user hashed-user token) :password)}
