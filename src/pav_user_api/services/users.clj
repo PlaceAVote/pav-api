@@ -32,7 +32,7 @@
   (merge user token))
 
 (defn create-user [user]
-  (log/info (str "Creating user " user))
+  (log/info (str "Creating user " (dissoc user :password)))
   (let [hashed-user (update-in user [:password] #(h/encrypt %))
         token (create-auth-token hashed-user)]
     (try
@@ -76,7 +76,7 @@
   {:record (dissoc (->> (create-auth-token user)
                         (associate-token-with-user user)) :password :email)})
 
-(defn is-authenticated? [token]
-  (if-not (nil? token)
+(defn is-authenticated? [user]
+  (if-not (nil? user)
     true
     false))

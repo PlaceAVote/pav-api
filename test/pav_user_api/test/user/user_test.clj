@@ -15,7 +15,7 @@
                                                                                                                      :first_name "john" :last_name "stuff"
                                                                                                                      :country_code 840
                                                                                                                      :dob "05/10/1984"})) "application/json"))) true)
-               response (app (header (request :get "/user") "PAV_AUTH_TOKEN" token))]
+               response (app (header (request :get "/user") "Authorization" (str "PAV_AUTH_TOKEN " token)))]
            (:status response) => 200
            (ch/parse-string (:body response) true) => (contains {:email "john@stuff.com"
                                                               :first_name "john" :last_name "stuff"
@@ -102,7 +102,7 @@
                                                                                                                      :first_name "john" :last_name "stuff"
                                                                                                                      :dob "05/10/1984"
                                                                                                                      :country_code 840})) "application/json"))) true)
-               response (app (header (request :get "/user/john@stuff.com") "PAV_AUTH_TOKEN" token))]
+               response (app (header (request :get "/user/john@stuff.com")"Authorization" (str "PAV_AUTH_TOKEN " token)))]
            (:status response) => 200
            (ch/parse-string (:body response) true) => (contains {:email "john@stuff.com"
                                                                  :first_name "john" :last_name "stuff"
@@ -114,7 +114,7 @@
                                                                                                                     :first_name "john" :last_name "stuff"
                                                                                                                     :dob "05/10/1984"
                                                                                                                     :country_code 840})) "application/json"))) true)
-              response (app (header (request :get "/user/peter@stuff.com") "PAV_AUTH_TOKEN" token))]
+              response (app (header (request :get "/user/peter@stuff.com") "Authorization" (str "PAV_AUTH_TOKEN " token)))]
           (:status response) => 200
           (:body response) => ""))
 

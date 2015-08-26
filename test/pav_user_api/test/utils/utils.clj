@@ -11,8 +11,7 @@
 (def test-user-result {:email "johnny@stuff.com" })
 
 (defn create-user-accounts []
-  ;(create-user test-user)
-  )
+  (create-user test-user))
 
 (defn bootstrap-constraints []
   (try

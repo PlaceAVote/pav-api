@@ -2,7 +2,7 @@
  (:require [liberator.core :refer [resource defresource]]
            [liberator.representation :refer [ring-response]]
            [pav-user-api.services.users :as service]
-           [pav-user-api.utils.utils :refer [record-in-ctx retrieve-body retrieve-token]]
+           [pav-user-api.utils.utils :refer [record-in-ctx retrieve-body retrieve-user-details]]
            [cheshire.core :as ch]
            [clojure.tools.logging :as log]))
 
@@ -10,7 +10,7 @@
 (def login-error-msg "Invalid Login credientials")
 
 (defresource list-users [payload]
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-token payload)))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details payload)))
  :available-media-types ["application/json"]
  :handle-ok (service/get-users))
 
@@ -35,7 +35,7 @@
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
 (defresource user [email]
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-token (:request ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :exists? {:record (service/get-user email)}

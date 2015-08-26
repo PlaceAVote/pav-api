@@ -1,7 +1,7 @@
 (defproject pav-user-api "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [compojure "1.1.6"]
                  [hiccup "1.0.5"]
                  [ring-server "0.3.1"]
@@ -12,7 +12,7 @@
                  [cheshire "5.5.0"]
                  [liberator "0.13"]
                  [environ "1.0.0"]
-                 [buddy "0.6.0"]
+                 [buddy "0.6.1"]
                  [com.taoensso/carmine "2.11.1"]
                  [org.clojure/tools.logging "0.3.1"]]
   :plugins [[lein-ring "0.8.12"] [lein-environ "1.0.0"]]

@@ -14,11 +14,13 @@
             [buddy.auth.middleware :refer [wrap-authentication]]
             [buddy.core.keys :as ks]
             [environ.core :refer [env]]
-            [clojure.tools.logging :as log]
-            [cheshire.core :as c]))
+            [clojure.tools.logging :as log]))
 
-(def auth-backend (jws-backend {:secret (ks/public-key (:auth-pub-key env))
-                                :token-name "PAV_AUTH_TOKEN"}))
+(def auth-backend (jws-backend {:secret     (ks/public-key (:auth-pub-key env))
+                                :options    {:alg :rs256}
+                                :token-name "PAV_AUTH_TOKEN"
+                                :on-error   (fn [req e]
+                                              (log/error (str "Exception Failed decrypting credientials " e " REQUEST " req)))}))
 
 (defn init []
   (println "pav-user-api is starting"))
@@ -29,8 +31,8 @@
 (defroutes app-routes
   (GET "/user/:email" [email] (user email))
   (GET "/user" [] list-users)
-  (PUT "/user" user create)
-  (POST "/user/authenticate" user authenticate)
+  (PUT "/user" _ create)
+  (POST "/user/authenticate" _ authenticate)
   (route/resources "/")
   (route/not-found "Not Found"))
 
@@ -38,9 +40,9 @@
   (-> (routes app-routes)
       (wrap-authentication auth-backend)
       (wrap-json-body {:keywords? true})
-      (wrap-json-response)
       (handler/site)
       (wrap-base-url)
       (wrap-trace :header :ui)
       (wrap-cors :access-control-allow-origin [#".*"]
-                 :access-control-allow-methods [:get :put :post :delete :options])))
+                 :access-control-allow-methods [:get :put :post :delete :options])
+      (wrap-json-response)))
