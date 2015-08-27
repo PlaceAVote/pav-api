@@ -1,7 +1,7 @@
 (ns pav-user-api.test.user.user-test
   (:use midje.sweet)
   (:require [pav-user-api.handler :refer [app]]
-            [pav-user-api.test.utils.utils :refer [test-user bootstrap-users bootstrap-constraints test-user-result]]
+            [pav-user-api.test.utils.utils :refer [test-user bootstrap-users bootstrap-constraints test-user-result make-request parse-response-body]]
             [ring.mock.request :refer [request body content-type header]]
             [pav-user-api.models.user :refer [existing-user-error-msg login-error-msg]]
             [pav-user-api.services.users :refer [create-auth-token]]
@@ -11,13 +11,14 @@
                                       (bootstrap-users)))]
  (facts "Test cases for users"
    (fact "Get a list of existing users"
-         (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                                                                     :first_name "john" :last_name "stuff"
-                                                                                                                     :country_code 840
-                                                                                                                     :dob "05/10/1984"})) "application/json"))) true)
+         (let [{:keys [token]} (parse-response-body (make-request :put "/user" {:email "john@stuff.com" :password "stuff2"
+                                                                                   :first_name "john" :last_name "stuff"
+                                                                                   :country_code 840
+                                                                                   :dob "05/10/1984"}))
+
                response (app (header (request :get "/user") "Authorization" (str "PAV_AUTH_TOKEN " token)))]
            (:status response) => 200
-           (ch/parse-string (:body response) true) => (contains {:email "john@stuff.com"
+           (parse-response-body response) => (contains {:email "john@stuff.com"
                                                               :first_name "john" :last_name "stuff"
                                                               :country_code 840
                                                               :dob "05/10/1984"} :in-any-order)))
