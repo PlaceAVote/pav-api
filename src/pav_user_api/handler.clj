@@ -9,18 +9,10 @@
             [compojure.route :as route]
             [compojure.core :refer :all]
             [pav-user-api.models.user :refer [list-users create user authenticate]]
+            [pav-user-api.authentication.authentication :refer [token-handler]]
             [liberator.dev :refer [wrap-trace]]
-            [buddy.auth.backends.token :refer [jws-backend]]
             [buddy.auth.middleware :refer [wrap-authentication]]
-            [buddy.core.keys :as ks]
-            [environ.core :refer [env]]
-            [clojure.tools.logging :as log]))
-
-(def auth-backend (jws-backend {:secret     (ks/public-key (:auth-pub-key env))
-                                :options    {:alg :rs256}
-                                :token-name "PAV_AUTH_TOKEN"
-                                :on-error   (fn [req e]
-                                              (log/error (str "Exception Failed decrypting credientials " e " REQUEST " req)))}))
+            [environ.core :refer [env]]))
 
 (defn init []
   (println "pav-user-api is starting"))
@@ -38,7 +30,7 @@
 
 (def app
   (-> (routes app-routes)
-      (wrap-authentication auth-backend)
+      (wrap-authentication (token-handler env))
       (wrap-json-body {:keywords? true})
       (handler/site)
       (wrap-base-url)

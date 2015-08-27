@@ -26,6 +26,10 @@
         (let [response (app (request :get "/user"))]
           (:status response) => 401))
 
+    (fact "Get a list of existing users, with a malformed auth token, should return a 401"
+          (let [response (app (header (request :get "/user") "Authorization" (str "PAV_AUTH_TOKEN " "invalidToken")))]
+            (:status response) => 401))
+
    (fact "Create a new user, will return 201 status and newly created user"
          (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                       :first_name "john" :last_name "stuff"
