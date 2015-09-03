@@ -24,7 +24,8 @@
 
 (defn bootstrap-users []
   (cy/query connection "MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r")
-  (create-user-accounts))
+  ; (create-user-accounts)
+  )
 
 (defn make-request
   ([method url payload]

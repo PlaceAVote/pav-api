@@ -18,7 +18,8 @@
    :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
    :country_code (s/both s/Str
                          (s/pred (complement empty?))
-                         (s/pred #(contains? iso3-codes %)))})
+                         (s/pred #(contains? iso3-codes %)))
+   :topics [s/Str]})
 
 (def UserLogin
   {:email    (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
@@ -36,7 +37,8 @@
         (= :country_code k) {k "Country Code is a required field.  Please Specify Country Code"}
         (= :first_name k) {k "First Name is a required field"}
         (= :last_name k) {k "Last Name is a required field"}
-        (= :dob k) {k "Date of birth is a required field"}))
+        (= :dob k) {k "Date of birth is a required field"}
+        (= :topics k) {k "Please specify a list of topics."}))
 
 (defn construct-error-msg [errors]
   (log/error (str "An Error has occured " errors))
