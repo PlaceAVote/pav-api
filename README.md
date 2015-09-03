@@ -3,7 +3,7 @@
 This API is to register new users with the site.  The API will be used register, authenticate and retrieve information
 on the user.  See the postman [link][0] for how to interact with the API.
 
-[0]: https://www.getpostman.com/collections/e05b47834339280fd34d
+[0]: https://www.getpostman.com/collections/4f2da48d6d289bb72ea9
 
 ## Prerequisites
 
