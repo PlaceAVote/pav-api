@@ -3,6 +3,7 @@
   :url "http://example.com/FIXME"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [compojure "1.1.6"]
+                 [metosin/compojure-api "0.23.0"]
                  [hiccup "1.0.5"]
                  [ring-server "0.3.1"]
                  [ring/ring-json "0.3.1"]
