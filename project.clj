@@ -14,7 +14,11 @@
                  [environ "1.0.0"]
                  [buddy "0.6.1"]
                  [com.taoensso/carmine "2.11.1"]
-                 [org.clojure/tools.logging "0.3.1"]]
+                 [org.clojure/tools.logging "0.3.1"]
+                 [org.clojure/java.jdbc "0.3.3"]
+                 [org.flywaydb/flyway-core "3.0"]
+                 [mysql/mysql-connector-java "5.1.6"]
+                 [korma "0.4.0"]]
   :plugins [[lein-ring "0.8.12"] [lein-environ "1.0.0"]]
   :ring {:handler pav-user-api.handler/app
          :init pav-user-api.handler/init
@@ -24,6 +28,8 @@
          :ssl-port 8443
          :keystore "pavpkcs12.keystore"
          :key-password "password"}
+  :aliases {"migrate" ["run" "-m" "pav-user-api.migrations.migrations/migrate"]
+            "repair" ["run" "-m" "pav-user-api.migrations.migrations/repair"]}
   :profiles
   {:uberjar {:aot :all}
    :production
