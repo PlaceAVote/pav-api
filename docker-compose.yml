@@ -10,7 +10,7 @@ web:
     - SSLPORT=8443
     - LEIN_ROOT=1
     - MYSQL_DATABASE=pav_user
-    - MYSQL_HOST=pav-user.cohs9sc8kicp.us-west-2.rds.amazonaws.com
+    - MYSQL_HOST=pav-user-dev.cohs9sc8kicp.us-west-2.rds.amazonaws.com
     - MYSQL_PORT=3306
     - MYSQL_USER=pav_user
     - MYSQL_PASSWORD=pav_user
