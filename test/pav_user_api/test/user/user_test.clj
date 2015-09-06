@@ -1,14 +1,15 @@
 (ns pav-user-api.test.user.user-test
   (:use midje.sweet)
   (:require [pav-user-api.handler :refer [app]]
-            [pav-user-api.test.utils.utils :refer [test-user bootstrap-users bootstrap-constraints test-user-result make-request parse-response-body]]
+            [pav-user-api.test.utils.utils :refer [make-request parse-response-body
+                                                   delete-user]]
             [ring.mock.request :refer [request body content-type header]]
-            [pav-user-api.models.user :refer [existing-user-error-msg login-error-msg]]
+            [pav-user-api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [pav-user-api.services.users :refer [create-auth-token]]
             [cheshire.core :as ch]))
 
-(against-background [(before :facts (do (bootstrap-constraints)
-                                      (bootstrap-users)))]
+(against-background [(before :facts (do
+                                      (delete-user)))]
  (facts "Test cases for users"
    (fact "Get a list of existing users"
          (let [{:keys [token]} (parse-response-body (make-request :put "/user" {:email "john@stuff.com" :password "stuff2"

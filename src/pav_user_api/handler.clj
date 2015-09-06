@@ -8,17 +8,22 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-            [pav-user-api.models.user :refer [list-users create user authenticate]]
+            [pav-user-api.resources.user :refer [list-users create user authenticate]]
             [pav-user-api.authentication.authentication :refer [token-handler]]
+            [pav-user-api.migrations.migrations :refer [migrate]]
             [liberator.dev :refer [wrap-trace]]
             [buddy.auth.middleware :refer [wrap-authentication]]
-            [environ.core :refer [env]]))
+            [environ.core :refer [env]]
+            [clojure.tools.logging :as log]))
+
 
 (defn init []
-  (println "pav-user-api is starting"))
+  (log/info "pav-user-api is starting")
+  (log/info "Running database migration task")
+  (migrate))
 
 (defn destroy []
-  (println "pav-user-api is shutting down"))
+  (log/info "pav-user-api is shutting down"))
 
 (defroutes app-routes
   (GET "/user/:email" [email] (user email))

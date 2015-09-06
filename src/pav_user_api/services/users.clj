@@ -1,21 +1,13 @@
 (ns pav-user-api.services.users
-  (:require [clojurewerkz.neocons.rest.nodes :as nn]
-            [clojurewerkz.neocons.rest :as nr]
-            [clojurewerkz.neocons.rest.labels :as nl]
-            [clojurewerkz.neocons.rest.cypher :as cy]
-            [environ.core :refer [env]]
+  (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
             [pav-user-api.schema.user :refer [validate validate-login construct-error-msg]]
-            [taoensso.carmine :as car :refer (wcar)]
+            [pav-user-api.entities.user :as user-dao]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
             [clj-time.core :as t]
             [clojure.tools.logging :as log]))
-
-(def red-conn {:pool {} :spec {:host (str (:redis-port-6379-tcp-addr env)) :port (read-string (:redis-port-6379-tcp-port env))}})
-(defmacro wcar* [& body] `(car/wcar red-conn ~@body))
-(def connection (nr/connect (str "http://" (:neo4j-port-7474-tcp-addr env) ":" (:neo4j-port-7474-tcp-port env) "/db/data") (:neo-username env) (:neo-password env)))
 
 (defn- pkey []
   (ks/private-key (:auth-priv-key env) (:auth-priv-key-pwd env)))
@@ -26,9 +18,6 @@
                      :exp (-> (t/plus (t/now) (t/days 30)) (u/to-timestamp))})})
 
 (defn associate-token-with-user [user token]
-  (try
-    (wcar* (car/set (get-in user [:email]) (get-in token [:token])))
-  (catch Exception e (log/info (str "Exception writing to Redis at " red-conn e))))
   (merge user token))
 
 (defn create-user [user]
@@ -36,18 +25,21 @@
   (let [hashed-user (update-in user [:password] #(h/encrypt %))
         token (create-auth-token (dissoc hashed-user :password))]
     (try
-     (nl/add connection (nn/create connection hashed-user) "User")
+     (user-dao/create-user-with-token hashed-user token)
      {:record (dissoc (associate-token-with-user hashed-user token) :password)}
      (catch Exception e (log/info e)))))
 
 (defn get-users []
-  (cy/tquery connection "MATCH (u:User) RETURN u.email AS email, u.first_name AS first_name, u.last_name AS last_name, u.dob AS dob, u.country_code AS country_code, u.topics AS topics"))
+  (map #(dissoc % :password :id) (user-dao/get-all-users)))
 
 (defn get-user [email]
-    (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email, u.first_name AS first_name, u.last_name AS last_name, u.dob AS dob, u.country_code AS country_code, u.topics AS topics" {:email email})))
+  (let [user (first (user-dao/get-user email))]
+    (if user
+      (dissoc user :password :id))))
 
 (defn get-user-details [email]
-  (first (cy/tquery connection "MATCH (u:User {email: {email}}) RETURN u.email AS email, u.password AS password" {:email email})))
+  (let [user (user-dao/get-user-credientials email)]
+    user))
 
 (defn bind-any-errors? [user]
   (let [result (validate user)]
@@ -67,7 +59,7 @@
 (defn valid-user? [user]
   (let [existing-user (get-user-details (get-in user [:email]))]
     (if-not (nil? existing-user)
-      (if (h/check (:password user) (get-in existing-user ["password"]))
+      (if (h/check (:password user) (get-in existing-user [:password]))
         true
         false)
       false)))
