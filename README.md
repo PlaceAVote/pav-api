@@ -9,31 +9,35 @@ on the user.  See the postman [link][0] for how to interact with the API.
 
 - [Leiningen][1] 1.7.0 or above installed.
 
-- [Docker][2]
+- [MySQL] [2]
 
-- [Convox][3]
+- [Docker][3]
+
+- [Convox][4]
 
 [1]: https://github.com/technomancy/leiningen
-[2]: https://docs.docker.com/installation/
-[3]: http://convox.github.io/docs/getting-started-with-convox/
+[2]: http://www.mysql.com/
+[3]: https://docs.docker.com/installation/
+[4]: http://convox.github.io/docs/getting-started-with-convox/
 
 ## Running
 
 There are two ways to start the application.  
 
-The first is to having your own instances of Neo4J and Redis running.  This is ok if your machine has a decent spec.
-If you wish to install both of these then consult the following references [Redis][4], [Neo4J][5]
-
-If both redis and neo4j are installed locally, you can start the web server by issuing the following command:
-
-[4]:http://redis.io/topics/quickstart
-[5]:http://neo4j.com/download/
+#### Method 1
+The first is to having your own instances mysql running, you can start the web server by issuing the following command:
 
     Lein ring server
+    
+This will run a flyway migration script and create the tables in a schema called pav_user.  Please ensure this schema exists
+first.  If you want to use a different user other than root then update the project.clj file.
 
+
+#### Method 2
 The second and preferred way to launch the application locally is with the use of convox.
 Convox will read the Dockerfile and docker-compose.yml files and start the server with the correct setup.  Just issue
-the following command once docker and Convox are installed.
+the following command once docker and Convox are installed.  This will point to a database hosted in AWS.  If you want to use a local
+database instead then see method 1.
 
     convox start
 

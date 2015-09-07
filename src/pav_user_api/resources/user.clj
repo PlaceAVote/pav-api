@@ -1,4 +1,4 @@
-(ns pav-user-api.models.user
+(ns pav-user-api.resources.user
  (:require [liberator.core :refer [resource defresource]]
            [liberator.representation :refer [ring-response]]
            [pav-user-api.services.users :as service]

@@ -6,8 +6,7 @@ lein:
 
 #Services my build needs
 services:
-  - redis
-  - neo4j
+  - mysql
 
 # Create directories for test and coverage reports
 before_script:

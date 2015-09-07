@@ -2,30 +2,20 @@ web:
   build: .
   environment:
     - RACK_ENV=development
-    - NEO_USERNAME=neo4j
-    - PORT=8080
-    - NEO_PASSWORD=password
     - AUTH_PRIV_KEY=test-resources/pav_auth_privkey.pem
     - AUTH_PRIV_KEY_PWD=password
     - AUTH_PUB_KEY=test-resources/pav_auth_pubkey.pem
     - AUTH_PUB_KEY_PWD=password
+    - PORT=8080
     - SSLPORT=8443
     - LEIN_ROOT=1
-    # - NEO4J-PORT-7474-TCP-PORT=7474
-    # - NEO4J-PORT-7474-TCP-ADDR=localhost
-    # - REDIS_PORT_6379_TCP_ADDR=localhost
-    # - REDIS_PORT_6379_TCP_PORT=6379
+    - MYSQL_DATABASE=pav_user
+    - MYSQL_HOST=pav-user-dev.cohs9sc8kicp.us-west-2.rds.amazonaws.com
+    - MYSQL_PORT=3306
+    - MYSQL_USER=pav_user
+    - MYSQL_PASSWORD=pav_user
   ports:
     - 8080:8080
     - 8443:8443
   volumes:
     - .:/app
-  links:
-    - neo4j
-    - redis
-redis:
-  image: redis
-neo4j:
-  environment:
-    - NEO4J_AUTH=none
-  image: tpires/neo4j
