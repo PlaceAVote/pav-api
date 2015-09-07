@@ -2,14 +2,14 @@
   (:use midje.sweet)
   (:require [pav-user-api.handler :refer [app]]
             [pav-user-api.test.utils.utils :refer [make-request parse-response-body
-                                                   delete-user]]
+                                                   delete-user-data]]
             [ring.mock.request :refer [request body content-type header]]
             [pav-user-api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [pav-user-api.services.users :refer [create-auth-token]]
             [cheshire.core :as ch]))
 
 (against-background [(before :facts (do
-                                      (delete-user)))]
+                                      (delete-user-data)))]
  (facts "Test cases for users"
    (fact "Get a list of existing users"
          (let [{:keys [token]} (parse-response-body (make-request :put "/user" {:email "john@stuff.com" :password "stuff2"

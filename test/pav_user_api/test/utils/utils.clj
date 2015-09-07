@@ -10,7 +10,7 @@
 (def test-user-result {:email "johnny@stuff.com" })
 
 
-(defn delete-user []
+(defn delete-user-data []
   (delete users
           (where {:email [not= "null"]}))
   (delete user-token
