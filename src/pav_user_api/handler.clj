@@ -47,4 +47,5 @@
       (wrap-json-response)))
 
 (defn start-server [options]
+  (init)
   (run-server app options))
