@@ -5,6 +5,7 @@
                  [compojure "1.1.6"]
                  [hiccup "1.0.5"]
                  [ring-server "0.3.1"]
+                 [http-kit "2.1.18"]
                  [ring/ring-json "0.3.1"]
                  [ring-cors "0.1.7"]
                  [prismatic/schema "0.4.3"]
@@ -22,6 +23,7 @@
             [lein-beanstalk "0.2.7"]]
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
+  :main system
   :ring {:handler pav-user-api.handler/app
          :init pav-user-api.handler/init
          :destroy pav-user-api.handler/destroy
@@ -33,26 +35,11 @@
   :aliases {"migrate" ["run" "-m" "pav-user-api.migrations.migrations/migrate"]
             "repair" ["run" "-m" "pav-user-api.migrations.migrations/repair"]}
 
-  :aws {:beanstalk {:region "us-west-2"
-                    :s3-bucket "pav-user-repo.s3-website-us-west-2.amazonaws.com"
-                    :stack-name "64bit Amazon Linux 2015.03 v2.0.0 running Tomcat 8 Java 8"
-                    :environments [{:name "development"
-                                    :cname "pav-user-api-dev"
-                                    :env {
-                                          "AUTH_PRIV_KEY" "resources/pav_auth_privkey.pem"
-                                          "AUTH_PRIV_KEY_PWD" "password"
-                                          "AUTH_PUB_KEY" "resources/pav_auth_pubkey.pem"
-                                          "AUTH_PUB_KEY_PWD" "password"
-                                          "MYSQL_DATABASE" "pav_user"
-                                          "MYSQL_PORT" "3306"
-                                          "MYSQL_HOST" "pav-user-dev.cohs9sc8kicp.us-west-2.rds.amazonaws.com"
-                                          "MYSQL_USER" "pav_user"
-                                          "MYSQL_PASSWORD" "pav_user"
-                                          }}]}}
   :profiles
   {
    :uberjar {:aot :all
-             :env {:auth-pub-key "resources/pav_auth_pubkey.pem"}}
+             :env {:auth-pub-key "resources/pav_auth_pubkey.pem"}
+             :uberjar-name "pav-user-api.jar"}
    :production
    {:ring
     {:open-browser? false, :stacktraces? false, :auto-reload? false}}
