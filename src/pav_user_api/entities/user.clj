@@ -10,10 +10,12 @@
            (database user_db)
            (prepare (fn [{topics :topics :as v}]
                       (if topics
-                        (assoc v :topics (apply str (interpose "," topics))))))
+                        (assoc v :topics (apply str (interpose "," topics)))
+                        v)))
            (transform (fn [{topics :topics :as v}]
                         (if topics
-                          (assoc v :topics (split topics #","))))))
+                          (assoc v :topics (split topics #","))
+                          v))))
 
 (defentity user-token
            (table :user_token)
@@ -31,8 +33,7 @@
           (values user)))
 
 (defn create-user-with-token [user token]
-  (let [_ (create-user user)
-        id (:id (first (get-user (:email user))))
+  (let [{id :generated_key} (create-user user)
         new-token {:user_id id :token (get-in token [:token])}]
     (insert user-token
             (values new-token))))

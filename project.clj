@@ -6,6 +6,7 @@
                  [metosin/compojure-api "0.23.0"]
                  [hiccup "1.0.5"]
                  [ring-server "0.3.1"]
+                 [http-kit "2.1.18"]
                  [ring/ring-json "0.3.1"]
                  [ring-cors "0.1.7"]
                  [prismatic/schema "0.4.3"]
@@ -18,7 +19,12 @@
                  [org.flywaydb/flyway-core "3.0"]
                  [mysql/mysql-connector-java "5.1.6"]
                  [korma "0.4.2"]]
-  :plugins [[lein-ring "0.8.12"] [lein-environ "1.0.0"]]
+  :plugins [[lein-ring "0.9.6"]
+            [lein-environ "1.0.0"]
+            [lein-beanstalk "0.2.7"]]
+  :min-lein-version "2.0.0"
+  :javac-options ["-target" "1.8" "-source" "1.8"]
+  :main system
   :ring {:handler pav-user-api.handler/app
          :init pav-user-api.handler/init
          :destroy pav-user-api.handler/destroy
@@ -29,8 +35,12 @@
          :key-password "password"}
   :aliases {"migrate" ["run" "-m" "pav-user-api.migrations.migrations/migrate"]
             "repair" ["run" "-m" "pav-user-api.migrations.migrations/repair"]}
+
   :profiles
-  {:uberjar {:aot :all}
+  {
+   :uberjar {:aot :all
+             :env {:auth-pub-key "resources/pav_auth_pubkey.pem"}
+             :uberjar-name "pav-user-api.jar"}
    :production
    {:ring
     {:open-browser? false, :stacktraces? false, :auto-reload? false}}

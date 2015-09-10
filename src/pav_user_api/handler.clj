@@ -1,5 +1,6 @@
 (ns pav-user-api.handler
   (:require [compojure.core :refer [defroutes routes]]
+            [org.httpkit.server :refer [run-server]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.json :refer [wrap-json-body wrap-json-params wrap-json-response]]
             [ring.middleware.file-info :refer [wrap-file-info]]
@@ -18,6 +19,7 @@
 
 
 (defn init []
+  (log/info (str "Environment Variables " env))
   (log/info "pav-user-api is starting")
   (log/info "Running database migration task")
   (migrate))
@@ -43,3 +45,7 @@
       (wrap-cors :access-control-allow-origin [#".*"]
                  :access-control-allow-methods [:get :put :post :delete :options])
       (wrap-json-response)))
+
+(defn start-server [options]
+  (init)
+  (run-server app options))

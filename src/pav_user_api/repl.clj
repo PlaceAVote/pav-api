@@ -1,5 +1,6 @@
 (ns pav-user-api.repl
-  (:use pav-user-api.handler
+  (:require [pav-user-api.handler :refer [app init destroy]])
+  (:use
         ring.server.standalone
         [ring.middleware file-info file]))
 
