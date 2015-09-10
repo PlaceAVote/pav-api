@@ -2,9 +2,9 @@ web:
   build: .
   environment:
     - RACK_ENV=development
-    - AUTH_PRIV_KEY=test-resources/pav_auth_privkey.pem
+    - AUTH_PRIV_KEY=/app/test-resources/pav_auth_privkey.pem
     - AUTH_PRIV_KEY_PWD=password
-    - AUTH_PUB_KEY=test-resources/pav_auth_pubkey.pem
+    - AUTH_PUB_KEY=/app/test-resources/pav_auth_pubkey.pem
     - AUTH_PUB_KEY_PWD=password
     - PORT=8080
     - SSLPORT=8443
