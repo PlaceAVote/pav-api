@@ -18,6 +18,7 @@
 
 
 (defn init []
+  (log/info (str "Environment Variables " env))
   (log/info "pav-user-api is starting")
   (log/info "Running database migration task")
   (migrate))

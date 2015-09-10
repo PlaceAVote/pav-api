@@ -5,6 +5,5 @@
    (:gen-class))
 
  (defn -main []
-   (init)
    (run-server app {:port 8080})
    (log/info "Server Listening on port 8080"))
