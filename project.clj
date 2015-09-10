@@ -17,7 +17,11 @@
                  [org.flywaydb/flyway-core "3.0"]
                  [mysql/mysql-connector-java "5.1.6"]
                  [korma "0.4.2"]]
-  :plugins [[lein-ring "0.8.12"] [lein-environ "1.0.0"]]
+  :plugins [[lein-ring "0.9.6"]
+            [lein-environ "1.0.0"]
+            [lein-beanstalk "0.2.7"]]
+  :min-lein-version "2.0.0"
+  :javac-options ["-target" "1.8" "-source" "1.8"]
   :ring {:handler pav-user-api.handler/app
          :init pav-user-api.handler/init
          :destroy pav-user-api.handler/destroy
@@ -28,8 +32,27 @@
          :key-password "password"}
   :aliases {"migrate" ["run" "-m" "pav-user-api.migrations.migrations/migrate"]
             "repair" ["run" "-m" "pav-user-api.migrations.migrations/repair"]}
+
+  :aws {:beanstalk {:region "us-west-2"
+                    :s3-bucket "pav-user-repo.s3-website-us-west-2.amazonaws.com"
+                    :stack-name "64bit Amazon Linux 2015.03 v2.0.0 running Tomcat 8 Java 8"
+                    :environments [{:name "development"
+                                    :cname "pav-user-api-dev"
+                                    :env {
+                                          "AUTH_PRIV_KEY" "resources/pav_auth_privkey.pem"
+                                          "AUTH_PRIV_KEY_PWD" "password"
+                                          "AUTH_PUB_KEY" "resources/pav_auth_pubkey.pem"
+                                          "AUTH_PUB_KEY_PWD" "password"
+                                          "MYSQL_DATABASE" "pav_user"
+                                          "MYSQL_PORT" "3306"
+                                          "MYSQL_HOST" "pav-user-dev.cohs9sc8kicp.us-west-2.rds.amazonaws.com"
+                                          "MYSQL_USER" "pav_user"
+                                          "MYSQL_PASSWORD" "pav_user"
+                                          }}]}}
   :profiles
-  {:uberjar {:aot :all}
+  {
+   :uberjar {:aot :all
+             :env {:auth-pub-key "resources/pav_auth_pubkey.pem"}}
    :production
    {:ring
     {:open-browser? false, :stacktraces? false, :auto-reload? false}}
