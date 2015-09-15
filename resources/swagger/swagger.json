@@ -1,0 +1,191 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "0.0.0",
+    "title": "PlaceAVote user api",
+    "description": "PlaceAVote user api for registering and authenticating existing users"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/user/:email": {
+      "get": {
+        "description": "Gets `UserProfile` object.",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Users email address",
+            "required": true,
+            "type": "string",
+            "format": "email"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "UserProfile",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "test@place.com"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "last_name": {
+                  "type": "string"
+                },
+                "dob": {
+                  "type": "string",
+                  "format": "01/10/1999"
+                },
+                "country_code": {
+                  "type": "string",
+                  "format": "USA"
+                },
+                "topics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "[Defence, Arts]"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user": {
+      "put": {
+        "description": "Register new user",
+        "parameters": [
+          {
+            "name": "NewUser",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "title": "NewUserProfile",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "test@place.com"
+                },
+                "password": {
+                  "type": "string"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "last_name": {
+                  "type": "string"
+                },
+                "dob": {
+                  "type": "string",
+                  "format": "01/10/1999"
+                },
+                "country_code": {
+                  "type": "string",
+                  "format": "USA"
+                },
+                "topics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "[Defence, Arts]"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "schema": {
+              "title": "UserProfile",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "test@place.com"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "last_name": {
+                  "type": "string"
+                },
+                "dob": {
+                  "type": "string",
+                  "format": "01/10/1999"
+                },
+                "country_code": {
+                  "type": "string",
+                  "format": "USA"
+                },
+                "topics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "[Defence, Arts]"
+                  }
+                },
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/authenticate": {
+      "post": {
+        "description": "Authenticate existing user",
+        "parameters": [
+          {
+            "name": "Login",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "title": "Login Details",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "test@place.com"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "New Token",
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
