@@ -10,6 +10,7 @@
             [compojure.route :as route]
             [compojure.core :refer :all]
             [pav-user-api.resources.user :refer [list-users create user authenticate]]
+            [pav-user-api.resources.docs :refer [swagger-docs]]
             [pav-user-api.authentication.authentication :refer [token-handler]]
             [pav-user-api.migrations.migrations :refer [migrate]]
             [liberator.dev :refer [wrap-trace]]
@@ -28,6 +29,7 @@
   (log/info "pav-user-api is shutting down"))
 
 (defroutes app-routes
+  (GET "/docs" [] swagger-docs)
   (GET "/user/:email" [email] (user email))
   (GET "/user" [] list-users)
   (PUT "/user" _ create)

@@ -21,6 +21,17 @@
                          (s/pred #(contains? iso3-codes %)))
    :topics [s/Str]})
 
+(def UserRecord
+  {:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+   :first_name   s/Str
+   :last_name    s/Str
+   :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
+   :country_code (s/both s/Str
+                         (s/pred (complement empty?))
+                         (s/pred #(contains? iso3-codes %)))
+   :topics [s/Str]
+   :token s/Str})
+
 (def UserLogin
   {:email    (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
    :password (s/both (s/pred (complement empty?)) s/Str)})
