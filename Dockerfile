@@ -20,10 +20,11 @@ ENV MYSQL_USER=pav_user
 ENV MYSQL_PASSWORD=pav_user
 
 RUN lein uberjar
-COPY target/pav-user-api.jar pav-user-api.jar
+RUN cp target/pav-user-api.jar pav-user-api.jar
 
 ENV PORT 8080
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "target/pav-user-api.jar"]
+RUN ls -ltr
+CMD java -jar pav-user-api.jar
