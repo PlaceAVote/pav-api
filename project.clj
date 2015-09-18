@@ -18,7 +18,8 @@
                  [org.flywaydb/flyway-core "3.0"]
                  [mysql/mysql-connector-java "5.1.6"]
                  [korma "0.4.2"]
-                 [metosin/ring-swagger "0.21.0"]]
+                 [metosin/ring-swagger "0.21.0"]
+                 [clojurewerkz/neocons "3.1.0-rc1"]]
   :plugins [[lein-ring "0.9.6"]
             [lein-environ "1.0.0"]
             [lein-beanstalk "0.2.7"]]
@@ -55,5 +56,8 @@
                 :mysql-port "3306"
                 :mysql-host "localhost"
                 :mysql-user "root"
-                :mysql-password "root"}
+                :mysql-password "root"
+                :neo-url "http://localhost:7474/db/data/"
+                :neo-username "neo4j"
+                :neo-password "password"}
     :plugins [[lein-midje "3.1.3"]]}})

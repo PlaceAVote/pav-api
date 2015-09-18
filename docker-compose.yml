@@ -14,6 +14,9 @@ web:
     - MYSQL_PORT=3306
     - MYSQL_USER=pav_user
     - MYSQL_PASSWORD=pav_user
+    - NEO_URL=http://pavcongress.sb04.stations.graphenedb.com:24789/db/data/
+    - NEO_USERNAME=pav_congress
+    - NEO_PASSWORD=thdsG8Bec3zumdF9uece
   ports:
     - 8080:8080
     - 8443:8443

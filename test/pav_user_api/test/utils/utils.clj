@@ -4,17 +4,28 @@
            [pav-user-api.handler :refer [app]]
            [cheshire.core :as ch]
            [environ.core :refer [env]]
-           [pav-user-api.entities.user :refer [users user-token]])
+           [pav-user-api.entities.user :refer [users user-token]]
+           [clojurewerkz.neocons.rest :refer [connect]]
+           [clojurewerkz.neocons.rest.cypher :as nrc])
   (:use korma.core))
 
-(def test-user-result {:email "johnny@stuff.com" })
+(def neo-connection (connect "http://localhost:7474/db/data/" "neo4j" "password"))
 
+(defn delete-user-nodes []
+  (try
+    (nrc/query neo-connection "MATCH ()-[r]->() DELETE r")
+    (nrc/query neo-connection "MATCH n DELETE n")
+    (catch Exception e)))
+
+(defn retrieve-user-from-neo [email]
+  (nrc/query neo-connection "MATCH (user:User {email: {email}}) RETURN user.email AS email, user.first_name, user.last_name, user.dob, user.country_code, user.topics" {:email email}))
 
 (defn delete-user-data []
   (delete users
           (where {:email [not= "null"]}))
   (delete user-token
-          (where {:token [not= "null"]})))
+          (where {:token [not= "null"]}))
+  (delete-user-nodes))
 
 (defn make-request
   ([method url payload]

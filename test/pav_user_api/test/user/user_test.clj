@@ -2,7 +2,9 @@
   (:use midje.sweet)
   (:require [pav-user-api.handler :refer [app]]
             [pav-user-api.test.utils.utils :refer [make-request parse-response-body
-                                                   delete-user-data]]
+                                                   delete-user-data
+                                                   neo-connection
+                                                   retrieve-user-from-neo]]
             [ring.mock.request :refer [request body content-type header]]
             [pav-user-api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [pav-user-api.services.users :refer [create-auth-token]]
@@ -181,5 +183,16 @@
                                                                               :topics ["Defence" "Arts"]})) "application/json"))
               login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:password "stuff2"})) "application/json"))]
           (:status login-response) => 400
-          (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))))
+          (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
+
+  (fact "Create new user, user should be persisted to Neo4J for relationship purposes"
+        (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
+                                                                                     :first_name "john" :last_name "stuff"
+                                                                                     :dob "05/10/1984"
+                                                                                     :country_code "USA"
+                                                                                     :topics ["Defence" "Arts"]})) "application/json"))
+              neo-response (:data (retrieve-user-from-neo "john@stuff.com"))]
+          (:status response) => 201
+          neo-response => [["john@stuff.com" "john" "stuff" "05/10/1984" "USA" ["Defence" "Arts"]]]))
+ ))
 

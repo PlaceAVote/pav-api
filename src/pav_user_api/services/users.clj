@@ -3,6 +3,7 @@
             [buddy.hashers :as h]
             [pav-user-api.schema.user :refer [validate validate-login construct-error-msg]]
             [pav-user-api.entities.user :as user-dao]
+            [pav-user-api.neo4j.users :as neo-dao]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
@@ -26,6 +27,7 @@
         token (create-auth-token (dissoc hashed-user :password))]
     (try
      (user-dao/create-user-with-token hashed-user token)
+     (neo-dao/create-user hashed-user)
      {:record (dissoc (associate-token-with-user hashed-user token) :password)}
      (catch Exception e (log/info e)))))
 
