@@ -32,6 +32,9 @@
   (insert users
           (values user)))
 
+(defn create-facebook-user [user]
+  (create-user (assoc user :password "")))
+
 (defn create-user-with-token [user token]
   (let [{id :generated_key} (create-user user)
         new-token {:user_id id :token (get-in token [:token])}]

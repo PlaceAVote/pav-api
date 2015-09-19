@@ -26,7 +26,8 @@
                                                               :first_name "john" :last_name "stuff"
                                                               :country_code "USA"
                                                               :dob "05/10/1984"
-                                                              :topics ["Defence" "Arts"]} :in-any-order)))
+                                                              :topics ["Defence" "Arts"]
+                                                              :img_url nil} :in-any-order)))
 
     (fact "Get a list of existing users, without auth token, should return a 401"
         (let [response (app (request :get "/user"))]
@@ -46,6 +47,17 @@
            (keys (ch/parse-string (:body response) true)) => (contains [:token :email :first_name :last_name :dob :country_code
                                                                         :topics] :in-any-order)))
 
+   (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
+         (let [response (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "paul@facebook.com"
+                                                                                               :first_name "john" :last_name "stuff"
+                                                                                               :dob "05/10/1984"
+                                                                                               :country_code "USA"
+                                                                                               :img_url "http://image.com/image.jpg"
+                                                                                               :topics ["Defence" "Arts"]})) "application/json"))]
+           (:status response) => 201
+           (keys (ch/parse-string (:body response) true)) => (contains [:email :first_name :last_name :dob :country_code
+                                                                        :img_url :topics] :in-any-order)))
+
   (fact "Create a new user, with an existing email, should return 409"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
@@ -53,6 +65,20 @@
                                                                               :country_code "USA"
                                                                               :topics ["Defence" "Arts"]})) "application/json"))
               response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
+                                                                                     :first_name "john" :last_name "stuff"
+                                                                                     :dob "05/10/1984"
+                                                                                     :country_code "USA"
+                                                                                     :topics ["Defence" "Arts"]})) "application/json"))]
+          (:status response) => 409
+          (:body response ) => (ch/generate-string existing-user-error-msg)))
+
+  (fact "Create a new facebook user, with an existing email, should return 409"
+        (let [_ (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "john@stuff.com"
+                                                                              :first_name "john" :last_name "stuff"
+                                                                              :dob "05/10/1984"
+                                                                              :country_code "USA"
+                                                                              :topics ["Defence" "Arts"]})) "application/json"))
+              response (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "john@stuff.com"
                                                                                      :first_name "john" :last_name "stuff"
                                                                                      :dob "05/10/1984"
                                                                                      :country_code "USA"

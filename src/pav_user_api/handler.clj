@@ -9,7 +9,7 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-            [pav-user-api.resources.user :refer [list-users create user authenticate]]
+            [pav-user-api.resources.user :refer [list-users create create-facebook user authenticate]]
             [pav-user-api.resources.docs :refer [swagger-docs]]
             [pav-user-api.authentication.authentication :refer [token-handler]]
             [pav-user-api.migrations.migrations :refer [migrate]]
@@ -33,6 +33,7 @@
   (GET "/user/:email" [email] (user email))
   (GET "/user" [] list-users)
   (PUT "/user" _ create)
+  (PUT "/user/facebook" _ create-facebook)
   (POST "/user/authenticate" _ authenticate)
   (route/resources "/")
   (route/not-found "Not Found"))

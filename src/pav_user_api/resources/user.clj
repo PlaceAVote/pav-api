@@ -24,6 +24,14 @@
  :handle-conflict existing-user-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
+(defresource create-facebook [payload]
+ :allowed-methods [:put]
+ :available-media-types ["application/json"]
+ :conflict? (fn [ctx] (service/user-exist? (retrieve-body payload)))
+ :handle-created :record
+ :handle-conflict existing-user-error-msg
+ :put! (fn [ctx] (service/create-facebook-user (retrieve-body payload))))
+
 (defresource authenticate [payload]
  :allowed-methods [:post]
  :malformed? (fn [ctx] (service/validate-user-login (retrieve-body payload)))
