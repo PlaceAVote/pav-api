@@ -24,7 +24,7 @@
 (defn create-facebook-user [user]
   (log/info (str "Creating user " user " from facebook"))
   (try
-    (user-dao/create-facebook-user user)
+    (user-dao/create-facebook-user-with-token user)
     (neo-dao/create-user user)
     {:record user}
     (catch Exception e (log/error e))))

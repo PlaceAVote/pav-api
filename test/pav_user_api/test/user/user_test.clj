@@ -53,10 +53,11 @@
                                                                                                :dob "05/10/1984"
                                                                                                :country_code "USA"
                                                                                                :img_url "http://image.com/image.jpg"
-                                                                                               :topics ["Defence" "Arts"]})) "application/json"))]
+                                                                                               :topics ["Defence" "Arts"]
+                                                                                               :token "token"})) "application/json"))]
            (:status response) => 201
            (keys (ch/parse-string (:body response) true)) => (contains [:email :first_name :last_name :dob :country_code
-                                                                        :img_url :topics] :in-any-order)))
+                                                                        :img_url :topics :token] :in-any-order)))
 
   (fact "Create a new user, with an existing email, should return 409"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
@@ -77,12 +78,14 @@
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
                                                                               :country_code "USA"
-                                                                              :topics ["Defence" "Arts"]})) "application/json"))
+                                                                              :topics ["Defence" "Arts"]
+                                                                              :token "token"})) "application/json"))
               response (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "john@stuff.com"
                                                                                      :first_name "john" :last_name "stuff"
                                                                                      :dob "05/10/1984"
                                                                                      :country_code "USA"
-                                                                                     :topics ["Defence" "Arts"]})) "application/json"))]
+                                                                                     :topics ["Defence" "Arts"]
+                                                                                     :token "token"})) "application/json"))]
           (:status response) => 409
           (:body response ) => (ch/generate-string existing-user-error-msg)))
 
