@@ -64,7 +64,8 @@
         (= :first_name k) {k "First Name is a required field"}
         (= :last_name k) {k "Last Name is a required field"}
         (= :dob k) {k "Date of birth is a required field"}
-        (= :topics k) {k "Please specify a list of topics."}))
+        (= :topics k) {k "Please specify a list of topics."}
+        (= :token k) {k "A token is required for social media logins"}))
 
 (defn construct-error-msg [errors]
   (log/error (str "An Error has occured " errors))

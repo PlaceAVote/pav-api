@@ -148,6 +148,100 @@
         }
       }
     },
+    "/user/facebook": {
+      "put": {
+        "description": "Register new user using facebook",
+        "parameters": [
+          {
+            "name": "NewUser",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "title": "NewUserProfile",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "test@place.com"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "last_name": {
+                  "type": "string"
+                },
+                "dob": {
+                  "type": "string",
+                  "format": "01/10/1999"
+                },
+                "country_code": {
+                  "type": "string",
+                  "format": "USA"
+                },
+                "img_url": {
+                  "type": "string",
+                  "format": "http://example.jpg"
+                },
+                "token": {
+                  "type": "string",
+                  "format": "token"
+                },
+                "topics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "[Defence, Arts]"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "schema": {
+              "title": "UserProfile",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "test@place.com"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "last_name": {
+                  "type": "string"
+                },
+                "dob": {
+                  "type": "string",
+                  "format": "01/10/1999"
+                },
+                "country_code": {
+                  "type": "string",
+                  "format": "USA"
+                },
+                "topics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "[Defence, Arts]"
+                  }
+                },
+                "img_url": {
+                  "type": "string",
+                  "format": "http://example.jpg"
+                },
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/user/authenticate": {
       "post": {
         "description": "Authenticate existing user",

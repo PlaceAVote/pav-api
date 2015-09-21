@@ -70,6 +70,17 @@
                                                                                               :token "token"})) "application/json"))]
           (:status response) => 400
           (:body response ) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
+
+  (fact "Create a new user from facebook login, when token is missing, return 400 with appropriate error message"
+        (let [response (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "john@stuff.com"
+                                                                                              :first_name "john" :last_name "stuff"
+                                                                                              :dob "05/10/1984"
+                                                                                              :country_code "USA"
+                                                                                              :img_url "http://image.com/image.jpg"
+                                                                                              :topics ["Defence" "Arts"]})) "application/json"))]
+          (:status response) => 400
+          (:body response ) => (ch/generate-string {:errors [{:token "A token is required for social media logins"}]})))
+
   (fact "Create a new user, with an existing email, should return 409"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
