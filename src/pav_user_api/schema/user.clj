@@ -21,6 +21,18 @@
                          (s/pred #(contains? iso3-codes %)))
    :topics [s/Str]})
 
+(def FacebookUser
+  {:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+   :first_name   s/Str
+   :last_name    s/Str
+   :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
+   :country_code (s/both s/Str
+                         (s/pred (complement empty?))
+                         (s/pred #(contains? iso3-codes %)))
+   :img_url s/Str
+   :topics [s/Str]
+   :token s/Str})
+
 (def UserRecord
   {:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
    :first_name   s/Str
@@ -38,6 +50,9 @@
 
 (defn validate [user]
   (s/check User user))
+
+(defn validate-facebook [user]
+  (s/check FacebookUser user))
 
 (defn validate-login [user]
   (s/check UserLogin user))

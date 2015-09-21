@@ -1,7 +1,7 @@
 (ns pav-user-api.services.users
   (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
-            [pav-user-api.schema.user :refer [validate validate-login construct-error-msg]]
+            [pav-user-api.schema.user :refer [validate validate-facebook validate-login construct-error-msg]]
             [pav-user-api.entities.user :as user-dao]
             [pav-user-api.neo4j.users :as neo-dao]
             [buddy.sign.jws :as jws]
@@ -53,6 +53,11 @@
 
 (defn bind-any-errors? [user]
   (let [result (validate user)]
+    (if-not (nil? result)
+      {:errors (construct-error-msg result)})))
+
+(defn validate-facebook-payload [user]
+  (let [result (validate-facebook user)]
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 
