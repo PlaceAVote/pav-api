@@ -218,6 +218,18 @@
           (:status login-response) => 201
           (keys (ch/parse-string (:body login-response) true)) => (contains [:token])))
 
+  (fact "Create token for facebook user when logging on"
+        (let [_ (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "paul@facebook.com"
+                                                                                       :first_name "john" :last_name "stuff"
+                                                                                       :dob "05/10/1984"
+                                                                                       :country_code "USA"
+                                                                                       :img_url "http://image.com/image.jpg"
+                                                                                       :topics ["Defence" "Arts"]
+                                                                                       :token "token"})) "application/json"))
+              login-response (app (content-type (request :post "/user/facebook/authenticate" (ch/generate-string {:email "paul@facebook.com" :token "token"})) "application/json"))]
+          (:status login-response) => 201
+          (keys (ch/parse-string (:body login-response) true)) => (contains [:token])))
+
   (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"

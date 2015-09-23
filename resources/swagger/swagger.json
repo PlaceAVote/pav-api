@@ -280,6 +280,45 @@
           }
         }
       }
+    },
+    "/user/facebook/authenticate": {
+      "post": {
+        "description": "Authenticate existing facebook user",
+        "parameters": [
+          {
+            "name": "Login",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "title": "Login Details",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "test@place.com"
+                },
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "New Token",
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

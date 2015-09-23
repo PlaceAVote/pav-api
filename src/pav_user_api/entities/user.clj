@@ -56,6 +56,18 @@
             (where {:user_id id}))
     new-token))
 
+(defn update-facebook-user-token [user token]
+  (let [id (:id (first (get-user (:email user))))
+        new-pav-token (assoc token :user_id id)
+        new-facebook-token {:user_id id :token (:token user)}]
+    (update user-token
+            (set-fields new-pav-token)
+            (where {:user_id id}))
+    (update user-social-token
+            (set-fields new-facebook-token)
+            (where {:user_id id}))
+    new-pav-token))
+
 (defn create-user-with-token [user token]
   (let [{id :generated_key} (create-user user)
         new-token {:user_id id :token (get-in token [:token])}]

@@ -1,7 +1,7 @@
 (ns pav-user-api.services.users
   (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
-            [pav-user-api.schema.user :refer [validate validate-facebook validate-login construct-error-msg]]
+            [pav-user-api.schema.user :refer [validate validate-facebook validate-login validate-facebook-login construct-error-msg]]
             [pav-user-api.entities.user :as user-dao]
             [pav-user-api.neo4j.users :as neo-dao]
             [buddy.sign.jws :as jws]
@@ -44,6 +44,10 @@
   (let [new-token (create-auth-token (dissoc user :password))]
     (user-dao/update-user-token user new-token)))
 
+(defn update-facebook-user-token [user]
+  (let [new-token (create-auth-token (dissoc user :password))]
+    (user-dao/update-facebook-user-token user new-token)))
+
 (defn get-users []
   (map #(dissoc % :password :id) (user-dao/get-all-users)))
 
@@ -71,6 +75,11 @@
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 
+(defn validate-facebook-user-login [user]
+  (let [result (validate-facebook-login user)]
+    (if-not (nil? result)
+      {:errors (construct-error-msg result)})))
+
 (defn user-exist? [user]
   (if (empty? (get-user (get-in user [:email])))
     false
@@ -84,8 +93,18 @@
         false)
       false)))
 
+(defn valid-facebook-user? [user]
+  (let [existing-user (get-user-details (get-in user [:email]))]
+    (if-not (nil? existing-user)
+      true
+      false)))
+
 (defn authenticate-user [user]
   {:record (dissoc (->> (update-user-token user)
+                        (associate-token-with-user user)) :password :email)})
+
+(defn authenticate-facebook-user [user]
+  {:record (dissoc (->> (update-facebook-user-token user)
                         (associate-token-with-user user)) :password :email)})
 
 (defn is-authenticated? [user]

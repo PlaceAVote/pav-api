@@ -44,6 +44,16 @@
  :handle-unauthorized login-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
+(defresource facebook-authenticate [payload]
+ :allowed-methods [:post]
+ :malformed? (fn [ctx] (service/validate-facebook-user-login (retrieve-body payload)))
+ :authorized? (fn [ctx] (service/valid-facebook-user? (retrieve-body payload)))
+ :available-media-types ["application/json"]
+ :post! (fn [ctx] (service/authenticate-facebook-user (retrieve-body payload)))
+ :handle-created :record
+ :handle-unauthorized login-error-msg
+ :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
+
 (defresource user [email]
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]
