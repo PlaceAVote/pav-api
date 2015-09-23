@@ -48,6 +48,14 @@
     (insert user-social-token
             (values fb-token))))
 
+(defn update-user-token [user token]
+  (let [id (:id (first (get-user (:email user))))
+        new-token (assoc token :user_id id)]
+    (update user-token
+            (set-fields new-token)
+            (where {:user_id id}))
+    new-token))
+
 (defn create-user-with-token [user token]
   (let [{id :generated_key} (create-user user)
         new-token {:user_id id :token (get-in token [:token])}]

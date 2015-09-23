@@ -40,6 +40,10 @@
      {:record (dissoc (associate-token-with-user hashed-user token) :password)}
      (catch Exception e (log/info e)))))
 
+(defn update-user-token [user]
+  (let [new-token (create-auth-token (dissoc user :password))]
+    (user-dao/update-user-token user new-token)))
+
 (defn get-users []
   (map #(dissoc % :password :id) (user-dao/get-all-users)))
 
@@ -81,7 +85,7 @@
       false)))
 
 (defn authenticate-user [user]
-  {:record (dissoc (->> (create-auth-token user)
+  {:record (dissoc (->> (update-user-token user)
                         (associate-token-with-user user)) :password :email)})
 
 (defn is-authenticated? [user]
