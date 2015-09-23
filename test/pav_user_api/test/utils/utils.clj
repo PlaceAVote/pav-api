@@ -4,7 +4,7 @@
            [pav-user-api.handler :refer [app]]
            [cheshire.core :as ch]
            [environ.core :refer [env]]
-           [pav-user-api.entities.user :refer [users user-token]]
+           [pav-user-api.entities.user :refer [users user-token user-social-token]]
            [clojurewerkz.neocons.rest :refer [connect]]
            [clojurewerkz.neocons.rest.cypher :as nrc])
   (:use korma.core))
@@ -24,6 +24,8 @@
   (delete users
           (where {:email [not= "null"]}))
   (delete user-token
+          (where {:token [not= "null"]}))
+  (delete user-social-token
           (where {:token [not= "null"]}))
   (delete-user-nodes))
 

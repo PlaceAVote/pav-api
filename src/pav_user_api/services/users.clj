@@ -23,11 +23,12 @@
 
 (defn create-facebook-user [user]
   (log/info (str "Creating user " user " from facebook"))
-  (try
-    (user-dao/create-facebook-user-with-token user)
-    (neo-dao/create-user user)
-    {:record user}
-    (catch Exception e (log/error e))))
+  (let [pav-token (create-auth-token (dissoc user :token))]
+    (try
+      (user-dao/create-facebook-user-with-token user pav-token)
+      (neo-dao/create-user user)
+      {:record user}
+      (catch Exception e (log/error e)))))
 
 (defn create-user [user]
   (log/info (str "Creating user " (dissoc user :password)))

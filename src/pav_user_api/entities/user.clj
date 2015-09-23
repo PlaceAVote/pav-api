@@ -21,6 +21,10 @@
            (table :user_token)
            (database user_db))
 
+(defentity user-social-token
+           (table :user_social_token)
+           (database user_db))
+
 (defn get-all-users []
   (select users))
 
@@ -35,11 +39,14 @@
 (defn create-facebook-user [user]
   (create-user (assoc user :password "")))
 
-(defn create-facebook-user-with-token [user]
+(defn create-facebook-user-with-token [user pav-token]
   (let [{id :generated_key} (create-facebook-user (dissoc user :token))
-        new-token {:user_id id :token (get-in user [:token])}]
+        fb-token {:user_id id :token (get-in user [:token])}
+        new-pav-token {:user_id id :token (get-in pav-token [:token])}]
     (insert user-token
-            (values new-token))))
+            (values new-pav-token))
+    (insert user-social-token
+            (values fb-token))))
 
 (defn create-user-with-token [user token]
   (let [{id :generated_key} (create-user user)
