@@ -1,5 +1,5 @@
  (ns system
-  (:require [pav-user-api.handler :refer [app start-server]]
+  (:require [com.pav.user.api.handler :refer [app start-server]]
             [clojure.tools.logging :as log])
    (:gen-class))
 
