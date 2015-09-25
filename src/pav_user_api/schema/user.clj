@@ -57,15 +57,12 @@
     :pav (s/check User user)
     :facebook (s/check FacebookUser user)))
 
-(defn validate-facebook [user]
-  (s/check FacebookUser user))
-
 (defn validate-login [user origin]
   (case origin
     :pav (s/check UserLogin user)
     :facebook (s/check FacebookLogin user)))
 
-(defn find-suitable-error [[k v]]
+(defn find-suitable-error [[k _]]
   (cond (= :email k) {k "A valid email address is a required"}
         (= :password k) {k "Password is a required field"}
         (= :country_code k) {k "Country Code is a required field.  Please Specify Country Code"}
@@ -73,7 +70,8 @@
         (= :last_name k) {k "Last Name is a required field"}
         (= :dob k) {k "Date of birth is a required field"}
         (= :topics k) {k "Please specify a list of topics."}
-        (= :token k) {k "A token is required for social media logins"}))
+        (= :token k) {k "A token is required for social media registerations and logins"}
+        (= :img_url k) {k "A IMG URL is required for social media registerations and logins"}))
 
 (defn construct-error-msg [errors]
   (log/error (str "An Error has occured " errors))

@@ -79,7 +79,7 @@
                                                                                               :img_url "http://image.com/image.jpg"
                                                                                               :topics ["Defence" "Arts"]})) "application/json"))]
           (:status response) => 400
-          (:body response ) => (ch/generate-string {:errors [{:token "A token is required for social media logins"}]})))
+          (:body response ) => (ch/generate-string {:errors [{:token "A token is required for social media registerations and logins"}]})))
 
   (fact "Create a new user, with an existing email, should return 409"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
