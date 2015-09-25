@@ -17,7 +17,7 @@
 (defresource create [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? (fn [ctx] (service/bind-any-errors? (retrieve-body payload)))
+ :malformed? (fn [ctx] (service/validate-user-payload (retrieve-body payload)))
  :conflict? (fn [ctx] (service/user-exist? (retrieve-body payload)))
  :put! (fn [ctx] (service/create-user (retrieve-body payload)))
  :handle-created :record
@@ -27,29 +27,29 @@
 (defresource create-facebook [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? (fn [ctx] (service/validate-facebook-payload (retrieve-body payload)))
- :conflict? (fn [ctx] (service/user-exist? (retrieve-body payload)))
- :put! (fn [ctx] (service/create-facebook-user (retrieve-body payload)))
+ :malformed? (fn [_] (service/validate-facebook-user-payload (retrieve-body payload)))
+ :conflict? (fn [_] (service/user-exist? (retrieve-body payload)))
+ :put! (fn [_] (service/create-facebook-user (retrieve-body payload)))
  :handle-created :record
  :handle-conflict existing-user-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
 (defresource authenticate [payload]
  :allowed-methods [:post]
- :malformed? (fn [ctx] (service/validate-user-login (retrieve-body payload)))
- :authorized? (fn [ctx] (service/valid-user? (retrieve-body payload)))
+ :malformed? (fn [_] (service/validate-user-login (retrieve-body payload)))
+ :authorized? (fn [_] (service/valid-user? (retrieve-body payload) :pav))
  :available-media-types ["application/json"]
- :post! (fn [ctx] (service/authenticate-user (retrieve-body payload)))
+ :post! (fn [_] (service/authenticate-user (retrieve-body payload) :pav))
  :handle-created :record
  :handle-unauthorized login-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
 (defresource facebook-authenticate [payload]
  :allowed-methods [:post]
- :malformed? (fn [ctx] (service/validate-facebook-user-login (retrieve-body payload)))
- :authorized? (fn [ctx] (service/valid-facebook-user? (retrieve-body payload)))
+ :malformed? (fn [_] (service/validate-facebook-user-login (retrieve-body payload)))
+ :authorized? (fn [_] (service/valid-user? (retrieve-body payload) :facebook))
  :available-media-types ["application/json"]
- :post! (fn [ctx] (service/authenticate-facebook-user (retrieve-body payload)))
+ :post! (fn [_] (service/authenticate-user (retrieve-body payload) :facebook))
  :handle-created :record
  :handle-unauthorized login-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
