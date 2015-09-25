@@ -16,7 +16,7 @@
 (defresource create [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? (fn [_] (service/validate-user-payload (retrieve-body payload)))
+ :malformed? (fn [_] (service/validate-user-payload (retrieve-body payload) :pav))
  :conflict? (fn [_] (service/user-exist? (retrieve-body payload)))
  :put! (fn [_] (service/create-user (retrieve-body payload)))
  :handle-created :record
@@ -26,7 +26,7 @@
 (defresource create-facebook [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? (fn [_] (service/validate-facebook-user-payload (retrieve-body payload)))
+ :malformed? (fn [_] (service/validate-user-payload (retrieve-body payload) :facebook))
  :conflict? (fn [_] (service/user-exist? (retrieve-body payload)))
  :put! (fn [_] (service/create-facebook-user (retrieve-body payload)))
  :handle-created :record

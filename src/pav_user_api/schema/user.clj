@@ -52,8 +52,10 @@
   {:email    (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
    :token    s/Str})
 
-(defn validate [user]
-  (s/check User user))
+(defn validate [user origin]
+  (case origin
+    :pav (s/check User user)
+    :facebook (s/check FacebookUser user)))
 
 (defn validate-facebook [user]
   (s/check FacebookUser user))
@@ -62,9 +64,6 @@
   (case origin
     :pav (s/check UserLogin user)
     :facebook (s/check FacebookLogin user)))
-
-(defn validate-facebook-login [user]
-  (s/check FacebookLogin user))
 
 (defn find-suitable-error [[k v]]
   (cond (= :email k) {k "A valid email address is a required"}

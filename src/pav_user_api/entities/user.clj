@@ -39,15 +39,6 @@
 (defn create-facebook-user [user]
   (create-user (assoc user :password "")))
 
-(defn create-facebook-user-with-token [user pav-token]
-  (let [{id :generated_key} (create-facebook-user (dissoc user :token))
-        fb-token {:user_id id :token (get-in user [:token])}
-        new-pav-token {:user_id id :token (get-in pav-token [:token])}]
-    (insert user-token
-            (values new-pav-token))
-    (insert user-social-token
-            (values fb-token))))
-
 (defn update-user-token [user token]
   (let [id (:id (first (get-user (:email user))))
         new-token (assoc token :user_id id)]
@@ -73,6 +64,15 @@
         new-token {:user_id id :token (get-in token [:token])}]
     (insert user-token
             (values new-token))))
+
+(defn create-facebook-user-with-token [user pav-token]
+  (let [{id :generated_key} (create-facebook-user (dissoc user :token))
+        fb-token {:user_id id :token (get-in user [:token])}
+        new-pav-token {:user_id id :token (get-in pav-token [:token])}]
+    (insert user-token
+            (values new-pav-token))
+    (insert user-social-token
+            (values fb-token))))
 
 (defn get-user-credientials [email]
   (first (-> (select* "user_info")
