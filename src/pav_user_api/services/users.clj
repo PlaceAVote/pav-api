@@ -65,13 +65,8 @@
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 
-(defn validate-user-login [user]
-  (let [result (validate-login user)]
-    (if-not (nil? result)
-      {:errors (construct-error-msg result)})))
-
-(defn validate-facebook-user-login [user]
-  (let [result (validate-facebook-login user)]
+(defn validate-user-login [user origin]
+  (let [result (validate-login user origin)]
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 

@@ -58,8 +58,10 @@
 (defn validate-facebook [user]
   (s/check FacebookUser user))
 
-(defn validate-login [user]
-  (s/check UserLogin user))
+(defn validate-login [user origin]
+  (case origin
+    :pav (s/check UserLogin user)
+    :facebook (s/check FacebookLogin user)))
 
 (defn validate-facebook-login [user]
   (s/check FacebookLogin user))

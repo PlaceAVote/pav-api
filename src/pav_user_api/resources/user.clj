@@ -3,23 +3,22 @@
            [liberator.representation :refer [ring-response]]
            [pav-user-api.services.users :as service]
            [pav-user-api.utils.utils :refer [record-in-ctx retrieve-body retrieve-user-details]]
-           [cheshire.core :as ch]
-           [clojure.tools.logging :as log]))
+           [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
 (def login-error-msg "Invalid Login credientials")
 
 (defresource list-users [payload]
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details payload)))
+ :authorized? (fn [_] (service/is-authenticated? (retrieve-user-details payload)))
  :available-media-types ["application/json"]
  :handle-ok (service/get-users))
 
 (defresource create [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? (fn [ctx] (service/validate-user-payload (retrieve-body payload)))
- :conflict? (fn [ctx] (service/user-exist? (retrieve-body payload)))
- :put! (fn [ctx] (service/create-user (retrieve-body payload)))
+ :malformed? (fn [_] (service/validate-user-payload (retrieve-body payload)))
+ :conflict? (fn [_] (service/user-exist? (retrieve-body payload)))
+ :put! (fn [_] (service/create-user (retrieve-body payload)))
  :handle-created :record
  :handle-conflict existing-user-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
@@ -34,22 +33,12 @@
  :handle-conflict existing-user-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
-(defresource authenticate [payload]
+(defresource authenticate [payload origin]
  :allowed-methods [:post]
- :malformed? (fn [_] (service/validate-user-login (retrieve-body payload)))
- :authorized? (fn [_] (service/valid-user? (retrieve-body payload) :pav))
+ :malformed? (fn [_] (service/validate-user-login (retrieve-body payload) origin))
+ :authorized? (fn [_] (service/valid-user? (retrieve-body payload) origin))
  :available-media-types ["application/json"]
- :post! (fn [_] (service/authenticate-user (retrieve-body payload) :pav))
- :handle-created :record
- :handle-unauthorized login-error-msg
- :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
-
-(defresource facebook-authenticate [payload]
- :allowed-methods [:post]
- :malformed? (fn [_] (service/validate-facebook-user-login (retrieve-body payload)))
- :authorized? (fn [_] (service/valid-user? (retrieve-body payload) :facebook))
- :available-media-types ["application/json"]
- :post! (fn [_] (service/authenticate-user (retrieve-body payload) :facebook))
+ :post! (fn [_] (service/authenticate-user (retrieve-body payload) origin))
  :handle-created :record
  :handle-unauthorized login-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
