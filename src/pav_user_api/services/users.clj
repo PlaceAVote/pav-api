@@ -57,7 +57,6 @@
 
 (defn validate-user-payload [user origin]
   (let [result (validate user origin)]
-    (println result)
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 
