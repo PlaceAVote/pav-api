@@ -27,7 +27,7 @@
     (try
       (user-dao/create-facebook-user-with-token user pav-token)
       (neo-dao/create-user user)
-      {:record (assoc user :token pav-token)}
+      {:record (associate-token-with-user user pav-token)}
       (catch Exception e (log/error e)))))
 
 (defn create-user [user]
