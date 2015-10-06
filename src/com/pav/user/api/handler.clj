@@ -9,7 +9,7 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-            [com.pav.user.api.resources.user :refer [list-users create create-facebook user authenticate]]
+            [com.pav.user.api.resources.user :refer [list-users create create-facebook user authenticate user-timeline]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
             [com.pav.user.api.migrations.migrations :refer [migrate]]
@@ -31,6 +31,7 @@
   (GET "/docs" [] swagger-docs)
   (GET "/user/:email" [email] (user email))
   (GET "/user" [] list-users)
+  (GET "/user/:email/timeline" [email] (user-timeline email))
   (PUT "/user" _ create)
   (PUT "/user/facebook" _ create-facebook)
   (POST "/user/authenticate" req (authenticate req :pav))

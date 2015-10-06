@@ -22,6 +22,9 @@
 (defn associate-token-with-user [user token]
   (merge user token))
 
+(defn get-user-timeline [email]
+  (timeline-dao/get-timeline email))
+
 (defn create-facebook-user [user]
   (log/info (str "Creating user " user " from facebook"))
   (let [pav-token (create-auth-token (dissoc user :token))]

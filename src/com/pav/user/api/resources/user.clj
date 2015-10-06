@@ -49,3 +49,8 @@
  :available-media-types ["application/json"]
  :exists? {:record (service/get-user email)}
  :handle-ok record-in-ctx)
+
+(defresource user-timeline [email]
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :available-media-types ["application/json"]
+ :handle-ok (service/get-user-timeline email))
