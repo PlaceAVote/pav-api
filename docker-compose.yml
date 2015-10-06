@@ -17,6 +17,7 @@ web:
     - NEO_URL=http://pavcongress.sb04.stations.graphenedb.com:24789/db/data/
     - NEO_USERNAME=pav_congress
     - NEO_PASSWORD=thdsG8Bec3zumdF9uece
+    - REDIS_URL=redis://u@rert88to4y80eoq.nrte7m.ng.0001.usw2.cache.amazonaws.com:6379/0
   ports:
     - 8080:8080
     - 8443:8443

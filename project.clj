@@ -19,7 +19,9 @@
                  [mysql/mysql-connector-java "5.1.6"]
                  [korma "0.4.2"]
                  [metosin/ring-swagger "0.21.0"]
-                 [clojurewerkz/neocons "3.1.0-rc1"]]
+                 [clojurewerkz/neocons "3.1.0-rc1"]
+                 [com.taoensso/carmine "2.11.1"]
+                 [clojure-msgpack "1.1.1"]]
   :plugins [[lein-ring "0.9.6"]
             [lein-environ "1.0.0"]
             [lein-beanstalk "0.2.7"]]
@@ -59,5 +61,6 @@
                 :mysql-password "root"
                 :neo-url "http://localhost:7474/db/data/"
                 :neo-username "neo4j"
-                :neo-password "password"}
+                :neo-password "password"
+                :redis-url "redis://127.0.0.1:6379"}
     :plugins [[lein-midje "3.1.3"]]}})

@@ -4,6 +4,7 @@
             [com.pav.user.api.schema.user :refer [validate validate-login construct-error-msg]]
             [com.pav.user.api.entities.user :as user-dao]
             [com.pav.user.api.neo4j.users :as neo-dao]
+            [com.pav.user.api.timeline.timeline :as timeline-dao]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
@@ -27,6 +28,7 @@
     (try
       (user-dao/create-facebook-user-with-token user pav-token)
       (neo-dao/create-user user)
+      (timeline-dao/publish-newuser-evt user)
       {:record (associate-token-with-user user pav-token)}
       (catch Exception e (log/error e)))))
 
@@ -37,6 +39,7 @@
     (try
      (user-dao/create-user-with-token hashed-user token)
      (neo-dao/create-user hashed-user)
+     (timeline-dao/publish-newuser-evt user)
      {:record (dissoc (associate-token-with-user hashed-user token) :password)}
      (catch Exception e (log/info e)))))
 
