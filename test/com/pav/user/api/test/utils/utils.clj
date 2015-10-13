@@ -6,8 +6,26 @@
            [environ.core :refer [env]]
            [com.pav.user.api.entities.user :refer [users user-token user-social-token]]
            [clojurewerkz.neocons.rest :refer [connect]]
-           [clojurewerkz.neocons.rest.cypher :as nrc])
+           [clojurewerkz.neocons.rest.cypher :as nrc]
+           [taoensso.carmine :as car :refer (wcar)]
+           [taoensso.faraday :as far])
   (:use korma.core))
+
+(def client-opts {:access-key "<AWS_DYNAMODB_ACCESS_KEY>"
+                  :secret-key "<AWS_DYNAMODB_SECRET_KEY>"
+                  :endpoint "http://localhost:8000"})
+
+(defn delete-user-table []
+  (try
+    (far/delete-table client-opts :users)
+    (catch Exception e (println "Error occured with table setup " e))))
+
+(defn create-user-table []
+  (try
+    (far/create-table client-opts :users [:email :s]
+                      {:throughput {:read 5 :write 10}
+                       :block? true})
+    (catch Exception e (println "Error occured with table setup " e))))
 
 (def neo-connection (connect "http://localhost:7474/db/data/" "neo4j" "password"))
 

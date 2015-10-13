@@ -4,12 +4,14 @@
             [com.pav.user.api.schema.user :refer [validate validate-login construct-error-msg]]
             [com.pav.user.api.entities.user :as user-dao]
             [com.pav.user.api.neo4j.users :as neo-dao]
+            [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.timeline.timeline :as timeline-dao]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
             [clj-time.core :as t]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log])
+  (:import (java.util Date)))
 
 (defn- pkey []
   (ks/private-key (:auth-priv-key env) (:auth-priv-key-pwd env)))
@@ -27,23 +29,22 @@
 
 (defn create-facebook-user [user]
   (log/info (str "Creating user " user " from facebook"))
-  (let [pav-token (create-auth-token (dissoc user :token))]
+  (let [user-with-facebook-token (-> (assoc user :facebook_token (:token user))
+                                     (merge (create-auth-token (dissoc user :token)))
+                                     (assoc :created_at (.getTime (Date.))))]
     (try
-      (user-dao/create-facebook-user-with-token user pav-token)
-      (neo-dao/create-user user)
-      (timeline-dao/publish-newuser-evt user)
-      {:record (associate-token-with-user user pav-token)}
+      {:record (-> (dynamo-dao/create-user user-with-facebook-token)
+                   (dissoc :facebook_token))}
       (catch Exception e (log/error e)))))
 
 (defn create-user [user]
   (log/info (str "Creating user " (dissoc user :password)))
-  (let [hashed-user (update-in user [:password] #(h/encrypt %))
-        token (create-auth-token (dissoc hashed-user :password))]
+  (let [hashed-user (-> (update-in user [:password] #(h/encrypt %))
+                        (assoc :created_at (.getTime (Date.)))
+                        (merge (create-auth-token (dissoc user :password))))]
     (try
-     (user-dao/create-user-with-token hashed-user token)
-     (neo-dao/create-user hashed-user)
-     (timeline-dao/publish-newuser-evt user)
-     {:record (dissoc (associate-token-with-user hashed-user token) :password)}
+      {:record (-> (dynamo-dao/create-user hashed-user)
+                   (dissoc :password))}
      (catch Exception e (log/info e)))))
 
 (defn update-user-token [user origin]
@@ -57,7 +58,7 @@
   (map #(dissoc % :password :id) (user-dao/get-all-users)))
 
 (defn get-user [email]
-  (let [user (first (user-dao/get-user email))]
+  (let [user (dynamo-dao/get-user email)]
     (if user
       (dissoc user :password :id))))
 

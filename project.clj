@@ -20,7 +20,8 @@
                  [korma "0.4.2"]
                  [metosin/ring-swagger "0.21.0"]
                  [clojurewerkz/neocons "3.1.0-rc1"]
-                 [com.taoensso/carmine "2.11.1"]
+                 [com.taoensso/carmine "2.12.0"]
+                 [com.taoensso/faraday "1.8.0"]
                  [clojure-msgpack "1.1.1"]]
   :plugins [[lein-ring "0.9.6"]
             [lein-environ "1.0.0"]
@@ -62,5 +63,8 @@
                 :neo-url "http://localhost:7474/db/data/"
                 :neo-username "neo4j"
                 :neo-password "password"
-                :redis-url "redis://127.0.0.1:6379"}
+                :redis-url "redis://127.0.0.1:6379"
+                :access-key "Whatever"
+                :secret-key "whatever"
+                :dynamo-endpoint "http://localhost:8000"}
     :plugins [[lein-midje "3.1.3"]]}})
