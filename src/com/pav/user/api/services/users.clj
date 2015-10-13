@@ -2,8 +2,6 @@
   (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
             [com.pav.user.api.schema.user :refer [validate validate-login construct-error-msg]]
-            [com.pav.user.api.entities.user :as user-dao]
-            [com.pav.user.api.neo4j.users :as neo-dao]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.timeline.timeline :as timeline-dao]
             [buddy.sign.jws :as jws]
@@ -50,12 +48,8 @@
 (defn update-user-token [user origin]
   (let [new-token (create-auth-token (dissoc user :password))]
     (case origin
-      :pav (user-dao/update-user-token user new-token)
-      :facebook (user-dao/update-facebook-user-token user new-token))
-    (user-dao/update-user-token user new-token)))
-
-(defn get-users []
-  (map #(dissoc % :password :id) (user-dao/get-all-users)))
+      :pav (dynamo-dao/update-user-token user new-token)
+      :facebook (dynamo-dao/update-facebook-user-token user new-token))))
 
 (defn get-user [email]
   (let [user (dynamo-dao/get-user email)]
@@ -82,7 +76,7 @@
 
 (defn valid-user? [user origin]
   (case origin
-    :pav (check-pwd user (user-dao/get-user-credientials (get-in user [:email])))
+    :pav (check-pwd user (dynamo-dao/get-user (:email user)))
     :facebook (user-exist? user)))
 
 (defn authenticate-user [user origin]

@@ -9,10 +9,9 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-            [com.pav.user.api.resources.user :refer [list-users create create-facebook user authenticate user-timeline]]
+            [com.pav.user.api.resources.user :refer [create create-facebook user authenticate user-timeline]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
-            [com.pav.user.api.migrations.migrations :refer [migrate]]
             [liberator.dev :refer [wrap-trace]]
             [buddy.auth.middleware :refer [wrap-authentication]]
             [environ.core :refer [env]]
@@ -20,9 +19,7 @@
 
 
 (defn init []
-  (log/info "API is starting")
-  (log/info "Running database migration task")
-  (migrate))
+  (log/info "API is starting"))
 
 (defn destroy []
   (log/info "API is shutting down"))
@@ -30,8 +27,6 @@
 (defroutes app-routes
   (GET "/docs" [] swagger-docs)
   (GET "/user/:email" [email] (user email))
-  (GET "/user" [] list-users)
-  (GET "/user/:email/timeline" [email] (user-timeline email))
   (PUT "/user" _ create)
   (PUT "/user/facebook" _ create-facebook)
   (POST "/user/authenticate" req (authenticate req :pav))

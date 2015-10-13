@@ -37,9 +37,6 @@
          :ssl-port 8443
          :keystore "pavpkcs12.keystore"
          :key-password "password"}
-  :aliases {"migrate" ["run" "-m" "pav-user-api.migrations.migrations/migrate"]
-            "repair" ["run" "-m" "pav-user-api.migrations.migrations/repair"]}
-
   :profiles
   {
    :uberjar {:aot :all
@@ -55,14 +52,6 @@
                 :auth-priv-key-pwd "password"
                 :auth-pub-key "test-resources/pav_auth_pubkey.pem"
                 :auth-pub-key-pwd "password"
-                :mysql-database "pav_user"
-                :mysql-port "3306"
-                :mysql-host "localhost"
-                :mysql-user "root"
-                :mysql-password "root"
-                :neo-url "http://localhost:7474/db/data/"
-                :neo-username "neo4j"
-                :neo-password "password"
                 :redis-url "redis://127.0.0.1:6379"
                 :access-key "Whatever"
                 :secret-key "whatever"

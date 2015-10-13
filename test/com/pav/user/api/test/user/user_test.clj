@@ -2,44 +2,17 @@
   (:use midje.sweet)
   (:require [com.pav.user.api.handler :refer [app]]
             [com.pav.user.api.test.utils.utils :refer [make-request parse-response-body
-                                                   delete-user-data
-                                                   neo-connection
-                                                   retrieve-user-from-neo
-                                                   create-user-table
-                                                   delete-user-table]]
+                                                       create-user-table
+                                                       delete-user-table]]
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [com.pav.user.api.services.users :refer [create-auth-token]]
             [cheshire.core :as ch]))
 
 (against-background [(before :facts (do
-                                      (delete-user-data)
                                       (delete-user-table)
                                       (create-user-table)))]
  (facts "Test cases for users"
-   (future-fact "Get a list of existing users"
-         (let [{:keys [token]} (parse-response-body (make-request :put "/user" {:email "john@stuff.com" :password "stuff2"
-                                                                                   :first_name "john" :last_name "stuff"
-                                                                                   :country_code "USA"
-                                                                                   :dob "05/10/1984"
-                                                                                   :topics ["Defence" "Arts"]}))
-
-               response (app (header (request :get "/user") "Authorization" (str "PAV_AUTH_TOKEN " token)))]
-           (:status response) => 200
-           (parse-response-body response) => (contains {:email "john@stuff.com"
-                                                              :first_name "john" :last_name "stuff"
-                                                              :country_code "USA"
-                                                              :dob "05/10/1984"
-                                                              :topics ["Defence" "Arts"]
-                                                              :img_url nil} :in-any-order)))
-
-    (future-fact "Get a list of existing users, without auth token, should return a 401"
-        (let [response (app (request :get "/user"))]
-          (:status response) => 401))
-
-    (future-fact "Get a list of existing users, with a malformed auth token, should return a 401"
-          (let [response (app (header (request :get "/user") "Authorization" (str "PAV_AUTH_TOKEN " "invalidToken")))]
-            (:status response) => 401))
 
    (fact "Create a new user, will return 201 status and newly created user"
          (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
@@ -64,7 +37,7 @@
                                                                         :img_url :topics :token :created_at] :in-any-order)))
 
 
-  (future-fact "Create a new user from facebook login, when email is missing, return 400 with appropriate error message"
+  (fact "Create a new user from facebook login, when email is missing, return 400 with appropriate error message"
         (let [response (app (content-type (request :put "/user/facebook" (ch/generate-string {
                                                                                               :first_name "john" :last_name "stuff"
                                                                                               :dob "05/10/1984"
@@ -75,7 +48,7 @@
           (:status response) => 400
           (:body response ) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
 
-  (future-fact "Create a new user from facebook login, when token is missing, return 400 with appropriate error message"
+  (fact "Create a new user from facebook login, when token is missing, return 400 with appropriate error message"
         (let [response (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "john@stuff.com"
                                                                                               :first_name "john" :last_name "stuff"
                                                                                               :dob "05/10/1984"
@@ -85,7 +58,7 @@
           (:status response) => 400
           (:body response ) => (ch/generate-string {:errors [{:token "A token is required for social media registerations and logins"}]})))
 
-  (future-fact "Create a new user, with an existing email, should return 409"
+  (fact "Create a new user, with an existing email, should return 409"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
@@ -99,7 +72,7 @@
           (:status response) => 409
           (:body response ) => (ch/generate-string existing-user-error-msg)))
 
-  (future-fact "Create a new facebook user, with an existing email, should return 409"
+  (fact "Create a new facebook user, with an existing email, should return 409"
         (let [_ (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "john@stuff.com"
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
@@ -117,7 +90,7 @@
           (:status response) => 409
           (:body response ) => (ch/generate-string existing-user-error-msg)))
 
-  (future-fact "Create a new user, when the payload is missing an email, return 400 with appropriate error message"
+  (fact "Create a new user, when the payload is missing an email, return 400 with appropriate error message"
         (let [response (app (content-type (request :put "/user" (ch/generate-string {:password "stuff2"
                                                                                      :first_name "john" :last_name "stuff"
                                                                                      :dob "05/10/1984"
@@ -126,7 +99,7 @@
           (:status response) => 400
           (:body response ) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
 
-  (future-fact "Create a new user, when the payload is missing a password, return 400 with appropriate error message"
+  (fact "Create a new user, when the payload is missing a password, return 400 with appropriate error message"
         (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com"
                                                                                      :first_name "john" :last_name "stuff"
                                                                                      :dob "05/10/1984"
@@ -135,7 +108,7 @@
           (:status response) => 400
           (:body response ) => (ch/generate-string {:errors [{:password "Password is a required field"}]})))
 
-  (future-fact "Create a new user, when the payload is empty, return 400 with appropriate error message"
+  (fact "Create a new user, when the payload is empty, return 400 with appropriate error message"
         (let [response (app (content-type (request :put "/user" (ch/generate-string {})) "application/json"))]
           (:status response) => 400
           (:body response ) => (contains (ch/generate-string {:errors [
@@ -147,7 +120,7 @@
                                                               {:country_code "Country Code is a required field.  Please Specify Country Code"
                                                                :topics "Please specify a list of topics."}]}) :in-any-order)))
 
-  (future-fact "Create a new user, when the email is invalid, return 400 with appropriate error message"
+  (fact "Create a new user, when the email is invalid, return 400 with appropriate error message"
     (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "johnstuffcom" :password "stuff2"
                                                                                  :first_name "john" :last_name "stuff"
                                                                                  :dob "05/10/1984"
@@ -156,7 +129,7 @@
       (:status response) => 400
       (:body response ) => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}]}) :in-any-order)))
 
-  (future-fact "Create a new user, when the country is invalid, return 400 with appropriate error message"
+  (fact "Create a new user, when the country is invalid, return 400 with appropriate error message"
         (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                      :first_name "john" :last_name "stuff"
                                                                                      :dob "05/10/1984"
@@ -166,7 +139,7 @@
           (:body response ) => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
 
 
-  (future-fact "Create a new user, when the country code is invalid, return 400 with appropriate error message"
+  (fact "Create a new user, when the country code is invalid, return 400 with appropriate error message"
         (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                      :first_name "john" :last_name "stuff"
                                                                                      :dob "05/10/1984"
@@ -175,7 +148,7 @@
           (:status response) => 400
           (:body response ) => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
 
-  (future-fact "Create a new user, when the password is invalid, return 400 with appropriate error message"
+  (fact "Create a new user, when the password is invalid, return 400 with appropriate error message"
       (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password ""
                                                                                    :first_name "john" :last_name "stuff"
                                                                                    :dob "05/10/1984"
@@ -184,7 +157,7 @@
         (:status response) => 400
         (:body response ) => (contains (ch/generate-string {:errors [{:password "Password is a required field"}]}) :in-any-order)))
 
-  (future-fact "Retrieve a user by email"
+  (fact "Retrieve a user by email"
          (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                                                      :first_name "john" :last_name "stuff"
                                                                                                                      :dob "05/10/1984"
@@ -198,7 +171,7 @@
                                                                  :country_code "USA"
                                                                  :topics ["Defence" "Arts"]} :in-any-order)))
 
-  (future-fact "Retrieve a user by email that doesn't exist"
+  (fact "Retrieve a user by email that doesn't exist"
         (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                                                                     :first_name "john" :last_name "stuff"
                                                                                                                     :dob "05/10/1984"
@@ -208,11 +181,11 @@
           (:status response) => 200
           (:body response) => ""))
 
-  (future-fact "Retrieve a user by email, without authentication token"
+  (fact "Retrieve a user by email, without authentication token"
         (let [response (app (request :get "/user/johnny@stuff.com"))]
           (:status response) => 401))
 
-  (future-fact "Create token for user when logging on"
+  (fact "Create token for user when logging on"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
@@ -222,7 +195,7 @@
           (:status login-response) => 201
           (keys (ch/parse-string (:body login-response) true)) => (contains [:token])))
 
-  (future-fact "Create token for facebook user when logging on"
+  (fact "Create token for facebook user when logging on"
         (let [_ (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "paul@facebook.com"
                                                                                        :first_name "john" :last_name "stuff"
                                                                                        :dob "05/10/1984"
@@ -234,7 +207,7 @@
           (:status login-response) => 201
           (keys (ch/parse-string (:body login-response) true)) => (contains [:token])))
 
-  (future-fact "Create token for user that doesn't exist, returns 401 with suitable error message"
+  (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
@@ -244,7 +217,7 @@
           (:status login-response) => 401
           (:body login-response) => login-error-msg))
 
-  (future-fact "Create token for user, when payload doesn't contain an email then returns 400 with suitable error message"
+  (fact "Create token for user, when payload doesn't contain an email then returns 400 with suitable error message"
         (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
@@ -252,15 +225,5 @@
                                                                               :topics ["Defence" "Arts"]})) "application/json"))
               login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:password "stuff2"})) "application/json"))]
           (:status login-response) => 400
-          (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
-
-  (future-fact "Create new user, user should be persisted to Neo4J for relationship purposes"
-        (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                                     :first_name "john" :last_name "stuff"
-                                                                                     :dob "05/10/1984"
-                                                                                     :country_code "USA"
-                                                                                     :topics ["Defence" "Arts"]})) "application/json"))
-              neo-response (:data (retrieve-user-from-neo "john@stuff.com"))]
-          (:status response) => 201
-          neo-response => [["john@stuff.com" "john" "stuff" "05/10/1984" "USA" ["Defence" "Arts"]]]))))
+          (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))))
 

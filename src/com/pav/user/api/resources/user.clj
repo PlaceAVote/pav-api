@@ -8,11 +8,6 @@
 (def existing-user-error-msg {:error "A User already exists with this email"})
 (def login-error-msg "Invalid Login credientials")
 
-(defresource list-users [payload]
- :authorized? (fn [_] (service/is-authenticated? (retrieve-user-details payload)))
- :available-media-types ["application/json"]
- :handle-ok (service/get-users))
-
 (defresource create [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]

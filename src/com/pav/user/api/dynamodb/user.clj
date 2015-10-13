@@ -13,6 +13,19 @@
     user-profile
   (catch Exception e (log/info (str "Error occured persisting new user-profile " e)))))
 
+(defn update-user-token [user new-token]
+  (try
+    (far/update-item client-opts :users {:email (:email user)} {:token [:put new-token]})
+    (merge user new-token)
+  (catch Exception e (log/info (str "Error occured updating user token " e)))))
+
+(defn update-facebook-user-token [user new-token]
+  (try
+    (far/update-item client-opts :users {:email (:email user)} {:token [:put new-token]
+                                                                :facebook_token [:put (:token user)]})
+    (merge user new-token)
+    (catch Exception e (log/info (str "Error occured updating user token " e)))))
+
 (defn get-user [email]
   (try
     (far/get-item client-opts :users {:email email})
