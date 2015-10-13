@@ -25,6 +25,9 @@
             "format": "email"
           }
         ],
+        "tags": [
+          "Users"
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -106,6 +109,9 @@
               }
             }
           }
+        ],
+        "tags": [
+          "Users"
         ],
         "responses": {
           "201": {
@@ -197,6 +203,9 @@
             }
           }
         ],
+        "tags": [
+          "Users"
+        ],
         "responses": {
           "201": {
             "description": "Successful response",
@@ -265,6 +274,9 @@
             }
           }
         ],
+        "tags": [
+          "Users"
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -303,6 +315,9 @@
               }
             }
           }
+        ],
+        "tags": [
+          "Users"
         ],
         "responses": {
           "200": {
