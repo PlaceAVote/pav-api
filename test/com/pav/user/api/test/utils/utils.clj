@@ -12,14 +12,16 @@
                   :secret-key "<AWS_DYNAMODB_SECRET_KEY>"
                   :endpoint "http://localhost:8000"})
 
+(def user-table-name (:dynamo-user-table-name env))
+
 (defn delete-user-table []
   (try
-    (far/delete-table client-opts :users)
+    (far/delete-table client-opts user-table-name)
     (catch Exception e (println "Error occured with table setup " e))))
 
 (defn create-user-table []
   (try
-    (far/create-table client-opts :users [:email :s]
+    (far/create-table client-opts user-table-name [:email :s]
                       {:throughput {:read 5 :write 10}
                        :block? true})
     (catch Exception e (println "Error occured with table setup " e))))

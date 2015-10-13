@@ -13,11 +13,6 @@ ENV AUTH_PUB_KEY_PWD=password
 ENV PORT=8080
 ENV SSLPORT=8443
 ENV LEIN_ROOT=1
-ENV MYSQL_DATABASE=pav_user
-ENV MYSQL_HOST=pav-user-dev.cohs9sc8kicp.us-west-2.rds.amazonaws.com
-ENV MYSQL_PORT=3306
-ENV MYSQL_USER=pav_user
-ENV MYSQL_PASSWORD=pav_user
 
 RUN lein uberjar
 RUN cp target/pav-user-api.jar pav-user-api.jar

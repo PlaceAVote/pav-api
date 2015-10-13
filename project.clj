@@ -55,5 +55,6 @@
                 :redis-url "redis://127.0.0.1:6379"
                 :access-key "Whatever"
                 :secret-key "whatever"
-                :dynamo-endpoint "http://localhost:8000"}
+                :dynamo-endpoint "http://localhost:8000"
+                :dynamo-user-table-name "users"}
     :plugins [[lein-midje "3.1.3"]]}})
