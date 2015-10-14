@@ -17,14 +17,14 @@
 
 (defn update-user-token [user new-token]
   (try
-    (far/update-item client-opts user-table-name {:email (:email user)} {:token [:put new-token]})
+    (far/update-item client-opts user-table-name {:email (:email user)} {:token [:put (:token new-token)]})
     (merge user new-token)
   (catch Exception e (log/info (str "Error occured updating user token " e)))))
 
 (defn update-facebook-user-token [user new-token]
   (try
-    (far/update-item client-opts user-table-name {:email (:email user)} {:token [:put new-token]
-                                                                :facebook_token [:put (:token user)]})
+    (far/update-item client-opts user-table-name {:email (:email user)} {:token          [:put (:token new-token)]
+                                                                         :facebook_token [:put (:token user)]})
     (merge user new-token)
     (catch Exception e (log/info (str "Error occured updating user token " e)))))
 
