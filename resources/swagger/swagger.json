@@ -314,6 +314,17 @@
                 }
               }
             }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "token to be passed as a header",
+            "required": true,
+            "type": "string",
+            "items": {
+              "type": "string",
+              "format": "PAV_AUTH_TOKEN token"
+            }
           }
         ],
         "tags": [
