@@ -12,7 +12,6 @@
 (against-background [(before :facts (do
                                       (delete-user-table)
                                       (create-user-table)))]
- (facts "Test cases for users"
 
    (fact "Create a new user, will return 201 status and newly created user"
          (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
@@ -225,5 +224,5 @@
                                                                               :topics ["Defence" "Arts"]})) "application/json"))
               login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:password "stuff2"})) "application/json"))]
           (:status login-response) => 400
-          (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))))
+          (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]}))))
 
