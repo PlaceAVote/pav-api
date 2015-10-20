@@ -4,9 +4,6 @@ dependencies:
     - tar -xvzf dynamodb_local_latest
     - java -Djava.library.path=. -jar DynamoDBLocal.jar:
         background: true
-test:
-  commands:
-    - lein midje
 machine:
   java:
     - oraclejdk8
