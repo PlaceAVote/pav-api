@@ -5,8 +5,7 @@
            [cheshire.core :as ch]
            [environ.core :refer [env]]
            [taoensso.carmine :as car :refer (wcar)]
-           [taoensso.faraday :as far])
-  (:use korma.core))
+           [taoensso.faraday :as far]))
 
 (def client-opts {:access-key "<AWS_DYNAMODB_ACCESS_KEY>"
                   :secret-key "<AWS_DYNAMODB_SECRET_KEY>"
