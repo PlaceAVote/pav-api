@@ -5,7 +5,7 @@ machine:
     - java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar --sharedDb:
         background: true
     - curl -Ls https://install.convox.com/linux.zip > /tmp/convox.zip
-    - unzip /tmp/convox.zip -d /usr/local/bin
+    - sudo unzip /tmp/convox.zip -d /usr/local/bin
     - convox login convox-879923626.us-west-2.elb.amazonaws.com --password tknkFFiDruFRJOqRAmesmJNhChlPdu
   java:
     version: oraclejdk8
