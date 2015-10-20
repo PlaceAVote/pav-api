@@ -2,7 +2,8 @@ machine:
   pre:
     - wget http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest
     - tar -xvzf dynamodb_local_latest
-    - java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar --sharedDb &
+    - java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar --sharedDb:
+        background: true
   java:
     version: oraclejdk8
   services:
