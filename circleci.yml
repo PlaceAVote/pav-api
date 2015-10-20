@@ -3,7 +3,8 @@ dependencies:
     - sudo apt-get update
     - sudo wget http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest
     - sudo tar -xvzf dynamodb_local_latest
-    - sudo java -Djava.library.path=. -jar DynamoDBLocal.jar
+    - java -Djava.library.path=. -jar DynamoDBLocal.jar:
+        background: true
 test:
   commands:
     - lein midje
