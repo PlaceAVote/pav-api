@@ -1,4 +1,4 @@
-dependencies:
+machine:
   pre:
     - wget http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest
     - tar -xvzf dynamodb_local_latest
@@ -6,6 +6,6 @@ dependencies:
         background: true
 machine:
   java:
-    - oraclejdk8
+    version: oraclejdk8
   services:
     - redis
