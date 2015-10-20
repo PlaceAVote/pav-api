@@ -1,0 +1,8 @@
+test:
+  commands:
+    - lein midje
+machine:
+  java:
+    - oraclejdk8
+  services:
+    - redis
