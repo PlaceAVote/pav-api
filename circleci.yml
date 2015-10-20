@@ -1,13 +1,13 @@
 dependencies:
-  post:
+  pre:
     - wget http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest
-    - tar -xvzf dynamodb_local_latest
-    - java -Djava.library.path=. -jar DynamoDBLocal.jar:
-        background: true
+    - tar -xvzf dynamodb_local_latest /dynamodb
 test:
   commands:
     - lein midje
 machine:
+  - sh scripts/dynamodb.sh:
+      background: true
   java:
     - oraclejdk8
   services:
