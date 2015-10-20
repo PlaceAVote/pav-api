@@ -13,7 +13,7 @@
   (try
     (far/put-item client-opts user-table-name user-profile)
     user-profile
-  (catch Exception e (log/info (str "Error occured persisting new user-profile " e)))))
+  (catch Exception e (log/info (str "Error occured persisting new user-profile " e " to table " user-table-name)))))
 
 (defn update-user-token [user new-token]
   (try
