@@ -15,5 +15,5 @@ deployment:
   development:
     branch: master
     commands:
-      - convox build
+      - convox deploy
 
