@@ -9,8 +9,8 @@ machine:
     - convox login convox-879923626.us-west-2.elb.amazonaws.com --password tknkFFiDruFRJOqRAmesmJNhChlPdu
   java:
     version: oraclejdk8
-services:
-  - redis
+  services:
+    - redis
 deployment:
   development:
     branch: master
