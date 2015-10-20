@@ -4,7 +4,6 @@ machine:
     - tar -xvzf dynamodb_local_latest
     - java -Djava.library.path=. -jar DynamoDBLocal.jar:
         background: true
-machine:
   java:
     version: oraclejdk8
   services:
