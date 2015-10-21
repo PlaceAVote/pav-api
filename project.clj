@@ -54,9 +54,9 @@
                 :dynamo-endpoint "http://localhost:8000"
                 :dynamo-user-table-name "users"
                 :dynamo-user-confirmation-table-name "user-confirmation-tokens"
-                :email-host "smtp.gmail.com"
-                :email-user "whatever"
-                :email-pass "whatever"
-                :email-mode "test"
-                :email-port "456"}
+                :email-host "smtp.mandrillapp.com"
+                :email-user "ldavis@placeavote.com"
+                :email-pass "wIcrhjbexBF4E0vspS7t9w"
+                :email-mode "smtp"
+                :email-port "587"}
     :plugins [[lein-midje "3.1.3"]]}})
