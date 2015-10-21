@@ -129,3 +129,23 @@ paths:
             properties:
               token:
                 type: string
+  /user/confirm/{confirm-token}:
+    post:
+      description: Confirm token sent in users email
+      parameters:
+        - name: confirm-token
+          in: path
+          required: true
+          type: string
+          format: string
+      responses:
+        '201':
+          description: Successful response
+        '401':
+          description: Invalid token
+  
+  
+  
+  
+  
+  

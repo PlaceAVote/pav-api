@@ -25,9 +25,6 @@
             "format": "email"
           }
         ],
-        "tags": [
-          "Users"
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -110,9 +107,6 @@
             }
           }
         ],
-        "tags": [
-          "Users"
-        ],
         "responses": {
           "201": {
             "description": "Successful response",
@@ -144,103 +138,6 @@
                     "type": "string",
                     "format": "[Defence, Arts]"
                   }
-                },
-                "token": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/user/facebook": {
-      "put": {
-        "description": "Register new user using facebook",
-        "parameters": [
-          {
-            "name": "NewUser",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "title": "NewUserProfile",
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "dob": {
-                  "type": "string",
-                  "format": "01/10/1999"
-                },
-                "country_code": {
-                  "type": "string",
-                  "format": "USA"
-                },
-                "img_url": {
-                  "type": "string",
-                  "format": "http://example.jpg"
-                },
-                "token": {
-                  "type": "string",
-                  "format": "token"
-                },
-                "topics": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "[Defence, Arts]"
-                  }
-                }
-              }
-            }
-          }
-        ],
-        "tags": [
-          "Users"
-        ],
-        "responses": {
-          "201": {
-            "description": "Successful response",
-            "schema": {
-              "title": "UserProfile",
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "dob": {
-                  "type": "string",
-                  "format": "01/10/1999"
-                },
-                "country_code": {
-                  "type": "string",
-                  "format": "USA"
-                },
-                "topics": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "[Defence, Arts]"
-                  }
-                },
-                "img_url": {
-                  "type": "string",
-                  "format": "http://example.jpg"
                 },
                 "token": {
                   "type": "string"
@@ -274,9 +171,6 @@
             }
           }
         ],
-        "tags": [
-          "Users"
-        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -293,55 +187,24 @@
         }
       }
     },
-    "/user/facebook/authenticate": {
+    "/user/confirm/{confirm-token}": {
       "post": {
-        "description": "Authenticate existing facebook user",
+        "description": "Confirm token sent in users email",
         "parameters": [
           {
-            "name": "Login",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "title": "Login Details",
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "token": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
+            "name": "confirm-token",
+            "in": "path",
             "required": true,
             "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "format": "string"
           }
         ],
-        "tags": [
-          "Users"
-        ],
         "responses": {
-          "200": {
-            "description": "Successful response",
-            "schema": {
-              "title": "New Token",
-              "type": "object",
-              "properties": {
-                "token": {
-                  "type": "string"
-                }
-              }
-            }
+          "201": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Invalid token"
           }
         }
       }
