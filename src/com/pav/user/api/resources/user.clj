@@ -49,3 +49,9 @@
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :available-media-types ["application/json"]
  :handle-ok (service/get-user-timeline email))
+
+(defresource confirm-user [token]
+ :authorized? (fn [_] (service/confirm-token-valid? token))
+ :allowed-methods [:post]
+ :available-media-types ["application/json"]
+ :post! (service/update-registration token))

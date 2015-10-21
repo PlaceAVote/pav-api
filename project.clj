@@ -17,7 +17,8 @@
                  [metosin/ring-swagger "0.21.0"]
                  [com.taoensso/carmine "2.12.0"]
                  [com.taoensso/faraday "1.8.0"]
-                 [clojure-msgpack "1.1.1"]]
+                 [clojure-msgpack "1.1.1"]
+                 [clojurewerkz/mailer "1.2.0"]]
   :plugins [[lein-ring "0.9.6"]
             [lein-environ "1.0.0"]
             [lein-beanstalk "0.2.7"]]
@@ -51,5 +52,10 @@
                 :access-key "Whatever"
                 :secret-key "whatever"
                 :dynamo-endpoint "http://localhost:8000"
-                :dynamo-user-table-name "users"}
+                :dynamo-user-table-name "users"
+                :dynamo-user-confirmation-table-name "user-confirmation-tokens"
+                :email-host "smtp.gmail.com"
+                :email-user "whatever"
+                :email-pass "whatever"
+                :email-mode :test}
     :plugins [[lein-midje "3.1.3"]]}})

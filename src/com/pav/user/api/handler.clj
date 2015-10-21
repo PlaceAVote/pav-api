@@ -9,7 +9,8 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-            [com.pav.user.api.resources.user :refer [create create-facebook user authenticate user-timeline]]
+            [com.pav.user.api.resources.user :refer [create create-facebook user authenticate user-timeline
+                                                     confirm-user]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
             [liberator.dev :refer [wrap-trace]]
@@ -31,6 +32,7 @@
   (PUT "/user/facebook" _ create-facebook)
   (POST "/user/authenticate" req (authenticate req :pav))
   (POST "/user/facebook/authenticate" req (authenticate req :facebook))
+  (POST "/user/confirm/:confirm-token" [confirm-token] (confirm-user confirm-token))
   (route/resources "/")
   (route/not-found "Not Found"))
 

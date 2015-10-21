@@ -9,10 +9,15 @@
             [com.pav.user.api.services.users :refer [create-auth-token]]
             [cheshire.core :as ch]))
 
+(defn pav-req
+  ([method url] (app (content-type (request method url) "application/json")))
+  ([method url payload] (app (content-type (request method url (ch/generate-string payload)) "application/json")))
+  ([method url token payload] (app (content-type (header (request method url (ch/generate-string payload))
+                                                         "Authorization" (str "PAV_AUTH_TOKEN " token)) "application/json"))))
+
 (against-background [(before :facts (do
                                       (delete-user-table)
-                                      (create-user-table)
-                                      ))]
+                                      (create-user-table)))]
 
    (fact "Create a new user, will return 201 status and newly created user"
          (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
@@ -22,7 +27,7 @@
                                                                                       :topics ["Defence" "Arts"]})) "application/json"))]
            (:status response) => 201
            (keys (ch/parse-string (:body response) true)) => (contains [:token :email :first_name :last_name :dob :country_code
-                                                                        :topics :created_at] :in-any-order)))
+                                                                        :topics :created_at :registered] :in-any-order)))
 
    (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
          (let [response (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "paul@facebook.com"
@@ -34,7 +39,7 @@
                                                                                                :token "token"})) "application/json"))]
            (:status response) => 201
            (keys (ch/parse-string (:body response) true)) => (contains [:email :first_name :last_name :dob :country_code
-                                                                        :img_url :topics :token :created_at] :in-any-order)))
+                                                                        :img_url :topics :token :created_at :registered] :in-any-order)))
 
 
   (fact "Create a new user from facebook login, when email is missing, return 400 with appropriate error message"
@@ -225,5 +230,9 @@
                                                                               :topics ["Defence" "Arts"]})) "application/json"))
               login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:password "stuff2"})) "application/json"))]
           (:status login-response) => 400
-          (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]}))))
+          (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
+
+  (fact "Given confirmation token, when invalid, then return 401."
+        (let [{status :status} (pav-req :post "/user/confirm/1234")]
+          status => 401)))
 

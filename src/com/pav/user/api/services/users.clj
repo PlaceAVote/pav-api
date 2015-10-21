@@ -8,8 +8,7 @@
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
             [clj-time.core :as t]
-            [clojure.tools.logging :as log])
-  (:import (java.util Date)))
+            [clojure.tools.logging :as log]))
 
 (defn- pkey []
   (ks/private-key (:auth-priv-key env) (:auth-priv-key-pwd env)))
@@ -18,6 +17,7 @@
   {:token (jws/sign user (pkey)
                     {:alg :rs256
                      :exp (-> (t/plus (t/now) (t/days 30)) (u/to-timestamp))})})
+
 
 (defn associate-token-with-user [user token]
   (merge user token))
@@ -29,7 +29,8 @@
   (log/info (str "Creating user " user " from facebook"))
   (let [user-with-facebook-token (-> (assoc user :facebook_token (:token user))
                                      (merge (create-auth-token (dissoc user :token)))
-                                     (assoc :created_at (.getTime (Date.))))]
+                                     (assoc :created_at (.getTime (Date.)))
+                                     (merge {:registered false}))]
     (try
       {:record (-> (dynamo-dao/create-user user-with-facebook-token)
                    (dissoc :facebook_token))}
@@ -39,7 +40,8 @@
   (log/info (str "Creating user " (dissoc user :password)))
   (let [hashed-user (-> (update-in user [:password] #(h/encrypt %))
                         (assoc :created_at (.getTime (Date.)))
-                        (merge (create-auth-token (dissoc user :password))))]
+                        (merge (create-auth-token (dissoc user :password)))
+                        (merge {:registered false}))]
     (try
       {:record (-> (dynamo-dao/create-user hashed-user)
                    (dissoc :password))}
@@ -85,5 +87,13 @@
 
 (defn is-authenticated? [user]
   (if-not (nil? user)
+    true
+    false))
+
+(defn update-registration [token]
+  (dynamo-dao/update-registration token))
+
+(defn confirm-token-valid? [token]
+  (if-not (nil? (dynamo-dao/get-confirmation-token token))
     true
     false))
