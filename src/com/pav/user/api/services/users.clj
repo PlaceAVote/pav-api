@@ -8,7 +8,8 @@
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
             [clj-time.core :as t]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log])
+  (:import [java.util Date]))
 
 (defn- pkey []
   (ks/private-key (:auth-priv-key env) (:auth-priv-key-pwd env)))
