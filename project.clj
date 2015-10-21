@@ -55,8 +55,8 @@
                 :dynamo-user-table-name "users"
                 :dynamo-user-confirmation-table-name "user-confirmation-tokens"
                 :email-host "smtp.mandrillapp.com"
-                :email-user "ldavis@placeavote.com"
-                :email-pass "wIcrhjbexBF4E0vspS7t9w"
-                :email-mode "smtp"
+                :email-user "team@placeavote.com"
+                :email-pass "password"
+                :email-mode "test"
                 :email-port "587"}
     :plugins [[lein-midje "3.1.3"]]}})
