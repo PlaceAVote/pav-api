@@ -19,11 +19,12 @@
 (def email-user (:email-user env))
 (def email-pass (:email-pass env))
 (def email-delivery-mode (keyword (:email-mode env)))
+(def email-port (:email-port env))
 
 (defn send-confirmation-email [user confirmation-token]
   (try
     (with-settings
-     {:host email-host :user email-user :pass email-pass :port 465 :ssl true}
+     {:host email-host :user email-user :pass email-pass :port email-port :ssl true}
      (with-delivery-mode email-delivery-mode (deliver-email {:from "PlaceAVote Support Team" :to [(:email user)] :subject "Confirm Email Address"}
                                                             "templates/confirm_email.html" {:first_name            (:first_name user)
                                                                                             :last_name             (:last_name user)
