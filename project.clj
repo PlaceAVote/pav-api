@@ -58,5 +58,5 @@
                 :email-user "whatever"
                 :email-pass "whatever"
                 :email-mode "test"
-                :email-port 465}
+                :email-port "456"}
     :plugins [[lein-midje "3.1.3"]]}})
