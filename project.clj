@@ -57,5 +57,5 @@
                 :email-host "smtp.gmail.com"
                 :email-user "whatever"
                 :email-pass "whatever"
-                :email-mode :test}
+                :email-mode "test"}
     :plugins [[lein-midje "3.1.3"]]}})

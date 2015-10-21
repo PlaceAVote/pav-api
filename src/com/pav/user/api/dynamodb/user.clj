@@ -18,7 +18,7 @@
 (def email-host (:host env))
 (def email-user (:email-user env))
 (def email-pass (:email-pass env))
-(def email-delivery-mode (:email-mode env))
+(def email-delivery-mode (keyword (:email-mode env)))
 
 (defn send-confirmation-email [user confirmation-token]
   (try
