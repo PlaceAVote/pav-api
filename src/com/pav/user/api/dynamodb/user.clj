@@ -15,7 +15,7 @@
 
 (def user-table-name (:dynamo-user-table-name env))
 (def user-confirm-table-name (:dynamo-user-confirmation-table-name env))
-(def email-host (:host env))
+(def email-host (:email-host env))
 (def email-user (:email-user env))
 (def email-pass (:email-pass env))
 (def email-delivery-mode (keyword (:email-mode env)))
