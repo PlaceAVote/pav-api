@@ -18,6 +18,8 @@ paths:
           required: true
           type: string
           format: email
+      tags:
+        - Users
       responses:
         '200':
           description: Successful response
@@ -75,7 +77,8 @@ paths:
                 items:
                   type: string
                   format: '[Defence, Arts]'
-        
+      tags:
+        - Users  
       responses:
         '201':
           description: Successful response
@@ -120,6 +123,8 @@ paths:
                 format: test@place.com
               password:
                 type: string
+      tags:
+        - Users
       responses:
         '200':
           description: Successful response
@@ -138,6 +143,8 @@ paths:
           required: true
           type: string
           format: string
+      tags:
+        - Users
       responses:
         '201':
           description: Successful response

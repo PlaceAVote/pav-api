@@ -25,6 +25,9 @@
             "format": "email"
           }
         ],
+        "tags": [
+          "Users"
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -107,6 +110,9 @@
             }
           }
         ],
+        "tags": [
+          "Users"
+        ],
         "responses": {
           "201": {
             "description": "Successful response",
@@ -171,6 +177,9 @@
             }
           }
         ],
+        "tags": [
+          "Users"
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -198,6 +207,9 @@
             "type": "string",
             "format": "string"
           }
+        ],
+        "tags": [
+          "Users"
         ],
         "responses": {
           "201": {
