@@ -25,7 +25,7 @@
   (try
     (with-settings
       {:host email-host :user email-user :pass email-pass :port (read-string email-port) :tls true}
-     (with-delivery-mode email-delivery-mode (deliver-email {:from "PlaceAVote Support Team" :to [(:email user)] :subject "Confirm Email Address"}
+     (with-delivery-mode email-delivery-mode (deliver-email {:from email-user :to [(:email user)] :subject "Confirm Email Address"}
                                                             "templates/confirm_email.html" {:first_name            (:first_name user)
                                                                                             :last_name             (:last_name user)
                                                                                             :confirm-email-address (str "www.placeavote.com/user/confirm/" confirmation-token)}
