@@ -72,7 +72,7 @@
         "parameters": [
           {
             "name": "email",
-            "in": "query",
+            "in": "path",
             "description": "Users email address",
             "required": true,
             "type": "string",
