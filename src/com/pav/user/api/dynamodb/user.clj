@@ -15,6 +15,7 @@
 
 (def user-table-name (:dynamo-user-table-name env))
 (def user-confirm-table-name (:dynamo-user-confirmation-table-name env))
+(def notification-table-name (:dynamo-notification-table-name env))
 (def email-host (:email-host env))
 (def email-user (:email-user env))
 (def email-pass (:email-pass env))
@@ -72,3 +73,7 @@
       (if-not (empty? email)
         (far/update-item client-opts user-table-name {:email email} {:registered [:put true]})))
   (catch Exception e (log/info (str "Error occured updating registeration status for token " token " " e)))))
+
+(defn get-notifications [user]
+  (far/query client-opts notification-table-name {:user [:eq user]}
+                                                 {:order :desc}))

@@ -54,6 +54,7 @@
                 :dynamo-endpoint "http://localhost:8000"
                 :dynamo-user-table-name "users"
                 :dynamo-user-confirmation-table-name "user-confirmation-tokens"
+                :dynamo-notification-table-name "notifications"
                 :email-host "smtp.mandrillapp.com"
                 :email-user "team@placeavote.com"
                 :email-pass "password"

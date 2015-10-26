@@ -234,5 +234,9 @@
 
   (fact "Given confirmation token, when invalid, then return 401."
         (let [{status :status} (pav-req :post "/user/confirm/1234")]
-          status => 401)))
+          status => 401))
+
+  (fact "Retrieve users notifications"
+        (let [{status :status} (pav-req :get "/user/john@pl.com/notifications")]
+          status => 200)))
 

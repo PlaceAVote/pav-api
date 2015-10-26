@@ -10,7 +10,7 @@
             [compojure.route :as route]
             [compojure.core :refer :all]
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate user-timeline
-                                                     confirm-user]]
+                                                     confirm-user notifications]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
             [liberator.dev :refer [wrap-trace]]
@@ -28,6 +28,7 @@
 (defroutes app-routes
   (GET "/docs" [] swagger-docs)
   (GET "/user/:email" [email] (user email))
+  (GET "/user/:email/notifications" [email] (notifications email))
   (PUT "/user" _ create)
   (PUT "/user/facebook" _ create-facebook)
   (POST "/user/authenticate" req (authenticate req :pav))

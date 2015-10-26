@@ -98,3 +98,6 @@
   (if-not (nil? (dynamo-dao/get-confirmation-token token))
     true
     false))
+
+(defn get-notifications [user]
+  (dynamo-dao/get-notifications user))
