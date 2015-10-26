@@ -45,12 +45,12 @@ paths:
                 items:
                   type: string
                   format: '[Defence, Arts]'
-  /user/:email/notifications:
+  /user/{email}/notifications:
     get:
       description: Get users notifications
       parameters:
         - name: email
-          in: query
+          in: path
           description: Users email address
           required: true
           type: string
