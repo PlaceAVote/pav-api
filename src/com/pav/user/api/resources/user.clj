@@ -2,7 +2,8 @@
  (:require [liberator.core :refer [resource defresource]]
            [liberator.representation :refer [ring-response]]
            [com.pav.user.api.services.users :as service]
-           [com.pav.user.api.utils.utils :refer [record-in-ctx retrieve-body retrieve-user-details]]
+           [com.pav.user.api.utils.utils :refer [record-in-ctx retrieve-body retrieve-user-details
+                                                 retrieve-user-id]]
            [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
@@ -57,6 +58,7 @@
  :post! (service/update-registration token))
 
 (defresource notifications [email]
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
- :handle-ok (service/get-notifications email))
+ :handle-ok (fn [ctx] (service/get-notifications (retrieve-user-id (:request ctx)))))

@@ -270,6 +270,17 @@
           status => 401))
 
   (fact "Retrieve users notifications"
-        (let [{status :status} (pav-req :get "/user/john@pl.com/notifications")]
-          status => 200)))
+        (let [{body :body} (pav-req :put "/user" {:email "john@pl.com"
+                                       :password "stuff2"
+                                       :first_name "john" :last_name "stuff"
+                                       :dob "05/10/1984"
+                                       :country_code "USA"
+                                       :topics ["Defence" "Arts"]})
+              {token :token} (ch/parse-string body true)
+              {status :status} (pav-req :get "/user/notifications" token {})]
+          status => 200))
+
+  (fact "Retrieving user notifications without Authentication token, results in 401"
+        (let [{status :status} (pav-req :get "/user/notifications")]
+          status => 401)))
 

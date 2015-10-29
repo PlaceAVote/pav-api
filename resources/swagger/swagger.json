@@ -23,6 +23,17 @@
             "required": true,
             "type": "string",
             "format": "email"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "token to be passed as a header",
+            "required": true,
+            "type": "string",
+            "items": {
+              "type": "string",
+              "format": "PAV_AUTH_TOKEN token"
+            }
           }
         ],
         "tags": [
@@ -66,17 +77,20 @@
         }
       }
     },
-    "/user/{email}/notifications": {
+    "/user/notifications": {
       "get": {
         "description": "Get users notifications",
         "parameters": [
           {
-            "name": "email",
-            "in": "path",
-            "description": "Users email address",
+            "name": "Authorization",
+            "in": "header",
+            "description": "token to be passed as a header",
             "required": true,
             "type": "string",
-            "format": "email"
+            "items": {
+              "type": "string",
+              "format": "PAV_AUTH_TOKEN token"
+            }
           }
         ],
         "tags": [

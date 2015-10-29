@@ -8,3 +8,7 @@
 
 (defn retrieve-user-details [payload]
   (:identity payload))
+
+(defn retrieve-user-id [payload]
+  (-> (retrieve-user-details payload)
+      :email))
