@@ -20,217 +20,250 @@
                                       (create-user-table)))]
 
    (fact "Create a new user, will return 201 status and newly created user"
-         (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                                      :first_name "john" :last_name "stuff"
-                                                                                      :dob "05/10/1984"
-                                                                                      :country_code "USA"
-                                                                                      :topics ["Defence" "Arts"]})) "application/json"))]
-           (:status response) => 201
-           (keys (ch/parse-string (:body response) true)) => (contains [:token :email :first_name :last_name :dob :country_code
-                                                                        :topics :created_at :registered] :in-any-order)))
+         (let [{status :status body :body} (pav-req :put "/user"
+                                              {:email "john@stuff.com"
+                                               :password "stuff2"
+                                               :first_name "john"
+                                               :last_name "stuff"
+                                               :dob "05/10/1984"
+                                               :country_code "USA"
+                                               :topics ["Defence" "Arts"]})]
+           status => 201
+           (keys (ch/parse-string body true)) => (contains [:token :email :first_name :last_name :dob :country_code
+                                                            :topics :created_at :registered] :in-any-order)))
 
    (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
-         (let [response (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "paul@facebook.com"
-                                                                                               :first_name "john" :last_name "stuff"
-                                                                                               :dob "05/10/1984"
-                                                                                               :country_code "USA"
-                                                                                               :img_url "http://image.com/image.jpg"
-                                                                                               :topics ["Defence" "Arts"]
-                                                                                               :token "token"})) "application/json"))]
-           (:status response) => 201
-           (keys (ch/parse-string (:body response) true)) => (contains [:email :first_name :last_name :dob :country_code
-                                                                        :img_url :topics :token :created_at :registered] :in-any-order)))
+         (let [{status :status body :body} (pav-req :put "/user/facebook"
+                                               {:email "paul@facebook.com"
+                                                :first_name "john" :last_name "stuff"
+                                                :dob "05/10/1984"
+                                                :country_code "USA"
+                                                :img_url "http://image.com/image.jpg"
+                                                :topics ["Defence" "Arts"]
+                                                :token "token"})]
+           status => 201
+           (keys (ch/parse-string body true)) => (contains [:email :first_name :last_name :dob :country_code
+                                                            :img_url :topics :token :created_at :registered] :in-any-order)))
 
 
   (fact "Create a new user from facebook login, when email is missing, return 400 with appropriate error message"
-        (let [response (app (content-type (request :put "/user/facebook" (ch/generate-string {
-                                                                                              :first_name "john" :last_name "stuff"
-                                                                                              :dob "05/10/1984"
-                                                                                              :country_code "USA"
-                                                                                              :img_url "http://image.com/image.jpg"
-                                                                                              :topics ["Defence" "Arts"]
-                                                                                              :token "token"})) "application/json"))]
-          (:status response) => 400
-          (:body response ) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
+        (let [{status :status body :body} (pav-req :put "/user/facebook"
+                                                   {:first_name "john"
+                                                    :last_name "stuff"
+                                                    :dob "05/10/1984"
+                                                    :country_code "USA"
+                                                    :img_url "http://image.com/image.jpg"
+                                                    :topics ["Defence" "Arts"]
+                                                    :token "token"})]
+          status => 400
+          body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
 
   (fact "Create a new user from facebook login, when token is missing, return 400 with appropriate error message"
-        (let [response (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "john@stuff.com"
-                                                                                              :first_name "john" :last_name "stuff"
-                                                                                              :dob "05/10/1984"
-                                                                                              :country_code "USA"
-                                                                                              :img_url "http://image.com/image.jpg"
-                                                                                              :topics ["Defence" "Arts"]})) "application/json"))]
-          (:status response) => 400
-          (:body response ) => (ch/generate-string {:errors [{:token "A token is required for social media registerations and logins"}]})))
+        (let [{status :status body :body} (pav-req :put "/user/facebook"
+                                                   {:email "john@stuff.com"
+                                                    :first_name "john"
+                                                    :last_name "stuff"
+                                                    :dob "05/10/1984"
+                                                    :country_code "USA"
+                                                    :img_url "http://image.com/image.jpg"
+                                                    :topics ["Defence" "Arts"]})]
+          status => 400
+          body => (ch/generate-string {:errors [{:token "A token is required for social media registerations and logins"}]})))
 
   (fact "Create a new user, with an existing email, should return 409"
-        (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                              :first_name "john" :last_name "stuff"
-                                                                              :dob "05/10/1984"
-                                                                              :country_code "USA"
-                                                                              :topics ["Defence" "Arts"]})) "application/json"))
-              response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                                     :first_name "john" :last_name "stuff"
-                                                                                     :dob "05/10/1984"
-                                                                                     :country_code "USA"
-                                                                                     :topics ["Defence" "Arts"]})) "application/json"))]
-          (:status response) => 409
-          (:body response ) => (ch/generate-string existing-user-error-msg)))
+        (let [_ (pav-req :put "/user"
+                         {:email "john@stuff.com"
+                          :password "stuff2"
+                          :first_name "john"
+                          :last_name "stuff"
+                          :dob "05/10/1984"
+                          :country_code "USA"
+                          :topics ["Defence" "Arts"]})
+              {status :status body :body} (pav-req :put "/user"
+                                                   {:email "john@stuff.com"
+                                                    :password "stuff2"
+                                                    :first_name "john"
+                                                    :last_name "stuff"
+                                                    :dob "05/10/1984"
+                                                    :country_code "USA"
+                                                    :topics ["Defence" "Arts"]})]
+          status => 409
+          body => (ch/generate-string existing-user-error-msg)))
 
   (fact "Create a new facebook user, with an existing email, should return 409"
-        (let [_ (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "john@stuff.com"
-                                                                              :first_name "john" :last_name "stuff"
-                                                                              :dob "05/10/1984"
-                                                                              :country_code "USA"
-                                                                              :img_url "http://image.com/image.jpg"
-                                                                              :topics ["Defence" "Arts"]
-                                                                              :token "token"})) "application/json"))
-              response (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "john@stuff.com"
-                                                                                     :first_name "john" :last_name "stuff"
-                                                                                     :dob "05/10/1984"
-                                                                                     :country_code "USA"
-                                                                                     :img_url "http://image.com/image.jpg"
-                                                                                     :topics ["Defence" "Arts"]
-                                                                                     :token "token"})) "application/json"))]
-          (:status response) => 409
-          (:body response ) => (ch/generate-string existing-user-error-msg)))
+        (let [_ (pav-req :put "/user/facebook" {:email "john@stuff.com"
+                                                :first_name "john" :last_name "stuff"
+                                                :dob "05/10/1984"
+                                                :country_code "USA"
+                                                :img_url "http://image.com/image.jpg"
+                                                :topics ["Defence" "Arts"]
+                                                :token "token"})
+              {status :status body :body} (pav-req :put "/user/facebook"
+                                                   {:email "john@stuff.com"
+                                                    :first_name "john"
+                                                    :last_name "stuff"
+                                                    :dob "05/10/1984"
+                                                    :country_code "USA"
+                                                    :img_url "http://image.com/image.jpg"
+                                                    :topics ["Defence" "Arts"]
+                                                    :token "token"})]
+          status => 409
+          body => (ch/generate-string existing-user-error-msg)))
 
   (fact "Create a new user, when the payload is missing an email, return 400 with appropriate error message"
-        (let [response (app (content-type (request :put "/user" (ch/generate-string {:password "stuff2"
-                                                                                     :first_name "john" :last_name "stuff"
-                                                                                     :dob "05/10/1984"
-                                                                                     :country_code "USA"
-                                                                                     :topics ["Defence" "Arts"]})) "application/json"))]
-          (:status response) => 400
-          (:body response ) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
+        (let [{status :status body :body} (pav-req :put "/user"
+                                                   {:password "stuff2"
+                                                    :first_name "john" :last_name "stuff"
+                                                    :dob "05/10/1984"
+                                                    :country_code "USA"
+                                                    :topics ["Defence" "Arts"]})]
+          status => 400
+          body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
 
   (fact "Create a new user, when the payload is missing a password, return 400 with appropriate error message"
-        (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com"
-                                                                                     :first_name "john" :last_name "stuff"
-                                                                                     :dob "05/10/1984"
-                                                                                     :country_code "USA"
-                                                                                     :topics ["Defence" "Arts"]})) "application/json"))]
-          (:status response) => 400
-          (:body response ) => (ch/generate-string {:errors [{:password "Password is a required field"}]})))
-
-  (fact "Create a new user, when the payload is empty, return 400 with appropriate error message"
-        (let [response (app (content-type (request :put "/user" (ch/generate-string {})) "application/json"))]
-          (:status response) => 400
-          (:body response ) => (contains (ch/generate-string {:errors [
-                                                              {:email "A valid email address is a required"}
-                                                              {:password "Password is a required field"}
-                                                              {:first_name "First Name is a required field"}
-                                                              {:last_name "Last Name is a required field"}
-                                                              {:dob "Date of birth is a required field"}
-                                                              {:country_code "Country Code is a required field.  Please Specify Country Code"
-                                                               :topics "Please specify a list of topics."}]}) :in-any-order)))
-
-  (fact "Create a new user, when the email is invalid, return 400 with appropriate error message"
-    (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "johnstuffcom" :password "stuff2"
-                                                                                 :first_name "john" :last_name "stuff"
-                                                                                 :dob "05/10/1984"
-                                                                                 :country_code "USA"
-                                                                                 :topics ["Defence" "Arts"]})) "application/json"))]
-      (:status response) => 400
-      (:body response ) => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}]}) :in-any-order)))
-
-  (fact "Create a new user, when the country is invalid, return 400 with appropriate error message"
-        (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                                     :first_name "john" :last_name "stuff"
-                                                                                     :dob "05/10/1984"
-                                                                                     :country_code ""
-                                                                                     :topics ["Defence" "Arts"]})) "application/json"))]
-          (:status response) => 400
-          (:body response ) => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
-
-
-  (fact "Create a new user, when the country code is invalid, return 400 with appropriate error message"
-        (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                                     :first_name "john" :last_name "stuff"
-                                                                                     :dob "05/10/1984"
-                                                                                     :country_code "UPA"
-                                                                                     :topics ["Defence" "Arts"]})) "application/json"))]
-          (:status response) => 400
-          (:body response ) => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
-
-  (fact "Create a new user, when the password is invalid, return 400 with appropriate error message"
-      (let [response (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password ""
-                                                                                   :first_name "john" :last_name "stuff"
-                                                                                   :dob "05/10/1984"
-                                                                                   :country_code "USA"
-                                                                                   :topics ["Defence" "Arts"]})) "application/json"))]
-        (:status response) => 400
-        (:body response ) => (contains (ch/generate-string {:errors [{:password "Password is a required field"}]}) :in-any-order)))
-
-  (fact "Retrieve a user by email"
-         (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                                                                     :first_name "john" :last_name "stuff"
-                                                                                                                     :dob "05/10/1984"
-                                                                                                                     :country_code "USA"
-                                                                                                                     :topics ["Defence" "Arts"]})) "application/json"))) true)
-               response (app (header (request :get "/user/john@stuff.com")"Authorization" (str "PAV_AUTH_TOKEN " token)))]
-           (:status response) => 200
-           (ch/parse-string (:body response) true) => (contains {:email "john@stuff.com"
+        (let [{status :status body :body} (pav-req :put "/user" {:email "john@stuff.com"
                                                                  :first_name "john" :last_name "stuff"
                                                                  :dob "05/10/1984"
                                                                  :country_code "USA"
-                                                                 :topics ["Defence" "Arts"]} :in-any-order)))
+                                                                 :topics ["Defence" "Arts"]})]
+          status => 400
+          body => (ch/generate-string {:errors [{:password "Password is a required field"}]})))
+
+  (fact "Create a new user, when the payload is empty, return 400 with appropriate error message"
+        (let [{status :status body :body} (pav-req :put "/user" {})]
+          status => 400
+          body => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}
+                                                          {:password "Password is a required field"}
+                                                          {:first_name "First Name is a required field"}
+                                                          {:last_name "Last Name is a required field"}
+                                                          {:dob "Date of birth is a required field"}
+                                                          {:country_code "Country Code is a required field.  Please Specify Country Code"
+                                                           :topics "Please specify a list of topics."}]}) :in-any-order)))
+
+  (fact "Create a new user, when the email is invalid, return 400 with appropriate error message"
+    (let [{status :status body :body} (pav-req :put "/user" {:email "johnstuffcom"
+                                                             :password "stuff2"
+                                                             :first_name "john"
+                                                             :last_name "stuff"
+                                                             :dob "05/10/1984"
+                                                             :country_code "USA"
+                                                             :topics ["Defence" "Arts"]})]
+      status => 400
+      body => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}]}) :in-any-order)))
+
+  (fact "Create a new user, when the country is invalid, return 400 with appropriate error message"
+        (let [{status :status body :body} (pav-req :put "/user" {:email "john@stuff.com"
+                                                                 :password "stuff2"
+                                                                 :first_name "john"
+                                                                 :last_name "stuff"
+                                                                 :dob "05/10/1984"
+                                                                 :country_code ""
+                                                                 :topics ["Defence" "Arts"]})]
+          status => 400
+          body => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
+
+
+  (fact "Create a new user, when the country code is invalid, return 400 with appropriate error message"
+        (let [{status :status body :body} (pav-req :put "/user" {:email "john@stuff.com"
+                                                                 :password "stuff2"
+                                                                 :first_name "john"
+                                                                 :last_name "stuff"
+                                                                 :dob "05/10/1984"
+                                                                 :country_code "UPA"
+                                                                 :topics ["Defence" "Arts"]})]
+          status => 400
+          body => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
+
+  (fact "Create a new user, when the password is invalid, return 400 with appropriate error message"
+      (let [{status :status body :body} (pav-req :put "/user" {:email "john@stuff.com"
+                                                               :password ""
+                                                               :first_name "john"
+                                                               :last_name "stuff"
+                                                               :dob "05/10/1984"
+                                                               :country_code "USA"
+                                                               :topics ["Defence" "Arts"]})]
+        status => 400
+        body => (contains (ch/generate-string {:errors [{:password "Password is a required field"}]}) :in-any-order)))
+
+  (fact "Retrieve a user by email"
+         (let [{:keys [token]} (ch/parse-string (:body (pav-req :put "/user" {:email "john@stuff.com"
+                                                                              :password "stuff2"
+                                                                              :first_name "john" :last_name "stuff"
+                                                                              :dob "05/10/1984"
+                                                                              :country_code "USA"
+                                                                              :topics ["Defence" "Arts"]})) true)
+               {status :status body :body} (pav-req :get "/user/john@stuff.com" token {})]
+           status => 200
+           (ch/parse-string body true) => (contains {:email "john@stuff.com"
+                                                     :first_name "john"
+                                                     :last_name "stuff"
+                                                     :dob "05/10/1984"
+                                                     :country_code "USA"
+                                                     :topics ["Defence" "Arts"]} :in-any-order)))
 
   (fact "Retrieve a user by email that doesn't exist"
-        (let [{:keys [token]} (ch/parse-string (:body (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                                                                    :first_name "john" :last_name "stuff"
-                                                                                                                    :dob "05/10/1984"
-                                                                                                                    :country_code "USA"
-                                                                                                                    :topics ["Defence" "Arts"]})) "application/json"))) true)
-              response (app (header (request :get "/user/peter@stuff.com") "Authorization" (str "PAV_AUTH_TOKEN " token)))]
-          (:status response) => 200
-          (:body response) => ""))
+        (let [{:keys [token]} (ch/parse-string (:body (pav-req :put "/user" {:email "john@stuff.com"
+                                                                             :password "stuff2"
+                                                                             :first_name "john"
+                                                                             :last_name "stuff"
+                                                                             :dob "05/10/1984"
+                                                                             :country_code "USA"
+                                                                             :topics ["Defence" "Arts"]})) true)
+              {status :status body :body} (pav-req :get "/user/peter@stuff.com" token {})]
+          status => 200
+          body => ""))
 
   (fact "Retrieve a user by email, without authentication token"
-        (let [response (app (request :get "/user/johnny@stuff.com"))]
-          (:status response) => 401))
+        (let [{status :status} (pav-req :get "/user/johnny@stuff.com")]
+          status => 401))
 
   (fact "Create token for user when logging on"
-        (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                              :first_name "john" :last_name "stuff"
-                                                                              :dob "05/10/1984"
-                                                                              :country_code "USA"
-                                                                              :topics ["Defence" "Arts"]})) "application/json"))
-              login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:email "john@stuff.com" :password "stuff2"})) "application/json"))]
-          (:status login-response) => 201
-          (keys (ch/parse-string (:body login-response) true)) => (contains [:token])))
+        (let [_ (pav-req :put "/user" {:email "john@stuff.com"
+                                       :password "stuff2"
+                                       :first_name "john"
+                                       :last_name "stuff"
+                                       :dob "05/10/1984"
+                                       :country_code "USA"
+                                       :topics ["Defence" "Arts"]})
+              {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "stuff2"})]
+          status => 201
+          (keys (ch/parse-string body true)) => (contains [:token])))
 
   (fact "Create token for facebook user when logging on"
-        (let [_ (app (content-type (request :put "/user/facebook" (ch/generate-string {:email "paul@facebook.com"
-                                                                                       :first_name "john" :last_name "stuff"
-                                                                                       :dob "05/10/1984"
-                                                                                       :country_code "USA"
-                                                                                       :img_url "http://image.com/image.jpg"
-                                                                                       :topics ["Defence" "Arts"]
-                                                                                       :token "token"})) "application/json"))
-              login-response (app (content-type (request :post "/user/facebook/authenticate" (ch/generate-string {:email "paul@facebook.com" :token "token"})) "application/json"))]
-          (:status login-response) => 201
-          (keys (ch/parse-string (:body login-response) true)) => (contains [:token])))
+        (let [_ (pav-req :put "/user/facebook" {:email "paul@facebook.com"
+                                                :first_name "john"
+                                                :last_name "stuff"
+                                                :dob "05/10/1984"
+                                                :country_code "USA"
+                                                :img_url "http://image.com/image.jpg"
+                                                :topics ["Defence" "Arts"]
+                                                :token "token"})
+              {status :status body :body} (pav-req :post "/user/facebook/authenticate" {:email "paul@facebook.com" :token "token"})]
+          status => 201
+          (keys (ch/parse-string body true)) => (contains [:token])))
 
   (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
-        (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                              :first_name "john" :last_name "stuff"
-                                                                              :dob "05/10/1984"
-                                                                              :country_code "USA"
-                                                                              :topics ["Defence" "Arts"]})) "application/json"))
-              login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:email "john@stuff.com" :password "invalid"})) "application/json"))]
-          (:status login-response) => 401
-          (:body login-response) => login-error-msg))
+        (let [_ (pav-req :put "/user" {:email "john@stuff.com"
+                                       :password "stuff2"
+                                       :first_name "john"
+                                       :last_name "stuff"
+                                       :dob "05/10/1984"
+                                       :country_code "USA"
+                                       :topics ["Defence" "Arts"]})
+              {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "invalid"})]
+          status => 401
+          body => login-error-msg))
 
   (fact "Create token for user, when payload doesn't contain an email then returns 400 with suitable error message"
-        (let [_ (app (content-type (request :put "/user" (ch/generate-string {:email "john@stuff.com" :password "stuff2"
-                                                                              :first_name "john" :last_name "stuff"
-                                                                              :dob "05/10/1984"
-                                                                              :country_code "USA"
-                                                                              :topics ["Defence" "Arts"]})) "application/json"))
-              login-response (app (content-type (request :post "/user/authenticate" (ch/generate-string {:password "stuff2"})) "application/json"))]
-          (:status login-response) => 400
-          (:body login-response) => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
+        (let [_ (pav-req :put "/user" {:email "john@stuff.com"
+                                       :password "stuff2"
+                                       :first_name "john" :last_name "stuff"
+                                       :dob "05/10/1984"
+                                       :country_code "USA"
+                                       :topics ["Defence" "Arts"]})
+              {status :status body :body} (pav-req :post "/user/authenticate" {:password "stuff2"})]
+          status => 400
+          body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
 
   (fact "Given confirmation token, when invalid, then return 401."
         (let [{status :status} (pav-req :post "/user/confirm/1234")]
