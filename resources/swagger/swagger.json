@@ -12,71 +12,6 @@
     "application/json"
   ],
   "paths": {
-    "/user/:email": {
-      "get": {
-        "description": "Gets `UserProfile` object.",
-        "parameters": [
-          {
-            "name": "email",
-            "in": "query",
-            "description": "Users email address",
-            "required": true,
-            "type": "string",
-            "format": "email"
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
-          }
-        ],
-        "tags": [
-          "Users"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "schema": {
-              "title": "UserProfile",
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "dob": {
-                  "type": "string",
-                  "format": "01/10/1999"
-                },
-                "country_code": {
-                  "type": "string",
-                  "format": "USA"
-                },
-                "topics": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "[Defence, Arts]"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/user/notifications": {
       "get": {
         "description": "Get users notifications",
@@ -144,6 +79,61 @@
       }
     },
     "/user": {
+      "get": {
+        "description": "Gets `UserProfile` object.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "token to be passed as a header",
+            "required": true,
+            "type": "string",
+            "items": {
+              "type": "string",
+              "format": "PAV_AUTH_TOKEN token"
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "UserProfile",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "test@place.com"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "last_name": {
+                  "type": "string"
+                },
+                "dob": {
+                  "type": "string",
+                  "format": "01/10/1999"
+                },
+                "country_code": {
+                  "type": "string",
+                  "format": "USA"
+                },
+                "topics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "[Defence, Arts]"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "put": {
         "description": "Register new user",
         "parameters": [

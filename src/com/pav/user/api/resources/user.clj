@@ -43,7 +43,7 @@
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
- :exists? {:record (service/get-user email)}
+ :exists? (fn [ctx] {:record (service/get-user (retrieve-user-id (:request ctx)))})
  :handle-ok record-in-ctx)
 
 (defresource user-timeline [email]

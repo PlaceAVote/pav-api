@@ -185,14 +185,14 @@
         status => 400
         body => (contains (ch/generate-string {:errors [{:password "Password is a required field"}]}) :in-any-order)))
 
-  (fact "Retrieve a user by email"
+  (fact "Retrieve a user profile by authentication token"
          (let [{:keys [token]} (ch/parse-string (:body (pav-req :put "/user" {:email "john@stuff.com"
                                                                               :password "stuff2"
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
                                                                               :country_code "USA"
                                                                               :topics ["Defence" "Arts"]})) true)
-               {status :status body :body} (pav-req :get "/user/john@stuff.com" token {})]
+               {status :status body :body} (pav-req :get "/user" token {})]
            status => 200
            (ch/parse-string body true) => (contains {:email "john@stuff.com"
                                                      :first_name "john"
@@ -201,20 +201,8 @@
                                                      :country_code "USA"
                                                      :topics ["Defence" "Arts"]} :in-any-order)))
 
-  (fact "Retrieve a user by email that doesn't exist"
-        (let [{:keys [token]} (ch/parse-string (:body (pav-req :put "/user" {:email "john@stuff.com"
-                                                                             :password "stuff2"
-                                                                             :first_name "john"
-                                                                             :last_name "stuff"
-                                                                             :dob "05/10/1984"
-                                                                             :country_code "USA"
-                                                                             :topics ["Defence" "Arts"]})) true)
-              {status :status body :body} (pav-req :get "/user/peter@stuff.com" token {})]
-          status => 200
-          body => ""))
-
   (fact "Retrieve a user by email, without authentication token"
-        (let [{status :status} (pav-req :get "/user/johnny@stuff.com")]
+        (let [{status :status} (pav-req :get "/user")]
           status => 401))
 
   (fact "Create token for user when logging on"

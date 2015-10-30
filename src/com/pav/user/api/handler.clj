@@ -27,7 +27,7 @@
 
 (defroutes app-routes
   (GET "/docs" [] swagger-docs)
-  (GET "/user/:email" [email] (user email))
+  (GET "/user" [] user)
   (GET "/user/notifications" [] notifications)
   (PUT "/user" _ create)
   (PUT "/user/facebook" _ create-facebook)
