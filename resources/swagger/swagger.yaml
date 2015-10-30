@@ -203,4 +203,6 @@ paths:
       responses:
         '201':
           description: Successful response
+        '401':
+          description: Confirmation token is invalid
   
