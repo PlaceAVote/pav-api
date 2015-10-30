@@ -54,6 +54,8 @@ paths:
                     checked:
                       type: boolean
                       format: boolean
+        '401':
+          description: Not Authorized (Check Authentication Token)
                       
   /user:
     get:
@@ -94,6 +96,8 @@ paths:
                 items:
                   type: string
                   format: '[Defence, Arts]'
+        '401':
+          description: Not Authorized (Check Authentication Token)  
     put:
       description: Register new user
       parameters:
@@ -153,6 +157,8 @@ paths:
                   format: '[Defence, Arts]'
               token:
                 type: string
+        '400':
+          description: Bad Request (Check body of request)
                 
   /user/authenticate:
     post:
@@ -181,6 +187,8 @@ paths:
             properties:
               token:
                 type: string
+        '401':
+          description: Not Authorized (Check Authentication Token)
   /user/confirm/{confirm-token}:
     post:
       description: Confirm token sent in users email
@@ -195,6 +203,4 @@ paths:
       responses:
         '201':
           description: Successful response
-        '401':
-          description: Invalid token
   
