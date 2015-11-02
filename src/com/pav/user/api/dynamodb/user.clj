@@ -33,35 +33,41 @@
                                                             :text/html)))
   (catch Exception e (log/error (str "Error sending confirmation email to " user " " e)))))
 
-(defn associate-confirmation-token-with-user [email token]
-  (far/put-item client-opts user-confirm-table-name {:confirmation-token token
-                                                     :email email}))
+(defn associate-confirmation-token-with-user [user_id token]
+  (far/put-item client-opts user-confirm-table-name {:confirmation-token token :user_id user_id}))
 
 (defn create-user [user-profile]
   (let [confirmation-token (.toString (UUID/randomUUID))]
     (try
      (far/put-item client-opts user-table-name user-profile)
-     (associate-confirmation-token-with-user (:email user-profile) confirmation-token)
+     (associate-confirmation-token-with-user (:user_id user-profile) confirmation-token)
      (send-confirmation-email user-profile confirmation-token)
      user-profile
      (catch Exception e (log/info (str "Error occured persisting new user-profile " e " to table " confirmation-token))))))
 
 (defn update-user-token [user new-token]
-  (try
-    (far/update-item client-opts user-table-name {:email (:email user)} {:token [:put (:token new-token)]})
-    (merge user new-token)
-  (catch Exception e (log/info (str "Error occured updating user token " e)))))
+  (let [{user_id :user_id} (get-user-by-email (:email user))]
+    (try
+     (far/update-item client-opts user-table-name {:user_id user_id} {:token [:put (:token new-token)]})
+     (merge user new-token)
+    (catch Exception e (log/info (str "Error occured updating user token " e))))))
 
 (defn update-facebook-user-token [user new-token]
-  (try
-    (far/update-item client-opts user-table-name {:email (:email user)} {:token          [:put (:token new-token)]
-                                                                         :facebook_token [:put (:token user)]})
-    (merge user new-token)
-    (catch Exception e (log/info (str "Error occured updating user token " e)))))
+  (let [{user_id :user_id} (get-user-by-email (:email user))]
+    (try
+     (far/update-item client-opts user-table-name {:user_id user_id} {:token          [:put (:token new-token)]
+                                                                      :facebook_token [:put (:token user)]})
+     (merge user new-token)
+    (catch Exception e (log/info (str "Error occured updating user token " e))))))
 
-(defn get-user [email]
+(defn get-user-by-id [id]
   (try
-    (far/get-item client-opts user-table-name {:email email})
+    (far/get-item client-opts user-table-name {:user_id id})
+  (catch Exception e (log/info (str "Error occured retrieving user by id " e)))))
+
+(defn get-user-by-email [email]
+  (try
+    (first (far/query client-opts user-table-name {:email [:eq email]} {:index "user-email-idx"}))
   (catch Exception e (log/info (str "Error occured retrieving user by email " e)))))
 
 (defn get-confirmation-token [token]
@@ -69,11 +75,11 @@
 
 (defn update-registration [token]
   (try
-    (let [{email :email} (get-confirmation-token token)]
-      (if-not (empty? email)
-        (far/update-item client-opts user-table-name {:email email} {:registered [:put true]})))
+    (let [{user_id :user_id} (get-confirmation-token token)]
+      (if-not (empty? user_id)
+        (far/update-item client-opts user-table-name {:user_id user_id} {:registered [:put true]})))
   (catch Exception e (log/info (str "Error occured updating registeration status for token " token " " e)))))
 
-(defn get-notifications [user]
-  (far/query client-opts notification-table-name {:user [:eq user]}
+(defn get-notifications [user_id]
+  (far/query client-opts notification-table-name {:user_id [:eq user_id]}
                                                  {:order :desc}))

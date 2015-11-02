@@ -3,7 +3,7 @@
            [liberator.representation :refer [ring-response]]
            [com.pav.user.api.services.users :as service]
            [com.pav.user.api.utils.utils :refer [record-in-ctx retrieve-body retrieve-user-details
-                                                 retrieve-user-id]]
+                                                 retrieve-user-email retrieve-user-id]]
            [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
@@ -43,7 +43,7 @@
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
- :exists? (fn [ctx] {:record (service/get-user (retrieve-user-id (:request ctx)))})
+ :exists? (fn [ctx] {:record (service/get-user-by-id (retrieve-user-id (:request ctx)))})
  :handle-ok record-in-ctx)
 
 (defresource user-timeline [email]

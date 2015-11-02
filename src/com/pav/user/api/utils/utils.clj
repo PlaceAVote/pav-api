@@ -9,6 +9,10 @@
 (defn retrieve-user-details [payload]
   (:identity payload))
 
-(defn retrieve-user-id [payload]
+(defn retrieve-user-email [payload]
   (-> (retrieve-user-details payload)
       :email))
+
+(defn retrieve-user-id [payload]
+  (-> (retrieve-user-details payload)
+      :user_id))

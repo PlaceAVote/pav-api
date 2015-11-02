@@ -29,7 +29,7 @@
                                                :country_code "USA"
                                                :topics ["Defence" "Arts"]})]
            status => 201
-           (keys (ch/parse-string body true)) => (contains [:token :email :first_name :last_name :dob :country_code
+           (keys (ch/parse-string body true)) => (contains [:user_id :token :email :first_name :last_name :dob :country_code
                                                             :topics :created_at :registered] :in-any-order)))
 
    (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
@@ -42,7 +42,7 @@
                                                 :topics ["Defence" "Arts"]
                                                 :token "token"})]
            status => 201
-           (keys (ch/parse-string body true)) => (contains [:email :first_name :last_name :dob :country_code
+           (keys (ch/parse-string body true)) => (contains [:user_id :email :first_name :last_name :dob :country_code
                                                             :img_url :topics :token :created_at :registered] :in-any-order)))
 
 
@@ -162,7 +162,6 @@
           status => 400
           body => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
 
-
   (fact "Create a new user, when the country code is invalid, return 400 with appropriate error message"
         (let [{status :status body :body} (pav-req :put "/user" {:email "john@stuff.com"
                                                                  :password "stuff2"
@@ -270,5 +269,6 @@
 
   (fact "Retrieving user notifications without Authentication token, results in 401"
         (let [{status :status} (pav-req :get "/user/notifications")]
-          status => 401)))
+          status => 401))
+  )
 

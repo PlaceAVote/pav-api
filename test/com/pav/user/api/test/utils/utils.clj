@@ -26,13 +26,16 @@
 (defn create-user-table []
   (println "creating table")
   (try
-    (far/create-table client-opts user-table-name [:email :s]
-                      {:throughput {:read 5 :write 10}
+    (far/create-table client-opts user-table-name [:user_id :s]
+                      {:gsindexes [{:name "user-email-idx"
+                                    :hash-keydef [:email :s]
+                                    :throughput {:read 5 :write 10}}]
+                       :throughput {:read 5 :write 10}
                        :block? true})
     (far/create-table client-opts user-confirm-table-name [:confirmation-token :s]
                       {:throughput {:read 5 :write 10}
                        :block? true})
-    (far/create-table client-opts notification-table-name [:user :s]
+    (far/create-table client-opts notification-table-name [:user_id :s]
                       {:range-keydef [:timestamp :n]
                        :throughput {:read 5 :write 10}
                        :block? true})
