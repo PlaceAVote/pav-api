@@ -56,7 +56,71 @@ paths:
                       format: boolean
         '401':
           description: Not Authorized (Check Authentication Token)
-                      
+  /user/facebook:
+    put:
+      description: Register new user
+      parameters:
+        - name: NewUser
+          in: body
+          required: true
+          schema:
+            title: NewUserProfile
+            type: object
+            properties:
+              email:
+                type: string
+                format: test@place.com
+              token:
+                type: string
+              first_name: 
+                type: string
+              last_name:
+                type: string
+              dob:
+                type: string
+                format: 01/10/1999
+              country_code:
+                type: string
+                format: USA
+              img_url:
+                type: string
+                format: string
+              topics:
+                type: array
+                items:
+                  type: string
+                  format: '[Defence, Arts]'
+      tags:
+        - Users  
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            title: UserProfile
+            type: object
+            properties:
+              email:
+                type: string
+                format: test@place.com
+              first_name:
+                type: string
+              last_name:
+                type: string
+              dob:
+                type: string
+                format: 01/10/1999
+              country_code:
+                type: string
+                format: USA
+              topics:
+                type: array
+                items:
+                  type: string
+                  format: '[Defence, Arts]'
+              token:
+                type: string
+        '400':
+          description: Bad Request (Check body of request)
   /user:
     get:
       description: Gets `UserProfile` object.
