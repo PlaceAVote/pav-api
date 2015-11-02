@@ -42,7 +42,7 @@ paths:
                     from_name:
                       type: string
                       format: string
-                    user:
+                    user_id:
                       type: string
                       format: string
                     bill_id:
