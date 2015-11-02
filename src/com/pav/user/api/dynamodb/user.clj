@@ -22,6 +22,16 @@
 (def email-delivery-mode (keyword (:email-mode env)))
 (def email-port (:email-port env))
 
+(defn get-user-by-id [id]
+  (try
+    (far/get-item client-opts user-table-name {:user_id id})
+    (catch Exception e (log/info (str "Error occured retrieving user by id " e)))))
+
+(defn get-user-by-email [email]
+  (try
+    (first (far/query client-opts user-table-name {:email [:eq email]} {:index "user-email-idx"}))
+    (catch Exception e (log/info (str "Error occured retrieving user by email " e)))))
+
 (defn send-confirmation-email [user confirmation-token]
   (try
     (with-settings
@@ -59,16 +69,6 @@
                                                                       :facebook_token [:put (:token user)]})
      (merge user new-token)
     (catch Exception e (log/info (str "Error occured updating user token " e))))))
-
-(defn get-user-by-id [id]
-  (try
-    (far/get-item client-opts user-table-name {:user_id id})
-  (catch Exception e (log/info (str "Error occured retrieving user by id " e)))))
-
-(defn get-user-by-email [email]
-  (try
-    (first (far/query client-opts user-table-name {:email [:eq email]} {:index "user-email-idx"}))
-  (catch Exception e (log/info (str "Error occured retrieving user by email " e)))))
 
 (defn get-confirmation-token [token]
   (far/get-item client-opts user-confirm-table-name {:confirmation-token token}))
