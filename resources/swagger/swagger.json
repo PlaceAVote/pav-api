@@ -270,7 +270,52 @@
             }
           },
           "401": {
-            "description": "Not Authorized (Check Authentication Token)"
+            "description": "Not Authorized"
+          }
+        }
+      }
+    },
+    "/user/facebook/authenticate": {
+      "post": {
+        "description": "Authenticate existing user",
+        "parameters": [
+          {
+            "name": "Login",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "title": "Login Details",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "test@place.com"
+                },
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "New Token",
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not Authorized"
           }
         }
       }
