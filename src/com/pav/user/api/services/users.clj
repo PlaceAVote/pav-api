@@ -3,7 +3,6 @@
             [buddy.hashers :as h]
             [com.pav.user.api.schema.user :refer [validate validate-login construct-error-msg]]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
-            [com.pav.user.api.timeline.timeline :as timeline-dao]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
@@ -21,9 +20,6 @@
 
 (defn associate-token-with-user [user token]
   (merge user token))
-
-(defn get-user-timeline [email]
-  (timeline-dao/get-timeline email))
 
 (defn assoc-new-token [user]
   (let [safe-profile (dissoc user :token)

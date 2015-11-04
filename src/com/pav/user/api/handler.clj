@@ -9,7 +9,7 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-            [com.pav.user.api.resources.user :refer [create create-facebook user authenticate user-timeline
+            [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]

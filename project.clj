@@ -6,33 +6,25 @@
                  [hiccup "1.0.5"]
                  [ring-server "0.3.1"]
                  [http-kit "2.1.18"]
-                 [ring/ring-json "0.3.1"]
-                 [ring-cors "0.1.7"]
+                 [ring/ring-json "0.3.1" :exclusions [ring/ring-core]]
+                 [ring-cors "0.1.7" :exclusions [ring/ring-core]]
                  [prismatic/schema "0.4.3"]
                  [cheshire "5.5.0"]
                  [liberator "0.13"]
                  [environ "1.0.0"]
                  [buddy "0.6.1"]
                  [org.clojure/tools.logging "0.3.1"]
-                 [metosin/ring-swagger "0.21.0"]
-                 [com.taoensso/carmine "2.12.0"]
-                 [com.taoensso/faraday "1.8.0"]
-                 [clojure-msgpack "1.1.1"]
-                 [clojurewerkz/mailer "1.2.0"]]
-  :plugins [[lein-ring "0.9.6"]
-            [lein-environ "1.0.0"]
-            [lein-beanstalk "0.2.7"]]
+                 [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
+                                                    javax.jms/jms
+                                                    com.sun.jdmk/jmxtools
+                                                    com.sun.jmx/jmxri]]
+                 [com.taoensso/carmine "2.12.0" :exclusions [org.clojure/data.json
+                                                             org.clojure/tools.reader]]
+                 [com.taoensso/faraday "1.8.0" :exclusions [org.clojure/tools.reader]]]
+  :plugins [[lein-environ "1.0.0"]]
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
   :main system
-  :ring {:handler com.pav.user.api.handler/app
-         :init com.pav.user.api.handler/init
-         :destroy com.pav.user.api.handler/destroy
-         :ssl? true
-         :port 8080
-         :ssl-port 8443
-         :keystore "pavpkcs12.keystore"
-         :key-password "password"}
   :profiles
   {
    :uberjar {:aot :all
@@ -42,8 +34,8 @@
    {:ring
     {:open-browser? false, :stacktraces? false, :auto-reload? false}}
    :dev
-   {:dependencies [[ring-mock "0.1.5"] [ring/ring-devel "1.3.1"]
-                   [midje "1.7.0"]]
+   {:dependencies [[ring-mock "0.1.5"] [ring/ring-devel "1.3.1" :exclusions [ring/ring-core]]
+                   [midje "1.7.0" :exclusions [org.clojure/tools.macro]]]
     :env {      :auth-priv-key "test-resources/pav_auth_privkey.pem"
                 :auth-priv-key-pwd "password"
                 :auth-pub-key "test-resources/pav_auth_pubkey.pem"
@@ -54,10 +46,5 @@
                 :dynamo-endpoint "http://localhost:8000"
                 :dynamo-user-table-name "users"
                 :dynamo-user-confirmation-table-name "user-confirmation-tokens"
-                :dynamo-notification-table-name "notifications"
-                :email-host "smtp.mandrillapp.com"
-                :email-user "team@placeavote.com"
-                :email-pass "password"
-                :email-mode "test"
-                :email-port "587"}
+                :dynamo-notification-table-name "notifications"}
     :plugins [[lein-midje "3.1.3"]]}})

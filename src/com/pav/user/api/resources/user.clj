@@ -46,11 +46,6 @@
  :exists? (fn [ctx] {:record (service/get-user-by-id (retrieve-user-id (:request ctx)))})
  :handle-ok record-in-ctx)
 
-(defresource user-timeline [email]
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
- :available-media-types ["application/json"]
- :handle-ok (service/get-user-timeline email))
-
 (defresource confirm-user [token]
  :authorized? (fn [_] (service/confirm-token-valid? token))
  :allowed-methods [:post]
