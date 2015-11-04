@@ -268,7 +268,7 @@
           status => 200))
 
   (fact "Retrieving user notifications without Authentication token, results in 401"
-        (let [{status :status} (pav-req :get "/user/notifications")]
+        (let [{status :status} (pav-req :get "/user/notifications" "token" {})]
           status => 401))
   )
 
