@@ -53,12 +53,6 @@
                    (dissoc :password))}
      (catch Exception e (log/info e)))))
 
-(defn update-user-token [user origin]
-  (let [new-token (create-auth-token (dissoc user :password))]
-    (case origin
-      :pav (dynamo-dao/update-user-token user new-token)
-      :facebook (dynamo-dao/update-facebook-user-token user new-token))))
-
 (defn remove-sensitive-information [user]
   (if user
     (dissoc user :password)))
@@ -70,6 +64,13 @@
 (defn get-user-by-email [email]
   (-> (dynamo-dao/get-user-by-email email)
       remove-sensitive-information))
+
+(defn update-user-token [user origin]
+  (let [current-user (get-user-by-email (:email user))
+        new-token (create-auth-token (dissoc current-user :password))]
+    (case origin
+      :pav (dynamo-dao/update-user-token user new-token)
+      :facebook (dynamo-dao/update-facebook-user-token user new-token))))
 
 (defn validate-user-payload [user origin]
   (let [result (validate user origin)]
@@ -95,11 +96,11 @@
     :facebook (user-exist? user)))
 
 (defn authenticate-user [user origin]
-  {:record (dissoc (->> (update-user-token user origin)
-                        (associate-token-with-user user)) :password :email)})
+  {:record (-> (update-user-token user origin)
+               (select-keys [:token]))})
 
 (defn is-authenticated? [user]
-  (if-not (nil? user)
+  (if-not (nil? (:user_id user))
     true
     false))
 

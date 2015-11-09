@@ -215,8 +215,11 @@
                                        :dob "05/10/1984"
                                        :country_code "USA"
                                        :topics ["Defence" "Arts"]})
-              {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "stuff2"})]
+              {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "stuff2"})
+              {retrieve-user-status :status user-profile :body} (pav-req :get "/user" (:token (ch/parse-string body true)) {})]
           status => 201
+          retrieve-user-status => 200
+          (keys (ch/parse-string user-profile true)) => (contains [:user_id])
           (keys (ch/parse-string body true)) => (contains [:token])))
 
   (fact "Create token for facebook user when logging on"
@@ -228,8 +231,11 @@
                                                 :img_url "http://image.com/image.jpg"
                                                 :topics ["Defence" "Arts"]
                                                 :token "token"})
-              {status :status body :body} (pav-req :post "/user/facebook/authenticate" {:email "paul@facebook.com" :token "token"})]
+              {status :status body :body} (pav-req :post "/user/facebook/authenticate" {:email "paul@facebook.com" :token "token"})
+              {retrieve-user-status :status user-profile :body} (pav-req :get "/user" (:token (ch/parse-string body true)) {})]
           status => 201
+          retrieve-user-status => 200
+          (keys (ch/parse-string user-profile true)) => (contains [:user_id])
           (keys (ch/parse-string body true)) => (contains [:token])))
 
   (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
