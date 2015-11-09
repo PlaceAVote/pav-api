@@ -67,7 +67,7 @@
 
 (defn update-user-token [user origin]
   (let [current-user (get-user-by-email (:email user))
-        new-token (create-auth-token (dissoc current-user :password))]
+        new-token (create-auth-token (dissoc current-user :password :token))]
     (case origin
       :pav (dynamo-dao/update-user-token user new-token)
       :facebook (dynamo-dao/update-facebook-user-token user new-token))))
