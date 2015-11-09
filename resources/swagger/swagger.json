@@ -12,6 +12,75 @@
     "application/json"
   ],
   "paths": {
+    "/user/timeline": {
+      "get": {
+        "description": "Get users personal timeline.  This endpoint powers the user profile page",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "token to be passed as a header",
+            "required": true,
+            "type": "string",
+            "items": {
+              "type": "string",
+              "format": "PAV_AUTH_TOKEN token"
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "format": "comment"
+                  },
+                  "comment_id": {
+                    "type": "string",
+                    "format": "string"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "format": "string"
+                  },
+                  "bill_id": {
+                    "type": "string",
+                    "format": "string"
+                  },
+                  "timestamp": {
+                    "type": "number",
+                    "format": "number"
+                  },
+                  "bill_title": {
+                    "type": "string",
+                    "format": "string"
+                  },
+                  "score": {
+                    "type": "number",
+                    "format": "number"
+                  },
+                  "body": {
+                    "type": "string",
+                    "format": "string"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
     "/user/notifications": {
       "get": {
         "description": "Get users notifications",
