@@ -47,5 +47,6 @@
                 :dynamo-endpoint "http://localhost:8000"
                 :dynamo-user-table-name "users"
                 :dynamo-user-confirmation-table-name "user-confirmation-tokens"
-                :dynamo-notification-table-name "notifications"}
+                :dynamo-notification-table-name "notifications"
+                :dynamo-usertimeline-table-name "usertimeline"}
     :plugins [[lein-midje "3.1.3"]]}})

@@ -10,6 +10,7 @@
 (def user-table-name (:dynamo-user-table-name env))
 (def user-confirm-table-name (:dynamo-user-confirmation-table-name env))
 (def notification-table-name (:dynamo-notification-table-name env))
+(def timeline-table-name (:dynamo-usertimeline-table-name env))
 
 (defn get-user-by-id [id]
   (try
@@ -55,3 +56,7 @@
 (defn get-notifications [user_id]
   (far/query client-opts notification-table-name {:user_id [:eq user_id]}
                                                  {:order :desc}))
+
+(defn get-user-timeline [user_id]
+  (far/query client-opts timeline-table-name {:user_id [:eq user_id]}
+             {:order :desc}))
