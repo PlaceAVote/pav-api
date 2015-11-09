@@ -57,3 +57,9 @@
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx] (service/get-notifications (retrieve-user-id (:request ctx)))))
+
+(defresource timeline
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :allowed-methods [:get]
+ :available-media-types ["application/json"]
+ :handle-ok (fn [ctx] (service/get-timeline (retrieve-user-id (:request ctx)))))

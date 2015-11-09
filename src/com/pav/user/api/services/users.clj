@@ -3,6 +3,7 @@
             [buddy.hashers :as h]
             [com.pav.user.api.schema.user :refer [validate validate-login construct-error-msg]]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
+            [com.pav.user.api.redis.redis :as redis-dao]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
@@ -112,3 +113,6 @@
 
 (defn get-notifications [user]
   (dynamo-dao/get-notifications user))
+
+(defn get-timeline [user]
+  (redis-dao/get-user-timeline user))

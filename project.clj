@@ -20,7 +20,8 @@
                                                     com.sun.jmx/jmxri]]
                  [com.taoensso/carmine "2.12.0" :exclusions [org.clojure/data.json
                                                              org.clojure/tools.reader]]
-                 [com.taoensso/faraday "1.8.0" :exclusions [org.clojure/tools.reader]]]
+                 [com.taoensso/faraday "1.8.0" :exclusions [org.clojure/tools.reader]]
+                 [clojure-msgpack "1.1.2"]]
   :plugins [[lein-environ "1.0.0"]]
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]

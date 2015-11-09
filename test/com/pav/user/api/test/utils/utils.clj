@@ -5,7 +5,9 @@
            [cheshire.core :as ch]
            [environ.core :refer [env]]
            [taoensso.carmine :as car :refer (wcar)]
-           [taoensso.faraday :as far]))
+           [taoensso.faraday :as far]
+           [msgpack.core :as msg]
+           [msgpack.clojure-extensions]))
 
 (def client-opts {:access-key "<AWS_DYNAMODB_ACCESS_KEY>"
                   :secret-key "<AWS_DYNAMODB_SECRET_KEY>"
@@ -14,6 +16,13 @@
 (def user-table-name (:dynamo-user-table-name env))
 (def user-confirm-table-name (:dynamo-user-confirmation-table-name env))
 (def notification-table-name (:dynamo-notification-table-name env))
+
+(def redis-conn {:spec {:host "127.0.0.1" :port 6379}})
+
+(defn flush-redis []
+  (wcar redis-conn
+        (car/flushall)
+        (car/flushdb)))
 
 (defn delete-user-table []
   (println "deleting table")
@@ -47,3 +56,9 @@
 
 (defn parse-response-body [response]
   (ch/parse-string (:body response) true))
+
+(defn persist-timeline-event [events]
+  (wcar redis-conn
+        (mapv (fn [event]
+                (car/zadd (str "timeline:" (:user_id event)) (:timestamp event) (msg/pack event)))
+              events)))

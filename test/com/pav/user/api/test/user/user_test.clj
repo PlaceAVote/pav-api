@@ -3,7 +3,9 @@
   (:require [com.pav.user.api.handler :refer [app]]
             [com.pav.user.api.test.utils.utils :refer [make-request parse-response-body
                                                        create-user-table
-                                                       delete-user-table]]
+                                                       delete-user-table
+                                                       flush-redis
+                                                       persist-timeline-event]]
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [com.pav.user.api.services.users :refer [create-auth-token]]
@@ -17,7 +19,8 @@
 
 (against-background [(before :facts (do
                                       (delete-user-table)
-                                      (create-user-table)))]
+                                      (create-user-table)
+                                      (flush-redis)))]
 
    (fact "Create a new user, will return 201 status and newly created user"
          (let [{status :status body :body} (pav-req :put "/user"
@@ -270,5 +273,28 @@
   (fact "Retrieving user notifications without Authentication token, results in 401"
         (let [{status :status} (pav-req :get "/user/notifications" "token" {})]
           status => 401))
+
+  (fact "Try Retrieving users profile timeline with invalid token"
+        (let [{status :status} (pav-req :get "/user/timeline" "rubbish token" {})]
+          status => 401))
+
+  (fact "Retrieve users profile timeline"
+        (let [{body :body} (pav-req :put "/user" {:email "john@pl.com"
+                                                  :password "stuff2"
+                                                  :first_name "john" :last_name "stuff"
+                                                  :dob "05/10/1984"
+                                                  :country_code "USA"
+                                                  :topics ["Defence" "Arts"]})
+              {token :token user_id :user_id} (ch/parse-string body true)
+              timeline-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
+                                :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+                                :score 0 :body "Comment text goes here!!"}
+                               {:type "vote" :bill_id "s1182-114" :user_id user_id
+                                :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+                                :timestamp 1446462364297}]
+              _ (persist-timeline-event timeline-events)
+              {status :status body :body} (pav-req :get "/user/timeline" token {})]
+          status => 200
+          (ch/parse-string body true) => (contains timeline-events)))
   )
 
