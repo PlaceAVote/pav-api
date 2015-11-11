@@ -33,7 +33,7 @@
                                                :topics ["Defence" "Arts"]})]
            status => 201
            (keys (ch/parse-string body true)) => (contains [:user_id :token :email :first_name :last_name :dob :country_code
-                                                            :topics :created_at :registered] :in-any-order)))
+                                                            :topics :created_at :registered :public] :in-any-order)))
 
    (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
          (let [{status :status body :body} (pav-req :put "/user/facebook"
@@ -46,7 +46,7 @@
                                                 :token "token"})]
            status => 201
            (keys (ch/parse-string body true)) => (contains [:user_id :email :first_name :last_name :dob :country_code
-                                                            :img_url :topics :token :created_at :registered] :in-any-order)))
+                                                            :img_url :topics :token :created_at :registered :public] :in-any-order)))
 
 
   (fact "Create a new user from facebook login, when email is missing, return 400 with appropriate error message"

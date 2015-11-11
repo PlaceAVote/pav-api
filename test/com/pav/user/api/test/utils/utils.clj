@@ -7,7 +7,9 @@
            [taoensso.carmine :as car :refer (wcar)]
            [taoensso.faraday :as far]
            [msgpack.core :as msg]
-           [msgpack.clojure-extensions]))
+           [msgpack.clojure-extensions]
+           [clojurewerkz.elastisch.rest :refer [connect]]
+           [clojurewerkz.elastisch.rest.index :as esi]))
 
 (def client-opts {:access-key "<AWS_DYNAMODB_ACCESS_KEY>"
                   :secret-key "<AWS_DYNAMODB_SECRET_KEY>"
@@ -18,6 +20,8 @@
 (def notification-table-name (:dynamo-notification-table-name env))
 
 (def redis-conn {:spec {:host "127.0.0.1" :port 6379}})
+
+(def es-connection (connect (:es-url env)))
 
 (defn flush-redis []
   (wcar redis-conn
@@ -62,3 +66,7 @@
         (mapv (fn [event]
                 (car/zadd (str "timeline:" (:user_id event)) (:timestamp event) (msg/pack event)))
               events)))
+
+(defn flush-user-index []
+  (esi/delete es-connection "pav")
+  (esi/create es-connection "pav"))

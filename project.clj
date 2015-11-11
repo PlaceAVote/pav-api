@@ -21,7 +21,8 @@
                  [com.taoensso/carmine "2.12.0" :exclusions [org.clojure/data.json
                                                              org.clojure/tools.reader]]
                  [com.taoensso/faraday "1.8.0" :exclusions [org.clojure/tools.reader]]
-                 [clojure-msgpack "1.1.2"]]
+                 [clojure-msgpack "1.1.2"]
+                 [clojurewerkz/elastisch "2.1.0"]]
   :plugins [[lein-environ "1.0.0"]]
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
@@ -48,5 +49,6 @@
                 :dynamo-user-table-name "users"
                 :dynamo-user-confirmation-table-name "user-confirmation-tokens"
                 :dynamo-notification-table-name "notifications"
-                :dynamo-usertimeline-table-name "usertimeline"}
+                :dynamo-usertimeline-table-name "usertimeline"
+                :es-url "http://localhost:9200"}
     :plugins [[lein-midje "3.1.3"]]}})

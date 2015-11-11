@@ -19,9 +19,6 @@
                     {:alg :rs256
                      :exp (-> (t/plus (t/now) (t/days 30)) (u/to-timestamp))})})
 
-(defn associate-token-with-user [user token]
-  (merge user token))
-
 (defn assoc-new-token [user]
   (let [safe-profile (dissoc user :token)
         new-token (create-auth-token safe-profile)]
@@ -31,7 +28,7 @@
   (-> user
       (assoc :user_id (.toString (UUID/randomUUID)))
       (assoc :created_at (.getTime (Date.)))
-      (merge {:registered false})))
+      (merge {:registered false :public false})))
 
 (defn create-facebook-user [user]
   (log/info (str "Creating user " user " from facebook"))
