@@ -4,6 +4,7 @@
             [com.pav.user.api.schema.user :refer [validate validate-login construct-error-msg]]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
+            [com.pav.user.api.elasticsearch.user :refer [index-user]]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
@@ -34,21 +35,21 @@
   (log/info (str "Creating user " user " from facebook"))
   (let [user-with-token (-> (assoc-common-attributes user)
                             (assoc :facebook_token (:token user))
-                            assoc-new-token)]
-    (try
-      {:record (-> (dynamo-dao/create-user user-with-token)
-                   (dissoc :facebook_token))}
-      (catch Exception e (log/error e)))))
+                            assoc-new-token)
+        new-user-record (-> (dynamo-dao/create-user user-with-token)
+                            (dissoc :facebook_token))]
+    (index-user (dissoc new-user-record :token))
+    {:record new-user-record}))
 
 (defn create-user [user]
   (log/info (str "Creating user " user))
   (let [user-with-token (-> (update-in user [:password] #(h/encrypt %))
                             assoc-common-attributes
-                            assoc-new-token)]
-    (try
-      {:record (-> (dynamo-dao/create-user user-with-token)
-                   (dissoc :password))}
-     (catch Exception e (log/info e)))))
+                            assoc-new-token)
+        new-user-record (-> (dynamo-dao/create-user user-with-token)
+                            (dissoc :password))]
+    (index-user (dissoc new-user-record :token))
+    {:record new-user-record}))
 
 (defn remove-sensitive-information [user]
   (if user

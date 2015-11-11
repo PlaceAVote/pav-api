@@ -5,7 +5,8 @@
                                                        create-user-table
                                                        delete-user-table
                                                        flush-redis
-                                                       persist-timeline-event]]
+                                                       persist-timeline-event
+                                                       flush-user-index]]
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [com.pav.user.api.services.users :refer [create-auth-token]]
@@ -20,7 +21,8 @@
 (against-background [(before :facts (do
                                       (delete-user-table)
                                       (create-user-table)
-                                      (flush-redis)))]
+                                      (flush-redis)
+                                      (flush-user-index)))]
 
    (fact "Create a new user, will return 201 status and newly created user"
          (let [{status :status body :body} (pav-req :put "/user"
