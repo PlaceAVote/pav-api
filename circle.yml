@@ -12,6 +12,7 @@ machine:
     version: oraclejdk8
   services:
     - redis
+    - elasticsearch
 deployment:
   development:
     branch: master
