@@ -28,6 +28,7 @@
 (defroutes app-routes
   (GET "/docs" [] swagger-docs)
   (GET "/user" [] user)
+  (GET "/user/:user_id/profile" [user_id] user)
   (GET "/user/notifications" [] notifications)
   (GET "/user/timeline" [] timeline)
   (PUT "/user" _ create)

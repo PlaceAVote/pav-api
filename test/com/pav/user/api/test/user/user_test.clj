@@ -304,5 +304,24 @@
               {status :status body :body} (pav-req :get "/user/timeline" token {})]
           status => 200
           (ch/parse-string body true) => (contains timeline-events)))
+
+  (fact "Retrieve users profile by user_id"
+        (let [{caller :body} (pav-req :put "/user" {:email "john@pl.com"
+                                                  :password "stuff2"
+                                                  :first_name "john" :last_name "stuff"
+                                                  :dob "05/10/1984"
+                                                  :country_code "USA"
+                                                  :topics ["Defence" "Arts"]})
+              {token :token} (ch/parse-string caller true)
+              {search-user :body} (pav-req :put "/user" {:email "peter@pl.com"
+                                                  :password "stuff2"
+                                                  :first_name "peter" :last_name "pan"
+                                                  :dob "05/10/1984"
+                                                  :country_code "USA"
+                                                  :topics ["Defence" "Arts"]})
+              {user_id :user_id} (ch/parse-string search-user true)
+              {status :status body :body} (pav-req :get (str "/user/" user_id "/profile") token {})]
+          status => 200
+          body => search-user))
   )
 

@@ -39,11 +39,14 @@
  :handle-unauthorized login-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
-(defresource user [email]
+(defresource user
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
- :exists? (fn [ctx] {:record (service/get-user-by-id (retrieve-user-id (:request ctx)))})
+ :exists? (fn [ctx]
+           (if-not (nil? (get-in ctx [:request :params :user_id]))
+            {:record (service/get-user-by-id (get-in ctx [:request :params :user_id]))}
+            {:record (service/get-user-by-id (retrieve-user-id (:request ctx)))}))
  :handle-ok record-in-ctx)
 
 (defresource confirm-user [token]

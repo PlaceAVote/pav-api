@@ -14,7 +14,7 @@
   "paths": {
     "/user/timeline": {
       "get": {
-        "description": "Get users personal timeline.  This endpoint powers the user profile page",
+        "description": "Get the current users personal timeline.  This endpoint powers the user profile page",
         "parameters": [
           {
             "name": "Authorization",
@@ -83,7 +83,7 @@
     },
     "/user/notifications": {
       "get": {
-        "description": "Get users notifications",
+        "description": "Get the current users notifications",
         "parameters": [
           {
             "name": "Authorization",
@@ -208,6 +208,10 @@
               "title": "UserProfile",
               "type": "object",
               "properties": {
+                "user_id": {
+                  "type": "string",
+                  "format": "string"
+                },
                 "email": {
                   "type": "string",
                   "format": "test@place.com"
@@ -245,6 +249,77 @@
         }
       }
     },
+    "/user/{user_id}/profile": {
+      "get": {
+        "description": "Gets A different `UserProfile` object.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "token to be passed as a header",
+            "required": true,
+            "type": "string",
+            "items": {
+              "type": "string",
+              "format": "PAV_AUTH_TOKEN token"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "string"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "UserProfile",
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "test@place.com"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "last_name": {
+                  "type": "string"
+                },
+                "dob": {
+                  "type": "string",
+                  "format": "01/10/1999"
+                },
+                "country_code": {
+                  "type": "string",
+                  "format": "USA"
+                },
+                "topics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "[Defence, Arts]"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
     "/user": {
       "get": {
         "description": "Gets `UserProfile` object.",
@@ -271,6 +346,10 @@
               "title": "UserProfile",
               "type": "object",
               "properties": {
+                "user_id": {
+                  "type": "string",
+                  "format": "string"
+                },
                 "email": {
                   "type": "string",
                   "format": "test@place.com"
@@ -357,6 +436,10 @@
               "title": "UserProfile",
               "type": "object",
               "properties": {
+                "user_id": {
+                  "type": "string",
+                  "format": "string"
+                },
                 "email": {
                   "type": "string",
                   "format": "test@place.com"
