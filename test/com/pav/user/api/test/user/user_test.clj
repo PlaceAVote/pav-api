@@ -342,7 +342,7 @@
               _ (pav-req :put (str "/user/follow") token {:user_id user_id})
               {status :status body :body} (pav-req :get (str "/user/" user_id "/profile") token {})]
           status => 200
-          (ch/parse-string body true) => (merge (ch/parse-string search-user true)
+          (ch/parse-string body true) => (merge (dissoc (ch/parse-string search-user true) :email :topics :token)
                                                 {:following true
                                                  :total_followers 1
                                                  :total_following 0})))
@@ -357,7 +357,7 @@
               {token :token} (ch/parse-string caller true)
               {status :status body :body} (pav-req :get "/user/me/profile" token {})]
           status => 200
-          (ch/parse-string body true) => (merge (ch/parse-string caller true)
+          (ch/parse-string body true) => (merge (dissoc (ch/parse-string caller true) :email :topics :token)
                                                 {:total_followers 0
                                                  :total_following 0})))
 

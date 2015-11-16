@@ -249,9 +249,6 @@ paths:
               user_id:
                 type: string
                 format: string
-              email:
-                type: string
-                format: test@place.com
               first_name:
                 type: string
               last_name:
@@ -262,11 +259,6 @@ paths:
               country_code:
                 type: string
                 format: USA
-              topics:
-                type: array
-                items:
-                  type: string
-                  format: '[Defence, Arts]'
               total_followers:
                 type: number
                 format: number
@@ -304,9 +296,6 @@ paths:
               user_id:
                 type: string
                 format: string
-              email:
-                type: string
-                format: test@place.com
               first_name:
                 type: string
               last_name:
@@ -317,11 +306,6 @@ paths:
               country_code:
                 type: string
                 format: USA
-              topics:
-                type: array
-                items:
-                  type: string
-                  format: '[Defence, Arts]'
               following:
                 type: boolean
                 format: boolean
