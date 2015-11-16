@@ -406,3 +406,183 @@ paths:
         '401':
           description: Confirmation token is invalid
   
+  /user/me/following:
+    get:
+      description: Get users the current logged in user is following
+      parameters:
+        - name: Authorization
+          in: header
+          description: token to be passed as a header
+          required: true
+          type: string
+          items:
+            type: string
+            format: PAV_AUTH_TOKEN token
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            title: Following Profile
+            type: object
+            properties:
+              user_id:
+                type: string
+                format: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              img_url:
+                type: string
+        '401':
+          description: Not Authorized
+  /user/{user_id}/following:
+    get:
+      description: Given a user id, retrieve users they are following
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          type: string
+          format: string
+        - name: Authorization
+          in: header
+          description: token to be passed as a header
+          required: true
+          type: string
+          items:
+            type: string
+            format: PAV_AUTH_TOKEN token
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            title: Following Profile
+            type: object
+            properties:
+              user_id:
+                type: string
+                format: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              img_url:
+                type: string
+        '401':
+          description: Not Authorized
+  /user/me/followers:
+    get:
+      description: Get users the current logged in user is followed by
+      parameters:
+        - name: Authorization
+          in: header
+          description: token to be passed as a header
+          required: true
+          type: string
+          items:
+            type: string
+            format: PAV_AUTH_TOKEN token
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            title: Followers Profile
+            type: object
+            properties:
+              user_id:
+                type: string
+                format: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              img_url:
+                type: string
+        '401':
+          description: Not Authorized
+  /user/{user_id}/followers:
+    get:
+      description: Given a user id, retrieve users they are being followed by
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          type: string
+          format: string
+        - name: Authorization
+          in: header
+          description: token to be passed as a header
+          required: true
+          type: string
+          items:
+            type: string
+            format: PAV_AUTH_TOKEN token
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            title: Followers Profile
+            type: object
+            properties:
+              user_id:
+                type: string
+                format: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              img_url:
+                type: string
+        '401':
+          description: Not Authorized
+  /user/follow:
+    put:
+      description: Follow a user
+      parameters:
+        - name: Login
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              user_id:
+                type: string
+                format: string
+        - name: Authorization
+          in: header
+          description: token to be passed as a header
+          required: true
+          type: string
+          items:
+            type: string
+            format: PAV_AUTH_TOKEN token
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Successful response
+        '401':
+          description: Not Authorized
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+  
