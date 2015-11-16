@@ -11,7 +11,8 @@
             [compojure.core :refer :all]
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications timeline
-                                                     follow following followers unfollow]]
+                                                     follow following followers unfollow
+                                                     user-profile]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
             [liberator.dev :refer [wrap-trace]]
@@ -29,7 +30,8 @@
 (defroutes app-routes
   (GET "/docs" [] swagger-docs)
   (GET "/user" [] user)
-  (GET "/user/:user_id/profile" [user_id] user)
+  (GET "/user/me/profile" [] user-profile)
+  (GET "/user/:user_id/profile" [user_id] user-profile)
   (GET "/user/notifications" [] notifications)
   (GET "/user/me/timeline" [] timeline)
   (GET "/user/:user_id/timeline" [] timeline)

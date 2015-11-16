@@ -10,7 +10,8 @@
             [buddy.core.keys :as ks]
             [clj-time.core :as t]
             [clojure.tools.logging :as log]
-            [clojure.core.async :refer [go]])
+            [clojure.core.async :refer [go]]
+            [taoensso.faraday :as far])
   (:import [java.util Date UUID]))
 
 (defn- pkey []
@@ -153,3 +154,20 @@
 
 (defn user-followers [user_id]
   (dynamo-dao/user-followers user_id))
+
+(defn count-followers [user_id]
+  (dynamo-dao/count-followers user_id))
+
+(defn count-following [user_id]
+  (dynamo-dao/count-following user_id))
+
+(defn get-user-profile
+  ([user_id]
+    (-> (get-user-by-id user_id)
+        (assoc :total_followers (count-followers user_id))
+        (assoc :total_following (count-following user_id))))
+  ([current-user user_id]
+    (-> (get-user-by-id user_id)
+        (assoc :following (following? current-user user_id))
+        (assoc :total_followers (count-followers user_id))
+        (assoc :total_following (count-following user_id)))))

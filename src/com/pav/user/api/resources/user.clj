@@ -49,6 +49,16 @@
             {:record (service/get-user-by-id (retrieve-user-id (:request ctx)))}))
  :handle-ok record-in-ctx)
 
+(defresource user-profile
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :allowed-methods [:get]
+ :available-media-types ["application/json"]
+ :exists? (fn [ctx]
+           (if-not (nil? (get-in ctx [:request :params :user_id]))
+            {:record (service/get-user-profile (retrieve-user-id (:request ctx)) (get-in ctx [:request :params :user_id]))}
+            {:record (service/get-user-profile (retrieve-user-id (:request ctx)))}))
+ :handle-ok record-in-ctx)
+
 (defresource confirm-user [token]
  :authorized? (fn [_] (service/confirm-token-valid? token))
  :allowed-methods [:post]

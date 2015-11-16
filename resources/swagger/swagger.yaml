@@ -225,9 +225,59 @@ paths:
                 type: string
         '400':
           description: Bad Request (Check body of request)
+  /user/me/profile:
+    get:
+      description: Gets current users profile.
+      parameters:
+        - name: Authorization
+          in: header
+          description: token to be passed as a header
+          required: true
+          type: string
+          items:
+            type: string
+            format: PAV_AUTH_TOKEN token
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            title: UserProfile
+            type: object
+            properties:
+              user_id:
+                type: string
+                format: string
+              email:
+                type: string
+                format: test@place.com
+              first_name:
+                type: string
+              last_name:
+                type: string
+              dob:
+                type: string
+                format: 01/10/1999
+              country_code:
+                type: string
+                format: USA
+              topics:
+                type: array
+                items:
+                  type: string
+                  format: '[Defence, Arts]'
+              total_followers:
+                type: number
+                format: number
+              total_following:
+                type: number
+                format: number
+        '401':
+          description: Not Authorized (Check Authentication Token)
   /user/{user_id}/profile:
     get:
-      description: Gets A different `UserProfile` object.
+      description: Given a user_id retrieve user profile in relation to current user.
       parameters:
         - name: Authorization
           in: header
@@ -272,6 +322,15 @@ paths:
                 items:
                   type: string
                   format: '[Defence, Arts]'
+              following:
+                type: boolean
+                format: boolean
+              total_followers:
+                type: number
+                format: number
+              total_following:
+                type: number
+                format: number
         '401':
           description: Not Authorized (Check Authentication Token)
   /user:
