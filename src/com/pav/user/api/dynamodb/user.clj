@@ -1,7 +1,8 @@
 (ns com.pav.user.api.dynamodb.user
   (:require [taoensso.faraday :as far]
             [environ.core :refer [env]]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log])
+  (:import [java.util Date]))
 
 (def client-opts {:access-key (:access-key env)
                   :secret-key (:secret-key env)
@@ -78,8 +79,9 @@
       build-follow-profile))
 
 (defn follow-user [follower following]
-  (let [following-record {:user_id follower :following following}
-        follower-record {:user_id following :follower follower}]
+  (let [created_at (.getTime (Date.))
+        following-record {:user_id follower :following following :timestamp created_at}
+        follower-record {:user_id following :follower follower :timestamp created_at}]
     (far/put-item client-opts following-table-name following-record)
     (far/put-item client-opts follower-table-name follower-record)))
 

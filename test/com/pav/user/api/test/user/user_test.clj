@@ -324,7 +324,7 @@
           status => 200
           body => search-user))
 
-  (fact "Follow another user"
+  (fact "Follow/following another user"
         (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
                                                     :first_name "john" :last_name "stuff"
                                                     :dob "05/10/1984" :country_code "USA"
