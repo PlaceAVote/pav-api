@@ -167,7 +167,5 @@
         (assoc :total_followers (count-followers user_id))
         (assoc :total_following (count-following user_id))))
   ([current-user user_id]
-    (-> (get-user-by-id user_id)
-        (assoc :following (following? current-user user_id))
-        (assoc :total_followers (count-followers user_id))
-        (assoc :total_following (count-following user_id)))))
+    (-> (get-user-profile user_id)
+        (assoc :following (following? current-user user_id)))))
