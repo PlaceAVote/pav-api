@@ -118,3 +118,12 @@
     (if (empty? timeline)
       (dynamo-dao/get-user-timeline user)
       timeline)))
+
+(defn follow-user [follower following]
+  (dynamo-dao/follow-user follower following))
+
+(defn user-following [user_id]
+  (dynamo-dao/user-following user_id))
+
+(defn user-followers [user_id]
+  (dynamo-dao/user-followers user_id))

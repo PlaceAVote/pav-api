@@ -323,5 +323,27 @@
               {status :status body :body} (pav-req :get (str "/user/" user_id "/profile") token {})]
           status => 200
           body => search-user))
+
+  (fact "Follow another user"
+        (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
+                                                    :first_name "john" :last_name "stuff"
+                                                    :dob "05/10/1984" :country_code "USA"
+                                                    :topics ["Defence" "Arts"]})
+              {my_id :user_id token :token} (ch/parse-string follower true)
+              {being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
+                                                         :first_name "peter" :last_name "pan"
+                                                         :dob "05/10/1984" :country_code "USA"
+                                                         :topics ["Defence" "Arts"]})
+              {pauls_user_id :user_id} (ch/parse-string being-followed true)
+              {create_status :status} (pav-req :put (str "/user/follow") token {:user_id pauls_user_id})
+              {my-following :body} (pav-req :get (str "/user/me/following") token {})
+              {paul-following :body} (pav-req :get (str "/user/" pauls_user_id "/following") token {})
+              {my-followers :body} (pav-req :get (str "/user/me/followers") token {})
+              {pauls-followers :body} (pav-req :get (str "/user/" pauls_user_id "/followers") token {})]
+          create_status => 201
+          (ch/parse-string my-following true) => (contains {:user_id pauls_user_id :first_name "peter" :last_name "pan" :img_url nil})
+          (ch/parse-string paul-following true) => []
+          (ch/parse-string my-followers true) => []
+          (ch/parse-string pauls-followers true) => (contains {:user_id my_id :first_name "john" :last_name "stuff" :img_url nil})))
   )
 

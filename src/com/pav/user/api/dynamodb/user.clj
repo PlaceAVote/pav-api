@@ -11,6 +11,8 @@
 (def user-confirm-table-name (:dynamo-user-confirmation-table-name env))
 (def notification-table-name (:dynamo-notification-table-name env))
 (def timeline-table-name (:dynamo-usertimeline-table-name env))
+(def follower-table-name (:dynamo-follower-table-name env))
+(def following-table-name (:dynamo-following-table-name env))
 
 (defn get-user-by-id [id]
   (try
@@ -60,3 +62,31 @@
 (defn get-user-timeline [user_id]
   (far/query client-opts timeline-table-name {:user_id [:eq user_id]}
              {:order :desc}))
+
+(defn build-follow-profile [profile]
+  {:user_id (:user_id profile)
+   :first_name (:first_name profile)
+   :last_name (:last_name profile)
+   :img_url (:img_url profile)})
+
+(defn retrieve-following-profile [following-info]
+  (-> (far/get-item client-opts user-table-name {:user_id (:following following-info)})
+      build-follow-profile))
+
+(defn retrieve-follower-profile [follower-info]
+  (-> (far/get-item client-opts user-table-name {:user_id (:follower follower-info)})
+      build-follow-profile))
+
+(defn follow-user [follower following]
+  (let [following-record {:user_id follower :following following}
+        follower-record {:user_id following :follower follower}]
+    (far/put-item client-opts following-table-name following-record)
+    (far/put-item client-opts follower-table-name follower-record)))
+
+(defn user-following [user_id]
+  (->> (far/query client-opts following-table-name {:user_id [:eq user_id]})
+       (map #(retrieve-following-profile %))))
+
+(defn user-followers [user_id]
+  (->> (far/query client-opts follower-table-name {:user_id [:eq user_id]})
+       (map #(retrieve-follower-profile %))))

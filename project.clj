@@ -50,5 +50,7 @@
                 :dynamo-user-confirmation-table-name "user-confirmation-tokens"
                 :dynamo-notification-table-name "notifications"
                 :dynamo-usertimeline-table-name "usertimeline"
+                :dynamo-follower-table-name "userfollowers"
+                :dynamo-following-table-name "userfollowing"
                 :es-url "http://localhost:9200"}
     :plugins [[lein-midje "3.1.3"]]}})

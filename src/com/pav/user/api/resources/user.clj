@@ -66,3 +66,27 @@
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx] (service/get-timeline (retrieve-user-id (:request ctx)))))
+
+(defresource follow
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :allowed-methods [:put]
+ :available-media-types ["application/json"]
+ :put! (fn [ctx] (service/follow-user (retrieve-user-id (:request ctx)) (get-in ctx [:request :body :user_id]))))
+
+(defresource following
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :allowed-methods [:get]
+ :available-media-types ["application/json"]
+ :handle-ok (fn [ctx]
+             (if-not (nil? (get-in ctx [:request :params :user_id]))
+              (service/user-following (get-in ctx [:request :params :user_id]))
+              (service/user-following (retrieve-user-id (:request ctx))))))
+
+(defresource followers
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :allowed-methods [:get]
+ :available-media-types ["application/json"]
+ :handle-ok (fn [ctx]
+             (if-not (nil? (get-in ctx [:request :params :user_id]))
+              (service/user-followers (get-in ctx [:request :params :user_id]))
+              (service/user-followers (retrieve-user-id (:request ctx))))))

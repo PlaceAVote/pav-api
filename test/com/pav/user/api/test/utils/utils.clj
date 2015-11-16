@@ -18,6 +18,8 @@
 (def user-table-name (:dynamo-user-table-name env))
 (def user-confirm-table-name (:dynamo-user-confirmation-table-name env))
 (def notification-table-name (:dynamo-notification-table-name env))
+(def follower-table-name (:dynamo-follower-table-name env))
+(def following-table-name (:dynamo-following-table-name env))
 
 (def redis-conn {:spec {:host "127.0.0.1" :port 6379}})
 
@@ -34,6 +36,8 @@
     (far/delete-table client-opts user-table-name)
     (far/delete-table client-opts user-confirm-table-name)
     (far/delete-table client-opts notification-table-name)
+    (far/delete-table client-opts follower-table-name)
+    (far/delete-table client-opts following-table-name)
     (catch Exception e (println "Error occured when deleting table " e " table name: " user-table-name " client-opts " client-opts))))
 
 (defn create-user-table []
@@ -50,6 +54,14 @@
                        :block? true})
     (far/create-table client-opts notification-table-name [:user_id :s]
                       {:range-keydef [:timestamp :n]
+                       :throughput {:read 5 :write 10}
+                       :block? true})
+    (far/create-table client-opts following-table-name [:user_id :s]
+                      {:range-keydef [:following :s]
+                       :throughput {:read 5 :write 10}
+                       :block? true})
+    (far/create-table client-opts follower-table-name [:user_id :s]
+                      {:range-keydef [:follower :s]
                        :throughput {:read 5 :write 10}
                        :block? true})
     (catch Exception e (println "Error occured with table setup " e " table name: " user-table-name " client-opts " client-opts))))
