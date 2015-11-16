@@ -9,3 +9,7 @@
 (defn get-user-timeline [user]
   (->> (wcar redis-conn (car/zrevrange (str "timeline:" user) 0 -1))
        (mapv msg/unpack)))
+
+(defn publish-to-timeline [event]
+  (let [timeline-key (str "timeline:" (:user_id event))]
+    (wcar redis-conn (car/zadd timeline-key (:timestamp event) (msg/pack event)))))

@@ -9,7 +9,8 @@
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
             [clj-time.core :as t]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [clojure.core.async :refer [go]])
   (:import [java.util Date UUID]))
 
 (defn- pkey []
@@ -119,8 +120,30 @@
       (dynamo-dao/get-user-timeline user)
       timeline)))
 
+(defn publish-to-timeline [event]
+  (dynamo-dao/publish-to-timeline event)
+  (redis-dao/publish-to-timeline event))
+
+(defn publish-following-event [follower following]
+  (go
+    (let [follower-profile (get-user-by-id follower)
+         following-profile (get-user-by-id following)
+         following-event {:type       "following" :user_id follower :following_id following
+                          :first_name (:first_name following-profile) :last_name (:last_name following-profile)
+                                      :timestamp (.getTime (Date.))}
+         follower-event {:type       "follower" :user_id following :follower_id follower
+                         :first_name (:first_name follower-profile) :last_name (:last_name follower-profile)
+                                     :timestamp (.getTime (Date.))}]
+     (publish-to-timeline following-event)
+     (publish-to-timeline follower-event))))
+
+(defn following? [follower following]
+  (dynamo-dao/following? follower following))
+
 (defn follow-user [follower following]
-  (dynamo-dao/follow-user follower following))
+  (if-not (following? follower following)
+    (do (dynamo-dao/follow-user follower following)
+        (publish-following-event follower following))))
 
 (defn unfollow-user [follower following]
   (dynamo-dao/unfollow-user follower following))

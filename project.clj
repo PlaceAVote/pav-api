@@ -22,7 +22,8 @@
                                                              org.clojure/tools.reader]]
                  [com.taoensso/faraday "1.8.0" :exclusions [org.clojure/tools.reader]]
                  [clojure-msgpack "1.1.2"]
-                 [clojurewerkz/elastisch "2.1.0"]]
+                 [clojurewerkz/elastisch "2.1.0"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
   :plugins [[lein-environ "1.0.0"]]
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]

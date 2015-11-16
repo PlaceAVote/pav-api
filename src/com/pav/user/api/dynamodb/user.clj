@@ -96,3 +96,11 @@
 (defn user-followers [user_id]
   (->> (far/query client-opts follower-table-name {:user_id [:eq user_id]})
        (map #(retrieve-follower-profile %))))
+
+(defn following? [follower following]
+  (if (empty? (far/get-item client-opts following-table-name {:user_id follower :following following}))
+    false
+    true))
+
+(defn publish-to-timeline [event]
+  (far/put-item client-opts timeline-table-name event))
