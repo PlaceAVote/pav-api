@@ -103,10 +103,10 @@
     true))
 
 (defn count-followers [user_id]
-  (count (far/query client-opts follower-table-name {:user_id [:eq user_id]} {:return :count})))
+  (count (far/query client-opts follower-table-name {:user_id [:eq user_id]})))
 
 (defn count-following [user_id]
-  (count (far/query client-opts following-table-name {:user_id [:eq user_id]} {:return :count})))
+  (count (far/query client-opts following-table-name {:user_id [:eq user_id]})))
 
 (defn publish-to-timeline [event]
   (far/put-item client-opts timeline-table-name event))

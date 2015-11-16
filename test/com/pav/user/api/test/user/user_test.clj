@@ -339,11 +339,12 @@
                                                   :country_code "USA"
                                                   :topics ["Defence" "Arts"]})
               {user_id :user_id} (ch/parse-string search-user true)
+              _ (pav-req :put (str "/user/follow") token {:user_id user_id})
               {status :status body :body} (pav-req :get (str "/user/" user_id "/profile") token {})]
           status => 200
           (ch/parse-string body true) => (merge (ch/parse-string search-user true)
-                                                {:following false
-                                                 :total_followers 0
+                                                {:following true
+                                                 :total_followers 1
                                                  :total_following 0})))
 
   (fact "Retrieve the current users profile"
