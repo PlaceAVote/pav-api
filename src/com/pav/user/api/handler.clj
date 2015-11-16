@@ -11,7 +11,7 @@
             [compojure.core :refer :all]
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications timeline
-                                                     follow following followers]]
+                                                     follow following followers unfollow]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
             [liberator.dev :refer [wrap-trace]]
@@ -38,6 +38,7 @@
   (GET "/user/:user_id/followers" [user_id] followers)
   (PUT "/user" _ create)
   (PUT "/user/follow" _ follow)
+  (DELETE "/user/unfollow" _ unfollow)
   (PUT "/user/facebook" _ create-facebook)
   (POST "/user/authenticate" req (authenticate req :pav))
   (POST "/user/facebook/authenticate" req (authenticate req :facebook))

@@ -73,6 +73,12 @@
  :available-media-types ["application/json"]
  :put! (fn [ctx] (service/follow-user (retrieve-user-id (:request ctx)) (get-in ctx [:request :body :user_id]))))
 
+(defresource unfollow
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :allowed-methods [:delete]
+ :available-media-types ["application/json"]
+ :delete! (fn [ctx] (service/unfollow-user (retrieve-user-id (:request ctx)) (get-in ctx [:request :body :user_id]))))
+
 (defresource following
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]

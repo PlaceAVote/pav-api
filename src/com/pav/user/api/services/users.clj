@@ -122,6 +122,9 @@
 (defn follow-user [follower following]
   (dynamo-dao/follow-user follower following))
 
+(defn unfollow-user [follower following]
+  (dynamo-dao/unfollow-user follower following))
+
 (defn user-following [user_id]
   (dynamo-dao/user-following user_id))
 

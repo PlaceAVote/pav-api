@@ -345,5 +345,24 @@
           (ch/parse-string paul-following true) => []
           (ch/parse-string my-followers true) => []
           (ch/parse-string pauls-followers true) => (contains {:user_id my_id :first_name "john" :last_name "stuff" :img_url nil})))
+
+  (fact "Unfollow user"
+        (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
+                                                      :first_name "john" :last_name "stuff"
+                                                      :dob "05/10/1984" :country_code "USA"
+                                                      :topics ["Defence" "Arts"]})
+              {token :token} (ch/parse-string follower true)
+              {being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
+                                                            :first_name "peter" :last_name "pan"
+                                                            :dob "05/10/1984" :country_code "USA"
+                                                            :topics ["Defence" "Arts"]})
+              {pauls_user_id :user_id} (ch/parse-string being-followed true)
+              _ (pav-req :put (str "/user/follow") token {:user_id pauls_user_id})
+              {unfollow-status :status} (pav-req :delete (str "/user/unfollow") token {:user_id pauls_user_id})
+              {my-following :body} (pav-req :get (str "/user/me/following") token {})
+              {pauls-followers :body} (pav-req :get (str "/user/" pauls_user_id "/followers") token {})]
+          unfollow-status => 204
+          (ch/parse-string my-following true) => []
+          (ch/parse-string pauls-followers true) => []))
   )
 

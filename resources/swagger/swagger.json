@@ -803,7 +803,7 @@
         "description": "Follow a user",
         "parameters": [
           {
-            "name": "Login",
+            "name": "User to follow",
             "in": "body",
             "required": true,
             "schema": {
@@ -833,6 +833,49 @@
         ],
         "responses": {
           "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized"
+          }
+        }
+      }
+    },
+    "/user/unfollow": {
+      "delete": {
+        "description": "Unfollow a user",
+        "parameters": [
+          {
+            "name": "User to unfollow",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "type": "string",
+                  "format": "string"
+                }
+              }
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "token to be passed as a header",
+            "required": true,
+            "type": "string",
+            "items": {
+              "type": "string",
+              "format": "PAV_AUTH_TOKEN token"
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "204": {
             "description": "Successful response"
           },
           "401": {

@@ -85,6 +85,10 @@
     (far/put-item client-opts following-table-name following-record)
     (far/put-item client-opts follower-table-name follower-record)))
 
+(defn unfollow-user [follower following]
+  (far/delete-item client-opts following-table-name {:user_id follower :following following})
+  (far/delete-item client-opts follower-table-name {:user_id following :follower follower}))
+
 (defn user-following [user_id]
   (->> (far/query client-opts following-table-name {:user_id [:eq user_id]})
        (map #(retrieve-following-profile %))))
