@@ -65,7 +65,10 @@
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
- :handle-ok (fn [ctx] (service/get-timeline (retrieve-user-id (:request ctx)))))
+ :handle-ok (fn [ctx]
+             (if-not (nil? (get-in ctx [:request :params :user_id]))
+              (service/get-timeline (get-in ctx [:request :params :user_id]))
+              (service/get-timeline (retrieve-user-id (:request ctx))))))
 
 (defresource follow
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))

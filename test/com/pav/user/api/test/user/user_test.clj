@@ -283,10 +283,10 @@
           status => 401))
 
   (fact "Try Retrieving users profile timeline with invalid token"
-        (let [{status :status} (pav-req :get "/user/timeline" "rubbish token" {})]
+        (let [{status :status} (pav-req :get "/user/me/timeline" "rubbish token" {})]
           status => 401))
 
-  (fact "Retrieve users profile timeline"
+  (fact "Retrieve current users activity timeline"
         (let [{body :body} (pav-req :put "/user" {:email "john@pl.com"
                                                   :password "stuff2"
                                                   :first_name "john" :last_name "stuff"
@@ -301,7 +301,26 @@
                                 :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
                                 :timestamp 1446462364297}]
               _ (persist-timeline-event timeline-events)
-              {status :status body :body} (pav-req :get "/user/timeline" token {})]
+              {status :status body :body} (pav-req :get "/user/me/timeline" token {})]
+          status => 200
+          (ch/parse-string body true) => (contains timeline-events)))
+
+  (fact "Retrieve a users activity timeline"
+        (let [{body :body} (pav-req :put "/user" {:email "john@pl.com"
+                                                  :password "stuff2"
+                                                  :first_name "john" :last_name "stuff"
+                                                  :dob "05/10/1984"
+                                                  :country_code "USA"
+                                                  :topics ["Defence" "Arts"]})
+              {token :token} (ch/parse-string body true)
+              timeline-events [{:type "comment" :bill_id "s1182-114" :user_id "user102" :timestamp 1446479124991 :comment_id "comment:1"
+                                :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+                                :score 0 :body "Comment text goes here!!"}
+                               {:type "vote" :bill_id "s1182-114" :user_id "user102"
+                                :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+                                :timestamp 1446462364297}]
+              _ (persist-timeline-event timeline-events)
+              {status :status body :body} (pav-req :get "/user/user102/timeline" token {})]
           status => 200
           (ch/parse-string body true) => (contains timeline-events)))
 
