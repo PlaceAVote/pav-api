@@ -31,7 +31,7 @@
   (assoc user :user_id (str (UUID/randomUUID))
               :created_at (.getTime (Date.))
               :registered false
-              :public false})
+              :public false))
 
 (defn create-facebook-user [user]
   (log/infof "Creating user %s from facebook" user)

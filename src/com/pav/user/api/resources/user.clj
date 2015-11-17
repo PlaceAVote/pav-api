@@ -12,9 +12,9 @@
 (defresource create [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? #(service/validate-user-payload (retrieve-body payload) :pav)
- :conflict? #(service/user-exist? (retrieve-body payload))
- :put! #(service/create-user (retrieve-body payload))
+ :malformed? (fn [_] (service/validate-user-payload (retrieve-body payload) :pav))
+ :conflict? (fn [_] (service/user-exist? (retrieve-body payload)))
+ :put! (fn [_] (service/create-user (retrieve-body payload)))
  :handle-created :record
  :handle-conflict existing-user-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
@@ -22,19 +22,19 @@
 (defresource create-facebook [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? #(service/validate-user-payload (retrieve-body payload) :facebook)
- :conflict? #(service/user-exist? (retrieve-body payload))
- :put! #(service/create-facebook-user (retrieve-body payload))
+ :malformed? (fn [_] (service/validate-user-payload (retrieve-body payload) :facebook))
+ :conflict? (fn [_] (service/user-exist? (retrieve-body payload)))
+ :put! (fn [_] (service/create-facebook-user (retrieve-body payload)))
  :handle-created :record
  :handle-conflict existing-user-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
 (defresource authenticate [payload origin]
  :allowed-methods [:post]
- :malformed? #(service/validate-user-login (retrieve-body payload) origin)
- :authorized? #(service/valid-user? (retrieve-body payload) origin)
+ :malformed? (fn [_] (service/validate-user-login (retrieve-body payload) origin))
+ :authorized? (fn [_] (service/valid-user? (retrieve-body payload) origin))
  :available-media-types ["application/json"]
- :post! #(service/authenticate-user (retrieve-body payload) origin)
+ :post! (fn [_] (service/authenticate-user (retrieve-body payload) origin))
  :handle-created :record
  :handle-unauthorized login-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
@@ -60,7 +60,7 @@
  :handle-ok record-in-ctx)
 
 (defresource confirm-user [token]
- :authorized? #(service/confirm-token-valid? token)
+ :authorized? (fn [_] (service/confirm-token-valid? token))
  :allowed-methods [:post]
  :available-media-types ["application/json"]
  :post! (service/update-registration token))
