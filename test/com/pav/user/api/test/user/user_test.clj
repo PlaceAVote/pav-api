@@ -361,7 +361,6 @@
                                                 {:total_followers 0
                                                  :total_following 0})))
 
-
   (fact "Follow/following another user"
         (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
                                                     :first_name "john" :last_name "stuff"
@@ -402,5 +401,18 @@
           unfollow-status => 204
           (ch/parse-string my-following true) => []
           (ch/parse-string pauls-followers true) => []))
+
+  (fact "Verify the JWT Token"
+        (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
+                                                      :first_name "john" :last_name "stuff"
+                                                      :dob "05/10/1984" :country_code "USA"
+                                                      :topics ["Defence" "Arts"]})
+              {token :token} (ch/parse-string follower true)
+              {status :status} (pav-req :get (str "/user/token/validate?token=" token))]
+          status => 200))
+
+  (fact "Verify the JWT Token, when invalid, return 401."
+        (let [{status :status} (pav-req :get "/user/token/validate?token=rubbish")]
+          status => 401))
   )
 

@@ -109,3 +109,9 @@
              (if-not (nil? (get-in ctx [:request :params :user_id]))
               (service/user-followers (get-in ctx [:request :params :user_id]))
               (service/user-followers (retrieve-user-id (:request ctx))))))
+
+(defresource validate-token
+ :authorized? (fn [ctx]
+               (service/validate-token (get-in ctx [:request :params :token])))
+ :allowed-methods [:get]
+ :available-media-types ["application/json"])

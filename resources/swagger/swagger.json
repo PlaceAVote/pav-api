@@ -1021,6 +1021,31 @@
           }
         }
       }
+    },
+    "/user/token/validate": {
+      "get": {
+        "description": "Validate Authentication Token",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "format": "string"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Token invalid"
+          }
+        }
+      }
     }
   }
 }

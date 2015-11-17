@@ -5,13 +5,13 @@
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user]]
+            [com.pav.user.api.authentication.authentication :refer [token-valid?]]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
             [clj-time.core :as t]
             [clojure.tools.logging :as log]
-            [clojure.core.async :refer [go]]
-            [taoensso.faraday :as far])
+            [clojure.core.async :refer [go]])
   (:import [java.util Date UUID]))
 
 (defn- pkey []
@@ -170,3 +170,6 @@
   ([current-user user_id]
     (-> (get-user-profile user_id)
         (assoc :following (following? current-user user_id)))))
+
+(defn validate-token [token]
+  (token-valid? token))

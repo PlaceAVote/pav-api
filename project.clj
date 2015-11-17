@@ -12,7 +12,10 @@
                  [cheshire "5.5.0"]
                  [liberator "0.13"]
                  [environ "1.0.0"]
-                 [buddy "0.6.1"]
+                 [buddy "0.6.1" :exclusions [clout
+                                             clj-time
+                                             slingshot
+                                             org.clojure/tools.reader]]
                  [org.clojure/tools.logging "0.3.1"]
                  [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
                                                     javax.jms/jms

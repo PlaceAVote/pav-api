@@ -12,7 +12,7 @@
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications timeline
                                                      follow following followers unfollow
-                                                     user-profile]]
+                                                     user-profile validate-token]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
             [liberator.dev :refer [wrap-trace]]
@@ -39,6 +39,7 @@
   (GET "/user/:user_id/following" [user_id] following)
   (GET "/user/me/followers" [] followers)
   (GET "/user/:user_id/followers" [user_id] followers)
+  (GET "/user/token/validate" [] validate-token)
   (PUT "/user" _ create)
   (PUT "/user/follow" _ follow)
   (DELETE "/user/unfollow" _ unfollow)
