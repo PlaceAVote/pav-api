@@ -4,7 +4,8 @@
   (get ctx :record))
 
 (defn retrieve-body [payload]
-  (or (get-in payload [:body]) {}))
+  ;; FIXME: ok to return nil?
+  (get-in payload [:body] {}))
 
 (defn retrieve-user-details [payload]
   (:identity payload))

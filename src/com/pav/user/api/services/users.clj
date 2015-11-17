@@ -28,13 +28,13 @@
     (merge safe-profile new-token)))
 
 (defn assoc-common-attributes [user]
-  (-> user
-      (assoc :user_id (.toString (UUID/randomUUID)))
-      (assoc :created_at (.getTime (Date.)))
-      (merge {:registered false :public false})))
+  (assoc user :user_id (str (UUID/randomUUID))
+              :created_at (.getTime (Date.))
+              :registered false
+              :public false})
 
 (defn create-facebook-user [user]
-  (log/info (str "Creating user " user " from facebook"))
+  (log/infof "Creating user %s from facebook" user)
   (let [user-with-token (-> (assoc-common-attributes user)
                             (assoc :facebook_token (:token user))
                             assoc-new-token)
@@ -54,15 +54,16 @@
     {:record new-user-record}))
 
 (defn remove-sensitive-information [user]
-  (if user
-    (dissoc user :password)))
+  (dissoc user :password))
 
 (defn get-user-by-id [id]
-  (-> (dynamo-dao/get-user-by-id id)
+  (-> id
+      dynamo-dao/get-user-by-id
       remove-sensitive-information))
 
 (defn get-user-by-email [email]
-  (-> (dynamo-dao/get-user-by-email email)
+  (-> email
+      dynamo-dao/get-user-by-email
       remove-sensitive-information))
 
 (defn update-user-token [user origin]
@@ -73,19 +74,19 @@
       :facebook (dynamo-dao/update-facebook-user-token user new-token))))
 
 (defn validate-user-payload [user origin]
-  (let [result (validate user origin)]
-    (if-not (nil? result)
-      {:errors (construct-error-msg result)})))
+  (when-let [result (validate user origin)]
+    {:errors (construct-error-msg result)}))
 
 (defn validate-user-login [user origin]
-  (let [result (validate-login user origin)]
-    (if-not (nil? result)
-      {:errors (construct-error-msg result)})))
+  (when-let [result (validate-login user origin)]
+    {:errors (construct-error-msg result)}))
 
 (defn user-exist? [user]
-  (if (empty? (get-user-by-email (get-in user [:email])))
-    false
-    true))
+  (-> user
+      (get-in [:email])
+      get-user-by-email
+      seq
+      boolean))
 
 (defn check-pwd [user existing-user]
   (h/check (:password user) (:password existing-user)))
@@ -100,26 +101,24 @@
                (select-keys [:token]))})
 
 (defn is-authenticated? [user]
-  (if-not (nil? (:user_id user))
-    true
-    false))
+  (-> user :user_id boolean))
 
 (defn update-registration [token]
   (dynamo-dao/update-registration token))
 
 (defn confirm-token-valid? [token]
-  (if-not (nil? (dynamo-dao/get-confirmation-token token))
-    true
-    false))
+  (-> token
+      dynamo-dao/get-confirmation-token
+      boolean))
 
 (defn get-notifications [user]
   (dynamo-dao/get-notifications user))
 
 (defn get-timeline [user]
   (let [timeline (redis-dao/get-user-timeline user)]
-    (if (empty? timeline)
-      (dynamo-dao/get-user-timeline user)
-      timeline)))
+    (if (seq timeline)
+      timeline
+      (dynamo-dao/get-user-timeline user))))
 
 (defn publish-to-timeline [event]
   (dynamo-dao/publish-to-timeline event)
@@ -162,10 +161,14 @@
   (dynamo-dao/count-following user_id))
 
 (defn get-user-profile
+  "Return user profile with given ID with filled in number of followers.
+If ID is non-existant, returns nil."
   ([user_id]
-    (-> (get-user-by-id user_id)
-        (assoc :total_followers (count-followers user_id))
-        (assoc :total_following (count-following user_id))))
+    (some-> user_id
+            get-user-by-id
+            (assoc :total_followers (count-followers user_id))
+            (assoc :total_following (count-following user_id))))
   ([current-user user_id]
-    (-> (get-user-profile user_id)
-        (assoc :following (following? current-user user_id)))))
+    (some-> user_id
+            get-user-profile
+            (assoc :following (following? current-user user_id)))))

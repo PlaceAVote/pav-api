@@ -7,7 +7,8 @@
 (def redis-conn {:spec {:uri (:redis-url env)}})
 
 (defn get-user-timeline [user]
-  (->> (wcar redis-conn (car/zrevrange (str "timeline:" user) 0 -1))
+  (->> (car/zrevrange (str "timeline:" user) 0 -1)
+       (wcar redis-conn)
        (mapv msg/unpack)))
 
 (defn publish-to-timeline [event]

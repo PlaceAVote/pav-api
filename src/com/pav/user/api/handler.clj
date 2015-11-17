@@ -50,11 +50,12 @@
   (route/not-found "Not Found"))
 
 (def app
-  (-> (routes app-routes)
+  (-> app-routes
+      routes
       (wrap-authentication (token-handler env))
       (wrap-json-body {:keywords? true})
-      (handler/site)
-      (wrap-base-url)
+      handler/site
+      wrap-base-url
       (wrap-trace :header :ui)
       (wrap-cors :access-control-allow-origin [#".*"]
                  :access-control-allow-methods [:get :put :post :delete :options])

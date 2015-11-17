@@ -9,4 +9,4 @@
      :options {:alg :rs256}
      :token-name "PAV_AUTH_TOKEN"
      :on-error   (fn [req e]
-                   (log/error (str "Exception Failed decrypting token " e " REQUEST " req)))}))
+                   (log/errorf "Exception Failed decrypting token %s REQUEST %s" e req))}))
