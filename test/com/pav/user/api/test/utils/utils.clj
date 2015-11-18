@@ -76,7 +76,8 @@
 (defn persist-timeline-event [events]
   (wcar redis-conn
         (mapv (fn [event]
-                (car/zadd (str "timeline:" (:user_id event)) (:timestamp event) (msg/pack event)))
+                (car/zadd (str "timeline:" (:user_id event)) (:timestamp event) (-> (ch/generate-string event)
+                                                                                    msg/pack)))
               events)))
 
 (defn flush-user-index []
