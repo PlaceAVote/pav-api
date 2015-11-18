@@ -126,10 +126,10 @@
 
 (defn publish-following-event [follower following]
   (thread
-    (let [following-event {:type      "followeduser" :user_id follower :following_id following
-                          :timestamp (.getTime (Date.))}
-         follower-event {:type      "followedbyuser" :user_id following :follower_id follower
-                         :timestamp (.getTime (Date.))}]
+    (let [following-event {:type      "followinguser" :user_id follower :following_id following
+                           :timestamp (.getTime (Date.))}
+         follower-event   {:type      "followedbyuser" :user_id following :follower_id follower
+                           :timestamp (.getTime (Date.))}]
      (publish-to-timeline following-event)
      (publish-to-timeline follower-event))))
 
