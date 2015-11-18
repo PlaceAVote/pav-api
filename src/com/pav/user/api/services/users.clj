@@ -11,7 +11,7 @@
             [buddy.core.keys :as ks]
             [clj-time.core :as t]
             [clojure.tools.logging :as log]
-            [clojure.core.async :refer [go]])
+            [clojure.core.async :refer [thread]])
   (:import [java.util Date UUID]))
 
 (defn- pkey []
@@ -122,19 +122,14 @@
       timeline)))
 
 (defn publish-to-timeline [event]
-  (dynamo-dao/publish-to-timeline event)
   (redis-dao/publish-to-timeline event))
 
 (defn publish-following-event [follower following]
-  (go
-    (let [follower-profile (get-user-by-id follower)
-         following-profile (get-user-by-id following)
-         following-event {:type       "following" :user_id follower :following_id following
-                          :first_name (:first_name following-profile) :last_name (:last_name following-profile)
-                                      :timestamp (.getTime (Date.))}
-         follower-event {:type       "follower" :user_id following :follower_id follower
-                         :first_name (:first_name follower-profile) :last_name (:last_name follower-profile)
-                                     :timestamp (.getTime (Date.))}]
+  (thread
+    (let [following-event {:type      "followeduser" :user_id follower :following_id following
+                          :timestamp (.getTime (Date.))}
+         follower-event {:type      "followedbyuser" :user_id following :follower_id follower
+                         :timestamp (.getTime (Date.))}]
      (publish-to-timeline following-event)
      (publish-to-timeline follower-event))))
 
