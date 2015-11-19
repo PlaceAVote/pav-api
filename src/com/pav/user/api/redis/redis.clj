@@ -1,6 +1,7 @@
 (ns com.pav.user.api.redis.redis
   (:require [environ.core :refer [env]]
             [taoensso.carmine :as car :refer (wcar)]
+            [taoensso.carmine.message-queue :as car-mq]
             [msgpack.core :as msg]
             [msgpack.clojure-extensions]
             [cheshire.core :as ch]))
@@ -14,5 +15,5 @@
        (mapv #(ch/parse-string % true))))
 
 (defn publish-to-timeline [event]
-  (wcar redis-conn (car/lpush user-event-queue (-> (ch/generate-string event)
+  (wcar redis-conn (car-mq/enqueue user-event-queue (-> (ch/generate-string event)
                                                    msg/pack))))
