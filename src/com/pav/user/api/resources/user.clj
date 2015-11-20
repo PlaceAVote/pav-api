@@ -77,8 +77,8 @@
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx]
              (if-not (nil? (get-in ctx [:request :params :user_id]))
-              (service/get-timeline (get-in ctx [:request :params :user_id]))
-              (service/get-timeline (retrieve-user-id (:request ctx))))))
+              (service/get-timeline (get-in ctx [:request :params :user_id]) (get-in ctx [:request :params :page]))
+              (service/get-timeline (retrieve-user-id (:request ctx)) (get-in ctx [:request :params :page])))))
 
 (defresource follow
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))

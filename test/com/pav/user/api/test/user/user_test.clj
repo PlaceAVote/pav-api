@@ -301,9 +301,11 @@
                                 :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
                                 :timestamp 1446462364297}]
               _ (persist-timeline-event timeline-events)
-              {status :status body :body} (pav-req :get "/user/me/timeline" token {})]
+              {status :status body :body} (pav-req :get "/user/me/timeline" token {})
+              {next-page :next-page results :results} (ch/parse-string body true)]
           status => 200
-          (ch/parse-string body true) => (contains timeline-events)))
+          next-page => 0
+          results => (contains timeline-events)))
 
   (fact "Retrieve a users activity timeline"
         (let [{body :body} (pav-req :put "/user" {:email "john@pl.com"
@@ -320,9 +322,11 @@
                                 :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
                                 :timestamp 1446462364297}]
               _ (persist-timeline-event timeline-events)
-              {status :status body :body} (pav-req :get "/user/user102/timeline" token {})]
+              {status :status body :body} (pav-req :get "/user/user102/timeline" token {})
+              {next-page :next-page results :results} (ch/parse-string body true)]
           status => 200
-          (ch/parse-string body true) => (contains timeline-events)))
+          next-page => 0
+          results => (contains timeline-events)))
 
   (fact "Retrieve a users profile in relation to current user"
         (let [{caller :body} (pav-req :put "/user" {:email "john@pl.com"

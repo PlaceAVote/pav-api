@@ -62,7 +62,8 @@
 
 (defn get-user-timeline [user_id]
   (far/query client-opts timeline-table-name {:user_id [:eq user_id]}
-             {:order :desc}))
+             {:order :desc
+              :limit 10}))
 
 (defn build-follow-profile [profile]
   {:user_id (:user_id profile)

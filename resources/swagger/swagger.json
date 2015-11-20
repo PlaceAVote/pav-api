@@ -24,74 +24,12 @@
             "format": "string"
           },
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
+            "name": "page",
+            "in": "query",
+            "required": false,
             "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
-          }
-        ],
-        "tags": [
-          "Users"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "format": "comment"
-                  },
-                  "comment_id": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "user_id": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "bill_id": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "timestamp": {
-                    "type": "number",
-                    "format": "number"
-                  },
-                  "bill_title": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "score": {
-                    "type": "number",
-                    "format": "number"
-                  },
-                  "body": {
-                    "type": "string",
-                    "format": "string"
-                  }
-                }
-              }
-            }
+            "format": "string"
           },
-          "401": {
-            "description": "Not Authorized (Check Authentication Token)"
-          }
-        }
-      }
-    },
-    "/user/me/timeline": {
-      "get": {
-        "description": "Get the current users personal timeline.  This endpoint powers the activity feed",
-        "parameters": [
           {
             "name": "Authorization",
             "in": "header",
@@ -111,41 +49,135 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "format": "comment"
-                  },
-                  "comment_id": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "user_id": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "bill_id": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "timestamp": {
-                    "type": "number",
-                    "format": "number"
-                  },
-                  "bill_title": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "score": {
-                    "type": "number",
-                    "format": "number"
-                  },
-                  "body": {
-                    "type": "string",
-                    "format": "string"
+              "type": "object",
+              "properties": {
+                "next-page": {
+                  "type": "number",
+                  "format": "If equal to zero then there are no more results"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "format": "comment"
+                      },
+                      "comment_id": {
+                        "type": "string",
+                        "format": "string"
+                      },
+                      "user_id": {
+                        "type": "string",
+                        "format": "string"
+                      },
+                      "bill_id": {
+                        "type": "string",
+                        "format": "string"
+                      },
+                      "timestamp": {
+                        "type": "number",
+                        "format": "number"
+                      },
+                      "bill_title": {
+                        "type": "string",
+                        "format": "string"
+                      },
+                      "score": {
+                        "type": "number",
+                        "format": "number"
+                      },
+                      "body": {
+                        "type": "string",
+                        "format": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/user/me/timeline": {
+      "get": {
+        "description": "Get the current users personal timeline.  This endpoint powers the activity feed",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "string"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "token to be passed as a header",
+            "required": true,
+            "type": "string",
+            "items": {
+              "type": "string",
+              "format": "PAV_AUTH_TOKEN token"
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "next-page": {
+                  "type": "number",
+                  "format": "If equal to zero then there are no more results"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "format": "comment"
+                      },
+                      "comment_id": {
+                        "type": "string",
+                        "format": "string"
+                      },
+                      "user_id": {
+                        "type": "string",
+                        "format": "string"
+                      },
+                      "bill_id": {
+                        "type": "string",
+                        "format": "string"
+                      },
+                      "timestamp": {
+                        "type": "number",
+                        "format": "number"
+                      },
+                      "bill_title": {
+                        "type": "string",
+                        "format": "string"
+                      },
+                      "score": {
+                        "type": "number",
+                        "format": "number"
+                      },
+                      "body": {
+                        "type": "string",
+                        "format": "string"
+                      }
+                    }
                   }
                 }
               }

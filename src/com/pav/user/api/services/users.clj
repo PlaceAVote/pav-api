@@ -115,8 +115,8 @@
 (defn get-notifications [user]
   (dynamo-dao/get-notifications user))
 
-(defn get-timeline [user]
-  (let [timeline (redis-dao/get-user-timeline user)]
+(defn get-timeline [user from]
+  (let [timeline (redis-dao/get-user-timeline user from)]
     (if (empty? timeline)
       (dynamo-dao/get-user-timeline user)
       timeline)))
