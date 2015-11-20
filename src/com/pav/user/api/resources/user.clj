@@ -9,6 +9,12 @@
 (def existing-user-error-msg {:error "A User already exists with this email"})
 (def login-error-msg "Invalid Login credientials")
 
+(defn retrieve-page-param [payload]
+ (let [page (get-in payload [:request :params :page])]
+  (if page
+   (read-string page)
+   nil)))
+
 (defresource create [payload]
  :allowed-methods [:put]
  :available-media-types ["application/json"]
@@ -77,8 +83,8 @@
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx]
              (if-not (nil? (get-in ctx [:request :params :user_id]))
-              (service/get-timeline (get-in ctx [:request :params :user_id]) (get-in ctx [:request :params :page]))
-              (service/get-timeline (retrieve-user-id (:request ctx)) (get-in ctx [:request :params :page])))))
+              (service/get-timeline (get-in ctx [:request :params :user_id]) (retrieve-page-param ctx))
+              (service/get-timeline (retrieve-user-id (:request ctx)) (retrieve-page-param ctx)))))
 
 (defresource follow
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
