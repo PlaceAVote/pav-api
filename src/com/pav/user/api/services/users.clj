@@ -6,6 +6,7 @@
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user]]
             [com.pav.user.api.authentication.authentication :refer [token-valid?]]
+            [com.pav.user.api.mandril.mandril :refer [send-confirmation-email]]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
             [buddy.core.keys :as ks]
@@ -31,6 +32,7 @@
   (-> user
       (assoc :user_id (.toString (UUID/randomUUID)))
       (assoc :created_at (.getTime (Date.)))
+      (assoc :confirmation-token (.toString (UUID/randomUUID)))
       (merge {:registered false :public false})))
 
 (defn create-facebook-user [user]
@@ -39,8 +41,9 @@
                             (assoc :facebook_token (:token user))
                             assoc-new-token)
         new-user-record (-> (dynamo-dao/create-user user-with-token)
-                            (dissoc :facebook_token))]
+                            (dissoc :facebook_token :confirmation-token))]
     (index-user (dissoc new-user-record :token))
+    (send-confirmation-email user-with-token)
     {:record new-user-record}))
 
 (defn create-user [user]
@@ -49,13 +52,14 @@
                             assoc-common-attributes
                             assoc-new-token)
         new-user-record (-> (dynamo-dao/create-user user-with-token)
-                            (dissoc :password))]
+                            (dissoc :password :confirmation-token))]
     (index-user (dissoc new-user-record :token))
+    (send-confirmation-email user-with-token)
     {:record new-user-record}))
 
 (defn remove-sensitive-information [user]
   (if user
-    (dissoc user :password)))
+    (dissoc user :password :confirmation-token)))
 
 (defn get-user-by-id [id]
   (-> (dynamo-dao/get-user-by-id id)

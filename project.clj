@@ -26,7 +26,8 @@
                  [com.taoensso/faraday "1.8.0" :exclusions [org.clojure/tools.reader]]
                  [clojure-msgpack "1.1.2"]
                  [clojurewerkz/elastisch "2.1.0"]
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [clojurewerkz/mailer "1.2.0"]]
   :plugins [[lein-environ "1.0.0"]]
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
@@ -57,5 +58,10 @@
                 :dynamo-follower-table-name "userfollowers"
                 :dynamo-following-table-name "userfollowing"
                 :es-url "http://localhost:9200"
-                :user-event-queue "redismq::queue_name::user-event-input"}
+                :user-event-queue "redismq::queue_name::user-event-input"
+                :email-host "smtp.mandrillapp.com"
+                :email-user "team@placeavote.com"
+                :email-pass "password"
+                :email-mode "test"
+                :email-port "587"}
     :plugins [[lein-midje "3.1.3"]]}})

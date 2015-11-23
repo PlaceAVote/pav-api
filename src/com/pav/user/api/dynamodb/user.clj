@@ -25,9 +25,13 @@
     (first (far/query client-opts user-table-name {:email [:eq email]} {:index "user-email-idx"}))
     (catch Exception e (log/info (str "Error occured retrieving user by email " e)))))
 
+(defn create-confirmation-record [user_id token]
+  (far/put-item client-opts user-confirm-table-name {:user_id user_id
+                                                     :confirmation-token token}))
 (defn create-user [user-profile]
   (try
    (far/put-item client-opts user-table-name user-profile)
+   (create-confirmation-record (:user_id user-profile) (:confirmation-token user-profile))
    user-profile
    (catch Exception e (log/info (str "Error occured persisting new user-profile " e " to table " user-table-name)))))
 
