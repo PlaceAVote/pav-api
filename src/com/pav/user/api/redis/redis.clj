@@ -30,7 +30,9 @@
                        (car/set (str "email:" email ":id") user_id))))
 
 (defn get-user-profile [user_id]
-  (wcar redis-conn (car/parse-map (car/hgetall (str "user:" user_id ":profile")) :keywordize)))
+  (let [profile (wcar redis-conn (car/parse-map (car/hgetall (str "user:" user_id ":profile")) :keywordize))]
+    (if-not (empty? profile)
+      profile)))
 
 (defn get-user-profile-by-email [email]
   (let [user_id (wcar redis-conn (car/get (str "email:" email ":id")))]

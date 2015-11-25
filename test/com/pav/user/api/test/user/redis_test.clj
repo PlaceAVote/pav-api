@@ -20,4 +20,7 @@
                     :dob "05/10/1987" :created_at 12312321 :country_code "USA"}]
       (create-user-profile new-user)
       (update-token new-user {:token "token2"})
-      (get-user-profile "user101") => (assoc new-user :token "token2"))))
+      (get-user-profile "user101") => (assoc new-user :token "token2")))
+
+  (fact "If user profile doesn't exist return nil"
+    (get-user-profile "user102") => nil))
