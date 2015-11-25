@@ -39,7 +39,6 @@
   (let [{user_id :user_id} (get-user-by-email (:email user))]
     (try
      (far/update-item client-opts user-table-name {:user_id user_id} {:token [:put (:token new-token)]})
-     (merge user new-token)
     (catch Exception e (log/info (str "Error occured updating user token " e))))))
 
 (defn update-facebook-user-token [user new-token]

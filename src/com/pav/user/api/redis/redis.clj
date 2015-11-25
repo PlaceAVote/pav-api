@@ -24,3 +24,20 @@
 (defn publish-to-timeline [event]
   (wcar redis-conn (car-mq/enqueue user-event-queue (-> (ch/generate-string event)
                                                    msg/pack))))
+
+(defn create-user-profile [{:keys [user_id email] :as user-profile}]
+  (wcar redis-conn (do (car/hmset* (str "user:" user_id ":profile") (update-in user-profile [:created_at] bigint))
+                       (car/set (str "email:" email ":id") user_id))))
+
+(defn get-user-profile [user_id]
+  (wcar redis-conn (car/parse-map (car/hgetall (str "user:" user_id ":profile")) :keywordize)))
+
+(defn get-user-profile-by-email [email]
+  (let [user_id (wcar redis-conn (car/get (str "email:" email ":id")))]
+    (get-user-profile user_id)))
+
+(defn update-token [{:keys [user_id]} new-token]
+  (wcar redis-conn (car/hmset (str "user:" user_id ":profile") :token (:token new-token))))
+
+(defn update-facebook-token [{:keys [user_id token]} new-token]
+  (wcar redis-conn (car/hmset (str "user:" user_id ":profile") :token (:token new-token) :facebook_token token)))

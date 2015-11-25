@@ -35,23 +35,28 @@
       (assoc :confirmation-token (.toString (UUID/randomUUID)))
       (merge {:registered false :public false})))
 
+(defn create-user [user-profile]
+  (dynamo-dao/create-user user-profile)
+  (redis-dao/create-user-profile user-profile)
+  user-profile)
+
 (defn create-facebook-user [user]
   (log/info (str "Creating user " user " from facebook"))
   (let [user-with-token (-> (assoc-common-attributes user)
                             (assoc :facebook_token (:token user))
                             assoc-new-token)
-        new-user-record (-> (dynamo-dao/create-user user-with-token)
+        new-user-record (-> (create-user user-with-token)
                             (dissoc :facebook_token :confirmation-token))]
     (index-user (dissoc new-user-record :token))
     (send-confirmation-email user-with-token)
     {:record new-user-record}))
 
-(defn create-user [user]
+(defn create-pav-user [user]
   (log/info (str "Creating user " user))
   (let [user-with-token (-> (update-in user [:password] #(h/encrypt %))
                             assoc-common-attributes
                             assoc-new-token)
-        new-user-record (-> (dynamo-dao/create-user user-with-token)
+        new-user-record (-> (create-user user-with-token)
                             (dissoc :password :confirmation-token))]
     (index-user (dissoc new-user-record :token))
     (send-confirmation-email user-with-token)
@@ -62,19 +67,24 @@
     (dissoc user :password :confirmation-token)))
 
 (defn get-user-by-id [id]
-  (-> (dynamo-dao/get-user-by-id id)
+  (-> (or (redis-dao/get-user-profile id)
+          (dynamo-dao/get-user-by-id id))
       remove-sensitive-information))
 
 (defn get-user-by-email [email]
-  (-> (dynamo-dao/get-user-by-email email)
+  (-> (or (redis-dao/get-user-profile-by-email email)
+          (dynamo-dao/get-user-by-email email))
       remove-sensitive-information))
 
 (defn update-user-token [user origin]
   (let [current-user (get-user-by-email (:email user))
         new-token (create-auth-token (dissoc current-user :password :token))]
     (case origin
-      :pav (dynamo-dao/update-user-token user new-token)
-      :facebook (dynamo-dao/update-facebook-user-token user new-token))))
+      :pav      (do (redis-dao/update-token user new-token)
+                    (dynamo-dao/update-user-token user new-token))
+      :facebook (do (dynamo-dao/update-facebook-user-token user new-token)
+                    (redis-dao/update-facebook-token user new-token)))
+    (merge user new-token)))
 
 (defn validate-user-payload [user origin]
   (let [result (validate user origin)]
