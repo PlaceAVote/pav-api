@@ -66,15 +66,27 @@
   (if user
     (dissoc user :password :confirmation-token)))
 
-(defn get-user-by-id [id]
-  (-> (or (redis-dao/get-user-profile id)
-          (dynamo-dao/get-user-by-id id))
-      remove-sensitive-information))
+(defn get-user-by-id [user_id]
+  "Try retrieving user profile from redis, if this fails then retrieve from dynamodb and populate redis
+  with user profile"
+  (let [user-from-redis (redis-dao/get-user-profile user_id)]
+    (if user-from-redis
+      (remove-sensitive-information user-from-redis)
+      (let [user-from-dynamodb (dynamo-dao/get-user-by-id user_id)]
+        (when user-from-dynamodb
+          (redis-dao/create-user-profile user-from-dynamodb)
+          (remove-sensitive-information user-from-dynamodb))))))
 
 (defn get-user-by-email [email]
-  (-> (or (redis-dao/get-user-profile-by-email email)
-          (dynamo-dao/get-user-by-email email))
-      remove-sensitive-information))
+  "Try retrieving user profile from redis, if this fails then retrieve from dynamodb and populate redis
+  with user profile"
+  (let [user-from-redis (redis-dao/get-user-profile-by-email email)]
+    (if user-from-redis
+      (remove-sensitive-information user-from-redis)
+      (let [user-from-dynamodb (dynamo-dao/get-user-by-email email)]
+        (when user-from-dynamodb
+          (redis-dao/create-user-profile user-from-dynamodb)
+          (remove-sensitive-information user-from-dynamodb))))))
 
 (defn update-user-token [{:keys [email token]} origin]
   "Take current users email and token and update these values in databases.  Token can only be passed for facebook
