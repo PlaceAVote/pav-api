@@ -413,5 +413,9 @@
                                                       :topics ["Defence" "Arts"]})
               {token :token} (ch/parse-string follower true)
               {status :status} (pav-req :get (str "/user/token/validate?token=" token))]
-          status => 200)))
+          status => 200))
+
+  (fact "Verify the JWT Token, when invalid, return 401."
+       (let [{status :status} (pav-req :get "/user/token/validate?token=rubbish")]
+        status => 401)))
 
