@@ -38,8 +38,8 @@
   (let [user_id (wcar redis-conn (car/get (str "email:" email ":id")))]
     (get-user-profile user_id)))
 
-(defn update-token [{:keys [user_id]} new-token]
+(defn update-token [user_id new-token]
   (wcar redis-conn (car/hmset (str "user:" user_id ":profile") :token (:token new-token))))
 
-(defn update-facebook-token [{:keys [user_id token]} new-token]
-  (wcar redis-conn (car/hmset (str "user:" user_id ":profile") :token (:token new-token) :facebook_token token)))
+(defn update-facebook-token [user_id new-facebook-token new-token]
+  (wcar redis-conn (car/hmset (str "user:" user_id ":profile") :token (:token new-token) :facebook_token new-facebook-token)))

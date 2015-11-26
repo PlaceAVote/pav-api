@@ -76,15 +76,17 @@
           (dynamo-dao/get-user-by-email email))
       remove-sensitive-information))
 
-(defn update-user-token [user origin]
-  (let [current-user (get-user-by-email (:email user))
+(defn update-user-token [{:keys [email token]} origin]
+  "Take current users email and token and update these values in databases.  Token can only be passed for facebook
+  authentications"
+  (let [{:keys [user_id] :as current-user} (get-user-by-email email)
         new-token (create-auth-token (dissoc current-user :password :token))]
     (case origin
-      :pav      (do (redis-dao/update-token user new-token)
-                    (dynamo-dao/update-user-token user new-token))
-      :facebook (do (dynamo-dao/update-facebook-user-token user new-token)
-                    (redis-dao/update-facebook-token user new-token)))
-    (merge user new-token)))
+      :pav      (do (redis-dao/update-token user_id new-token)
+                    (dynamo-dao/update-user-token user_id new-token))
+      :facebook (do (redis-dao/update-facebook-token user_id token new-token)
+                    (dynamo-dao/update-facebook-user-token user_id token new-token)))
+    new-token))
 
 (defn validate-user-payload [user origin]
   (let [result (validate user origin)]
@@ -110,8 +112,7 @@
     :facebook (user-exist? user)))
 
 (defn authenticate-user [user origin]
-  {:record (-> (update-user-token user origin)
-               (select-keys [:token]))})
+  {:record (update-user-token user origin)})
 
 (defn is-authenticated? [user]
   (if-not (nil? (:user_id user))

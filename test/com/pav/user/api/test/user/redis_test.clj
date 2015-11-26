@@ -19,8 +19,9 @@
                     :public false :registered false :token "token" :topics ["Arts"] :password "password"
                     :dob "05/10/1987" :created_at 12312321 :country_code "USA"}]
       (create-user-profile new-user)
-      (update-token new-user {:token "token2"})
+      (update-token "user101" {:token "token2"})
       (get-user-profile "user101") => (assoc new-user :token "token2")))
 
   (fact "If user profile doesn't exist return nil"
-    (get-user-profile "user102") => nil))
+    (get-user-profile "user102") => nil
+    (get-user-profile-by-email "email@email.com") => nil))
