@@ -2,6 +2,8 @@
   (:require [buddy.auth.backends.token :refer [jws-backend]]
             [buddy.core.keys :as ks]
             [buddy.sign.jws :as jws]
+            [clj-time.core :as t]
+            [buddy.sign.util :as u]
             [clojure.tools.logging :as log]
             [environ.core :refer [env]]))
 
@@ -20,3 +22,11 @@
   (catch Exception e
     (log/warn token e)
     false)))
+
+(defn- pkey []
+  (ks/private-key (:auth-priv-key env) (:auth-priv-key-pwd env)))
+
+(defn create-auth-token [user]
+  {:token (jws/sign user (pkey)
+                    {:alg :rs256
+                     :exp (-> (t/plus (t/now) (t/days 30)) (u/to-timestamp))})})

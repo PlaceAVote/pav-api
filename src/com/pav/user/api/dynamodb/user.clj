@@ -1,7 +1,8 @@
 (ns com.pav.user.api.dynamodb.user
   (:require [taoensso.faraday :as far]
             [environ.core :refer [env]]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [com.pav.user.api.domain.user :refer [convert-to-correct-profile-type]])
   (:import [java.util Date]))
 
 (def client-opts {:access-key (:access-key env)
@@ -17,12 +18,14 @@
 
 (defn get-user-by-id [id]
   (try
-    (far/get-item client-opts user-table-name {:user_id id})
+    (-> (far/get-item client-opts user-table-name {:user_id id})
+        convert-to-correct-profile-type)
     (catch Exception e (log/info (str "Error occured retrieving user by id " e)))))
 
 (defn get-user-by-email [email]
   (try
-    (first (far/query client-opts user-table-name {:email [:eq email]} {:index "user-email-idx"}))
+    (-> (first (far/query client-opts user-table-name {:email [:eq email]} {:index "user-email-idx"}))
+        convert-to-correct-profile-type)
     (catch Exception e (log/info (str "Error occured retrieving user by email " e)))))
 
 (defn create-confirmation-record [user_id token]

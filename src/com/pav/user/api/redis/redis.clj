@@ -4,7 +4,8 @@
             [taoensso.carmine.message-queue :as car-mq]
             [msgpack.core :as msg]
             [msgpack.clojure-extensions]
-            [cheshire.core :as ch]))
+            [cheshire.core :as ch]
+            [com.pav.user.api.domain.user :refer [convert-to-correct-profile-type]]))
 
 (def redis-conn {:spec {:uri (:redis-url env)}})
 (def user-event-queue (:user-event-queue env))
@@ -32,7 +33,7 @@
 (defn get-user-profile [user_id]
   (let [profile (wcar redis-conn (car/parse-map (car/hgetall (str "user:" user_id ":profile")) :keywordize))]
     (if-not (empty? profile)
-      profile
+      (convert-to-correct-profile-type profile)
       nil)))
 
 (defn get-user-profile-by-email [email]

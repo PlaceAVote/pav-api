@@ -5,88 +5,48 @@
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user]]
-            [com.pav.user.api.authentication.authentication :refer [token-valid?]]
+            [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email]]
-            [buddy.sign.jws :as jws]
-            [buddy.sign.util :as u]
-            [buddy.core.keys :as ks]
-            [clj-time.core :as t]
+            [com.pav.user.api.domain.user :refer [new-user-profile]]
             [clojure.tools.logging :as log]
             [clojure.core.async :refer [thread]])
-  (:import [java.util Date UUID]))
-
-(defn- pkey []
-  (ks/private-key (:auth-priv-key env) (:auth-priv-key-pwd env)))
-
-(defn create-auth-token [user]
-  {:token (jws/sign user (pkey)
-                    {:alg :rs256
-                     :exp (-> (t/plus (t/now) (t/days 30)) (u/to-timestamp))})})
-
-(defn assoc-new-token [user]
-  (let [safe-profile (dissoc user :token)
-        new-token (create-auth-token safe-profile)]
-    (merge safe-profile new-token)))
-
-(defn assoc-common-attributes [user]
-  (-> user
-      (assoc :user_id (.toString (UUID/randomUUID)))
-      (assoc :created_at (.getTime (Date.)))
-      (assoc :confirmation-token (.toString (UUID/randomUUID)))
-      (merge {:registered false :public false})))
+  (:import (java.util Date)))
 
 (defn create-user [user-profile]
   (dynamo-dao/create-user user-profile)
   (redis-dao/create-user-profile user-profile)
   user-profile)
 
-(defn create-facebook-user [user]
-  (log/info (str "Creating user " user " from facebook"))
-  (let [user-with-token (-> (assoc-common-attributes user)
-                            (assoc :facebook_token (:token user))
-                            assoc-new-token)
-        new-user-record (-> (create-user user-with-token)
-                            (dissoc :facebook_token :confirmation-token))]
-    (index-user (dissoc new-user-record :token))
-    (send-confirmation-email user-with-token)
-    {:record new-user-record}))
-
-(defn create-pav-user [user]
+(defn create-pav-user [user origin]
   (log/info (str "Creating user " user))
-  (let [user-with-token (-> (update-in user [:password] #(h/encrypt %))
-                            assoc-common-attributes
-                            assoc-new-token)
-        new-user-record (-> (create-user user-with-token)
-                            (dissoc :password :confirmation-token))]
-    (index-user (dissoc new-user-record :token))
-    (send-confirmation-email user-with-token)
-    {:record new-user-record}))
-
-(defn remove-sensitive-information [user]
-  (if user
-    (dissoc user :password :confirmation-token)))
+  (let [new-user-profile (-> (new-user-profile user origin)
+                             create-user)
+        presentable-record (.presentable new-user-profile)]
+    (index-user (dissoc presentable-record :token))
+    (send-confirmation-email new-user-profile)
+    {:record presentable-record}))
 
 (defn get-user-by-id [user_id]
   "Try retrieving user profile from redis, if this fails then retrieve from dynamodb and populate redis
   with user profile"
   (let [user-from-redis (redis-dao/get-user-profile user_id)]
     (if user-from-redis
-      (remove-sensitive-information user-from-redis)
+      (.presentable user-from-redis)
       (let [user-from-dynamodb (dynamo-dao/get-user-by-id user_id)]
         (when user-from-dynamodb
           (redis-dao/create-user-profile user-from-dynamodb)
-          (remove-sensitive-information user-from-dynamodb))))))
+          (.presentable user-from-dynamodb))))))
 
 (defn get-user-by-email [email]
   "Try retrieving user profile from redis, if this fails then retrieve from dynamodb and populate redis
   with user profile"
   (let [user-from-redis (redis-dao/get-user-profile-by-email email)]
     (if user-from-redis
-      (remove-sensitive-information user-from-redis)
+      (.presentable user-from-redis)
       (let [user-from-dynamodb (dynamo-dao/get-user-by-email email)]
         (when user-from-dynamodb
           (redis-dao/create-user-profile user-from-dynamodb)
-          (remove-sensitive-information user-from-dynamodb))))))
+          (.presentable user-from-dynamodb))))))
 
 (defn update-user-token [{:keys [email token]} origin]
   "Take current users email and token and update these values in databases.  Token can only be passed for facebook

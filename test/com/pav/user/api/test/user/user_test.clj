@@ -9,7 +9,7 @@
                                                        flush-user-index]]
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
-            [com.pav.user.api.services.users :refer [create-auth-token]]
+            [com.pav.user.api.authentication.authentication :refer [create-auth-token]]
             [cheshire.core :as ch]))
 
 (defn pav-req

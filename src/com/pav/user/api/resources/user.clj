@@ -20,7 +20,7 @@
  :available-media-types ["application/json"]
  :malformed? (fn [_] (service/validate-user-payload (retrieve-body payload) :pav))
  :conflict? (fn [_] (service/user-exist? (retrieve-body payload)))
- :put! (fn [_] (service/create-pav-user (retrieve-body payload)))
+ :put! (fn [_] (service/create-pav-user (retrieve-body payload) :pav))
  :handle-created :record
  :handle-conflict existing-user-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
@@ -30,7 +30,7 @@
  :available-media-types ["application/json"]
  :malformed? (fn [_] (service/validate-user-payload (retrieve-body payload) :facebook))
  :conflict? (fn [_] (service/user-exist? (retrieve-body payload)))
- :put! (fn [_] (service/create-facebook-user (retrieve-body payload)))
+ :put! (fn [_] (service/create-pav-user (retrieve-body payload) :facebook))
  :handle-created :record
  :handle-conflict existing-user-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
