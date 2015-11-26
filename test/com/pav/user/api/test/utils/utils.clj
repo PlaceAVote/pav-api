@@ -1,5 +1,5 @@
 (ns com.pav.user.api.test.utils.utils
-  (require [com.pav.user.api.services.users :refer [create-pav-user]]
+  (require [com.pav.user.api.services.users :refer [create-user-profile]]
            [ring.mock.request :refer [request body content-type header]]
            [com.pav.user.api.handler :refer [app]]
            [cheshire.core :as ch]

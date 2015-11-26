@@ -8,7 +8,6 @@
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile]]
-            [clojure.tools.logging :as log]
             [clojure.core.async :refer [thread]])
   (:import (java.util Date)))
 
@@ -17,9 +16,9 @@
   (redis-dao/create-user-profile user-profile)
   user-profile)
 
-(defn create-pav-user [user origin]
-  (log/info (str "Creating user " user))
-  (let [new-user-profile (-> (new-user-profile user origin)
+(defn create-user-profile [user & [origin]]
+  "Create new user profile, specify :facebook as the origin by default all uses are pav"
+  (let [new-user-profile (-> (new-user-profile user (or origin :pav))
                              create-user)
         presentable-record (.presentable new-user-profile)]
     (index-user (dissoc presentable-record :token))

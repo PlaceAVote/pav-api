@@ -12,8 +12,8 @@
     {:secret  (ks/public-key (:auth-pub-key env))
      :options {:alg :rs256}
      :token-name "PAV_AUTH_TOKEN"
-     :on-error   (fn [req e]
-                   (log/error (str "Exception Failed decrypting token " e " REQUEST " req)))}))
+     :on-error   (fn [req _]
+                   (log/error (str "Token not present or is malformed " req)))}))
 
 (defn token-valid? [token]
   (try
