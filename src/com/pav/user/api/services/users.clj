@@ -9,30 +9,19 @@
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile]]
             [clojure.core.async :refer [thread chan <!! put!]]
-            [clojure.tools.logging :as log]
-            [clj-http.client :as client]
-            [cheshire.core :as ch])
+            [clojure.tools.logging :as log])
   (:import (java.util Date)))
 
 (def new-user-profile-channel (chan 100))
 
-(defn assign-profile-picture [{:keys [facebook_token] :as profile}]
-  (if facebook_token
-    (let [url (try (-> (client/get (str "https://graph.facebook.com/v2.5/me/picture?height=160&redirect=false&width=160&access_token=" facebook_token))
-                       :body (ch/parse-string true) :data :url)
-              (catch Exception e (log/info (str "Error retrieving profile image for facebook user " e)) nil))]
-      (assoc profile :profile_img url))
-    (assoc profile :profile_img nil)))
-
 (dotimes [_ 3]
   (thread
    (loop []
-     (let [profile (<!! new-user-profile-channel)
-           with-profile-pic (assign-profile-picture profile)]
+     (let [profile (<!! new-user-profile-channel)]
        (when profile
          (try
-           (dynamo-dao/create-user with-profile-pic)
-           (redis-dao/create-user-profile with-profile-pic)
+           (dynamo-dao/create-user profile)
+           (redis-dao/create-user-profile profile)
            (catch Exception e (log/error (str "Error occured persisting user profile for " (:id profile) "Exception: " e))))))
      (recur))))
 

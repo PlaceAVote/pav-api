@@ -349,8 +349,7 @@
           (ch/parse-string body true) => (merge (dissoc (ch/parse-string search-user true) :email :topics :token)
                                                 {:following true
                                                  :total_followers 1
-                                                 :total_following 0
-                                                 :profile_img nil})))
+                                                 :total_following 0})))
 
   (fact "Retrieve the current users profile"
         (let [{caller :body} (pav-req :put "/user" {:email "john@pl.com"
@@ -364,8 +363,7 @@
           status => 200
           (ch/parse-string body true) => (merge (dissoc (ch/parse-string caller true) :email :topics :token)
                                                 {:total_followers 0
-                                                 :total_following 0
-                                                 :profile_img nil})))
+                                                 :total_following 0})))
 
   (fact "Follow/following another user"
         (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
