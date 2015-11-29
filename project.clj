@@ -27,7 +27,8 @@
                  [clojure-msgpack "1.1.2"]
                  [clojurewerkz/elastisch "2.1.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [clojurewerkz/mailer "1.2.0"]]
+                 [clojurewerkz/mailer "1.2.0"]
+                 [clj-http "2.0.0"]]
   :plugins [[lein-environ "1.0.0"]]
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]

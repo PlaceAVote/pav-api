@@ -42,7 +42,7 @@
     (dissoc profile :facebook_token :confirmation-token))
   (assigntoken [profile]
     (-> (create-auth-token (dissoc profile :token))
-        (merge profile))))
+        (merge profile {:facebook_token (:token profile)}))))
 
 (defn new-user-profile [user-profile origin]
   (case origin
@@ -52,6 +52,7 @@
                                                 assign-new-token)))
     :facebook (-> (map->FacebookUserProfile (-> user-profile
                                                 assoc-common-attributes
+                                                (merge {:facebook_token (:token user-profile)})
                                                 assign-new-token)))
     nil))
 
