@@ -22,6 +22,8 @@
          (try
            (dynamo-dao/create-user profile)
            (redis-dao/create-user-profile profile)
+           (index-user (dissoc profile :token :password))
+           (send-confirmation-email profile)
            (catch Exception e (log/error (str "Error occured persisting user profile for " (:id profile) "Exception: " e))))))
      (recur))))
 
@@ -37,8 +39,6 @@
   (let [new-user-profile (-> (new-user-profile user (or origin :pav))
                              persist-user-profile)
         presentable-record (.presentable new-user-profile)]
-    (index-user (dissoc presentable-record :token))
-    (send-confirmation-email new-user-profile)
     {:record presentable-record}))
 
 (defn get-user-by-id [user_id]
