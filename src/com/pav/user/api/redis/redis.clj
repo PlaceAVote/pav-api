@@ -40,6 +40,13 @@
   (let [user_id (wcar redis-conn (car/get (str "email:" email ":id")))]
     (get-user-profile user_id)))
 
+(defn retrieve-redis-notification [notification_id]
+  (wcar redis-conn (car/parse-map (car/hgetall notification_id) :keywordize)))
+
+(defn retrieve-redis-notifications [user_id]
+  (->> (wcar redis-conn (car/zrevrange (str "user:" user_id ":notifications") 0 20))
+       (mapv retrieve-redis-notification)))
+
 (defn update-token [user_id new-token]
   (wcar redis-conn (car/hmset (str "user:" user_id ":profile") :token (:token new-token))))
 

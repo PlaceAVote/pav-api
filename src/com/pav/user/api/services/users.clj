@@ -115,7 +115,7 @@
     false))
 
 (defn get-notifications [user]
-  (dynamo-dao/get-notifications user))
+  (redis-dao/retrieve-redis-notifications user))
 
 (defn get-timeline [user from]
   (let [timeline (redis-dao/get-user-timeline user from)]
