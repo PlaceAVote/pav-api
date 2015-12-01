@@ -8,31 +8,21 @@
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile]]
-            [clojure.core.async :refer [thread chan <!! put!]]
+            [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log])
   (:import (java.util Date)))
 
-(def new-user-profile-channel (chan 100))
-
-(dotimes [_ 3]
-  (thread
-   (loop []
-     (let [profile (<!! new-user-profile-channel)]
-       (when profile
-         (try
-           (dynamo-dao/create-user profile)
-           (redis-dao/create-user-profile profile)
-           (index-user (dissoc profile :token :password))
-           (send-confirmation-email profile)
-           (catch Exception e (log/error (str "Error occured persisting user profile for " (:id profile) "Exception: " e))))))
-     (recur))))
-
-(defn persist-user-profile [{:keys [user_id] :as user-profile}]
-  "Create new user profile asynchronously by publishing new profiles to core.async channel.  Worker subsequently writes
-   profile to dynamo and redis."
-  (put! new-user-profile-channel user-profile
-        (fn [_] (log/info "User profile created for " user_id)))
-  user-profile)
+(defn persist-user-profile [{:keys [user_id] :as profile}]
+  "Create new user profile profile to dynamo and redis."
+	(when profile
+		(try
+			(dynamo-dao/create-user profile)
+			(redis-dao/create-user-profile profile)
+			(thread ;; Expensive call to mandril.  Execute in seperate thread.
+				(index-user (dissoc profile :token :password))
+				(send-confirmation-email profile))
+		(catch Exception e (log/error (str "Error occured persisting user profile for " user_id "Exception: " e)))))
+  profile)
 
 (defn create-user-profile [user & [origin]]
   "Create new user profile, specify :facebook as the origin by default all uses are pav"
