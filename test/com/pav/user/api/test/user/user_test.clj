@@ -351,7 +351,7 @@
                                                  :total_followers 1
                                                  :total_following 0})))
 
-  (fact "Retrieve the current users profile"
+  (future-fact "Retrieve the current users profile"
         (let [{caller :body} (pav-req :put "/user" {:email "john@pl.com"
                                                     :password "stuff2"
                                                     :first_name "john" :last_name "stuff"
