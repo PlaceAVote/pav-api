@@ -35,6 +35,7 @@
     (far/delete-table client-opts user-table-name)
     (far/delete-table client-opts user-confirm-table-name)
     (far/delete-table client-opts notification-table-name)
+    (far/delete-table client-opts timeline-table-name)
     (far/delete-table client-opts follower-table-name)
     (far/delete-table client-opts following-table-name)
     (catch Exception e (println "Error occured when deleting table " e " table name: " user-table-name " client-opts " client-opts))))
@@ -51,6 +52,10 @@
                       {:throughput {:read 5 :write 10}
                        :block? true})
     (far/create-table client-opts notification-table-name [:user_id :s]
+                      {:range-keydef [:timestamp :n]
+                       :throughput {:read 5 :write 10}
+                       :block? true})
+		(far/create-table client-opts timeline-table-name [:user_id :s]
                       {:range-keydef [:timestamp :n]
                        :throughput {:read 5 :write 10}
                        :block? true})
