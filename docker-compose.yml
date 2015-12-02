@@ -2,14 +2,12 @@ web:
   build: .
   environment:
     - RACK_ENV=development
-    - AUTH_PRIV_KEY=/app/test-resources/pav_auth_privkey.pem
+    - AUTH_PRIV_KEY=/app/resources/pav_auth_privkey.pem
     - AUTH_PRIV_KEY_PWD=password
-    - AUTH_PUB_KEY=/app/test-resources/pav_auth_pubkey.pem
+    - AUTH_PUB_KEY=/app/resources/pav_auth_pubkey.pem
     - AUTH_PUB_KEY_PWD=password
     - PORT=8080
     - SSLPORT=8443
     - LEIN_ROOT=1
-    - REDIS_URL=redis://u@rert88to4y80eoq.nrte7m.ng.0001.usw2.cache.amazonaws.com:6379/0
   ports:
     - 8080:8080
-    - 8443:8443
