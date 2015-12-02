@@ -18,5 +18,4 @@ deployment:
   development:
     branch: master
     commands:
-      - lein uberjar
       - convox deploy
