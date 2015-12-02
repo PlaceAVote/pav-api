@@ -2,9 +2,7 @@ FROM clojure
 
 WORKDIR /app
 
-COPY . /app
-
-RUN lein uberjar
+COPY resources /app/resources
 
 RUN cp target/pav-user-api.jar pav-user-api.jar
 
