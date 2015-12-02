@@ -6,6 +6,7 @@
                                                        delete-user-table
                                                        flush-redis
                                                        persist-timeline-event
+																											 persist-notification-event
                                                        flush-user-index]]
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
@@ -274,9 +275,19 @@
                                        :dob "05/10/1984"
                                        :country_code "USA"
                                        :topics ["Defence" "Arts"]})
-              {token :token} (ch/parse-string body true)
-              {status :status} (pav-req :get "/user/notifications" token {})]
-          status => 200))
+							{token :token user_id :user_id} (ch/parse-string body true)
+							notification-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
+																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+																:score 0 :body "Comment text goes here!!"}
+															 {:type "vote" :bill_id "s1182-114" :user_id user_id
+																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+																:timestamp 1446462364297}]
+							_ (persist-notification-event notification-events)
+							{status :status body :body} (pav-req :get "/user/notifications" token {})
+							{next-page :next-page results :results} (ch/parse-string body true)]
+					status => 200
+					next-page => 0
+					results => (contains notification-events)))
 
   (fact "Retrieving user notifications without Authentication token, results in 401"
         (let [{status :status} (pav-req :get "/user/notifications" "token" {})]

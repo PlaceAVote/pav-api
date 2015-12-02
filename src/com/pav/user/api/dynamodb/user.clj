@@ -60,13 +60,12 @@
   (catch Exception e (log/info (str "Error occured updating registeration status for token " token " " e)))))
 
 (defn get-notifications [user_id]
-  (far/query client-opts notification-table-name {:user_id [:eq user_id]}
-                                                 {:order :desc}))
+	{:next-page 0
+	 :results (far/query client-opts notification-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
 
 (defn get-user-timeline [user_id]
-  (far/query client-opts timeline-table-name {:user_id [:eq user_id]}
-             {:order :desc
-              :limit 10}))
+	{:next-page 0
+	 :results (far/query client-opts timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
 
 (defn build-follow-profile [profile]
   {:user_id (:user_id profile)

@@ -105,13 +105,10 @@
     false))
 
 (defn get-notifications [user]
-  (redis-dao/retrieve-redis-notifications user))
+  (dynamo-dao/get-notifications user))
 
 (defn get-timeline [user from]
-  (let [timeline (redis-dao/get-user-timeline user from)]
-    (if (empty? timeline)
-      (dynamo-dao/get-user-timeline user)
-      timeline)))
+	(dynamo-dao/get-user-timeline user))
 
 (defn publish-to-timeline [event]
   (redis-dao/publish-to-timeline event))

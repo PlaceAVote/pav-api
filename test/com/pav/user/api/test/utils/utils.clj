@@ -6,7 +6,6 @@
            [environ.core :refer [env]]
            [taoensso.carmine :as car :refer (wcar)]
            [taoensso.faraday :as far]
-           [msgpack.core :as msg]
            [msgpack.clojure-extensions]
            [clojurewerkz.elastisch.rest :refer [connect]]
            [clojurewerkz.elastisch.rest.index :as esi]))
@@ -20,6 +19,7 @@
 (def notification-table-name (:dynamo-notification-table-name env))
 (def follower-table-name (:dynamo-follower-table-name env))
 (def following-table-name (:dynamo-following-table-name env))
+(def timeline-table-name (:dynamo-usertimeline-table-name env))
 
 (def redis-conn {:spec {:host "127.0.0.1" :port 6379}})
 
@@ -31,7 +31,6 @@
         (car/flushdb)))
 
 (defn delete-user-table []
-  (println "deleting table")
   (try
     (far/delete-table client-opts user-table-name)
     (far/delete-table client-opts user-confirm-table-name)
@@ -41,7 +40,6 @@
     (catch Exception e (println "Error occured when deleting table " e " table name: " user-table-name " client-opts " client-opts))))
 
 (defn create-user-table []
-  (println "creating table")
   (try
     (far/create-table client-opts user-table-name [:user_id :s]
                       {:gsindexes [{:name "user-email-idx"
@@ -74,11 +72,12 @@
   (ch/parse-string (:body response) true))
 
 (defn persist-timeline-event [events]
-  (wcar redis-conn
-        (mapv (fn [event]
-                (car/zadd (str "timeline:" (:user_id event)) (:timestamp event) (-> (ch/generate-string event)
-                                                                                    msg/pack)))
-              events)))
+  (doseq [event events]
+    (far/put-item client-opts timeline-table-name event)))
+
+(defn persist-notification-event [events]
+	(doseq [event events]
+		(far/put-item client-opts notification-table-name event)))
 
 (defn flush-user-index []
   (esi/delete es-connection "pav")
