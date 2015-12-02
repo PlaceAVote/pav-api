@@ -35,7 +35,7 @@
   :main system
   :profiles
   {
-   :uberjar {:aot :all
+   :uberjar {:aot [system]
              :env {:auth-pub-key "resources/pav_auth_pubkey.pem"}
              :uberjar-name "pav-user-api.jar"}
    :production
