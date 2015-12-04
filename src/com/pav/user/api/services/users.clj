@@ -20,7 +20,8 @@
 			(redis-dao/create-user-profile profile)
 			(thread ;; Expensive call to mandril.  Execute in seperate thread.
 				(index-user (dissoc profile :token :password))
-				(send-confirmation-email profile))
+				(send-confirmation-email profile)
+				(log/info "New user created " profile))
 		(catch Exception e (log/error (str "Error occured persisting user profile for " user_id "Exception: " e)))))
   profile)
 
