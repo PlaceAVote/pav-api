@@ -35,35 +35,35 @@
   :main system
   :profiles
   {
-   :uberjar {:jvm-opts ^:replace ["-Xms256m" "-Xmx512m" "-Xss512k" "-XX:MaxMetaspaceSize=150m"]
-						 :aot [system]
-             :env {:auth-pub-key "resources/pav_auth_pubkey.pem"}
+   :uberjar {:jvm-opts     ^:replace ["-Xms256m" "-Xmx512m" "-Xss512k" "-XX:MaxMetaspaceSize=150m"]
+             :aot          [system]
+             :env          {:auth-pub-key "resources/pav_auth_pubkey.pem"}
              :uberjar-name "pav-user-api.jar"}
    :production
-   {:ring
-    {:open-browser? false, :stacktraces? false, :auto-reload? false}}
+            {:ring
+             {:open-browser? false, :stacktraces? false, :auto-reload? false}}
    :dev
-   {:dependencies [[ring-mock "0.1.5"] [ring/ring-devel "1.3.1" :exclusions [ring/ring-core]]
-                   [midje "1.7.0" :exclusions [org.clojure/tools.macro]]]
-    :env {      :auth-priv-key "test-resources/pav_auth_privkey.pem"
-                :auth-priv-key-pwd "password"
-                :auth-pub-key "test-resources/pav_auth_pubkey.pem"
-                :auth-pub-key-pwd "password"
-                :redis-url "redis://127.0.0.1:6379"
-                :access-key "Whatever"
-                :secret-key "whatever"
-                :dynamo-endpoint "http://localhost:8000"
-                :dynamo-user-table-name "users"
-                :dynamo-user-confirmation-table-name "user-confirmation-tokens"
-                :dynamo-notification-table-name "notifications"
-                :dynamo-usertimeline-table-name "usertimeline"
-                :dynamo-follower-table-name "userfollowers"
-                :dynamo-following-table-name "userfollowing"
-                :es-url "http://localhost:9200"
-                :user-event-queue "redismq::queue_name::user-event-input"
-                :email-host "smtp.mandrillapp.com"
-                :email-user "team@placeavote.com"
-                :email-pass "password"
-                :email-mode "test"
-                :email-port "587"}
-    :plugins [[lein-midje "3.1.3"]]}})
+            {:dependencies [[ring-mock "0.1.5"] [ring/ring-devel "1.3.1" :exclusions [ring/ring-core]]
+                            [midje "1.7.0" :exclusions [org.clojure/tools.macro]]]
+             :env          {:auth-priv-key                       "test-resources/pav_auth_privkey.pem"
+                            :auth-priv-key-pwd                   "password"
+                            :auth-pub-key                        "test-resources/pav_auth_pubkey.pem"
+                            :auth-pub-key-pwd                    "password"
+                            :redis-url                           "redis://127.0.0.1:6379"
+                            :access-key                          "Whatever"
+                            :secret-key                          "whatever"
+                            :dynamo-endpoint                     "http://localhost:8000"
+                            :dynamo-user-table-name              "users"
+                            :dynamo-user-confirmation-table-name "user-confirmation-tokens"
+                            :dynamo-notification-table-name      "notifications"
+                            :dynamo-usertimeline-table-name      "usertimeline"
+                            :dynamo-follower-table-name          "userfollowers"
+                            :dynamo-following-table-name         "userfollowing"
+                            :es-url                              "http://localhost:9200"
+                            :timeline-queue                      "redismq::queue_name::user-timelineevent-queue"
+                            :email-host                          "smtp.mandrillapp.com"
+                            :email-user                          "team@placeavote.com"
+                            :email-pass                          "password"
+                            :email-mode                          "test"
+                            :email-port                          "587"}
+             :plugins      [[lein-midje "3.1.3"]]}})

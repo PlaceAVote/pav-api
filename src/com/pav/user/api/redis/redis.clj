@@ -8,10 +8,10 @@
             [com.pav.user.api.domain.user :refer [convert-to-correct-profile-type]]))
 
 (def redis-conn {:spec {:uri (:redis-url env)}})
-(def user-event-queue (:user-event-queue env))
+(def timeline-queue (:timeline-queue env))
 
 (defn publish-to-timeline [event]
-  (wcar redis-conn (car-mq/enqueue user-event-queue (-> (ch/generate-string event) msg/pack))))
+  (wcar redis-conn (car-mq/enqueue timeline-queue (-> (ch/generate-string event) msg/pack))))
 
 (defn create-user-profile [{:keys [user_id email] :as user-profile}]
   (wcar redis-conn (do (car/hmset* (str "user:" user_id ":profile") (update-in user-profile [:created_at] bigint))
