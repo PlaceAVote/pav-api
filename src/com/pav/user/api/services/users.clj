@@ -17,8 +17,7 @@
 		(if-not (empty? bills)
 			(dynamo-dao/persist-to-newsfeed
 				(mapv #(assoc % :event_id (.toString (UUID/randomUUID))
-												:user_id user_id
-												:timestamp (.getTime (Date.))) bills)))))
+												:user_id user_id) bills)))))
 
 (defn persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."

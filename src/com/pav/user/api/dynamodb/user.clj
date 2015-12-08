@@ -90,19 +90,20 @@
 			(merge event {:yes-count 0 :no-count 0}))))
 
 (defn get-user-feed [user_id]
-	(let [feed (far/query client-opts userfeed-table-name {:user_id [:eq user_id]} {:limit 10})]
+	(let [feed (far/query client-opts userfeed-table-name {:user_id [:eq user_id]} {:limit 10 :order :desc})]
 		(if (empty? feed)
 			feed
 			{:next-page 0
 			 :results   (->> feed
-										 	 (map add-bill-comment-count)
-										   (map add-bill-vote-count)
+										 	 (mapv add-bill-comment-count)
+										   (mapv add-bill-vote-count)
 											 (sort-by :timestamp >))})))
 
 (defn persist-to-newsfeed [events]
 	(when events
 		(log/info "Events being persisted to users newsfeed " events)
-		(far/batch-write-item client-opts {userfeed-table-name {:put events}})))
+		(doseq [evt events]
+			(far/put-item client-opts userfeed-table-name (assoc evt :timestamp (.getTime (Date.)))))))
 
 (defn build-follow-profile [profile]
   {:user_id (:user_id profile)
