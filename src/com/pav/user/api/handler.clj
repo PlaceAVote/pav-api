@@ -33,7 +33,7 @@
   (DELETE "/user" [] user)
   (GET "/user/me/profile" [] user-profile)
   (GET "/user/:user_id/profile" [user_id] user-profile)
-  (GET "/user/me/feed" [] feed)
+  (GET "/user/feed" [] feed)
   (GET "/user/notifications" [] notifications)
   (GET "/user/me/timeline" [] timeline)
   (GET "/user/:user_id/timeline" [] timeline)

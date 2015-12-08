@@ -74,9 +74,11 @@
 	 :results (far/query client-opts timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
 
 (defn get-user-feed [user_id]
-	{:next-page 0
-	 :results   (->> (far/query client-opts userfeed-table-name {:user_id [:eq user_id]} {:limit 10})
-								  #(sort-by :timestamp >))})
+	(let [feed (far/query client-opts userfeed-table-name {:user_id [:eq user_id]} {:limit 10})]
+		(if-not (empty? feed)
+			{:next-page 0
+			 :results #(sort-by :timestamp > feed)})
+		feed))
 
 (defn persist-to-newsfeed [events]
 	(when events

@@ -12,7 +12,7 @@
     "application/json"
   ],
   "paths": {
-    "/user/me/feed": {
+    "/user/feed": {
       "get": {
         "description": "Get the current users feed",
         "parameters": [

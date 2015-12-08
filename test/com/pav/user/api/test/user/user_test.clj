@@ -432,3 +432,21 @@
        (let [{status :status} (pav-req :get "/user/token/validate?token=rubbish")]
         status => 401)))
 
+(against-background [(before :facts (do
+																			(delete-user-table)
+																			(create-user-table)
+																			(flush-redis)
+																			(flush-user-index)
+																			(bootstrap-bills)))]
+	(fact "Retrieve current users feed"
+		(let [{body :body} (pav-req :put "/user" {:email "john@pl.com"
+																							:password "stuff2"
+																							:first_name "john" :last_name "stuff"
+																							:dob "05/10/1984"
+																							:country_code "USA"
+																							:topics ["Defense"]})
+					{token :token user_id :user_id} (ch/parse-string body true)
+					_ (Thread/sleep 3000)
+					{status :status body :body} (pav-req :get "/user/feed" token {})
+					{next-page :next-page results :results} (ch/parse-string body true)]
+			status => 200)))
