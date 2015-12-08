@@ -16,6 +16,8 @@
 (def timeline-table-name (:dynamo-usertimeline-table-name env))
 (def follower-table-name (:dynamo-follower-table-name env))
 (def following-table-name (:dynamo-following-table-name env))
+(def comment-details-table-name (:dynamo-comment-details-table-name env))
+(def vote-count-table-name (:dynamo-vote-count-table env))
 
 (defn get-user-by-id [id]
   (try
@@ -73,11 +75,24 @@
 	{:next-page 0
 	 :results (far/query client-opts timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
 
+(defn add-bill-comment-count [{:keys [bill_id] :as event}]
+	(assoc event :comment_count (far/query client-opts comment-details-table-name {:bill_id [:eq bill_id]}
+																{:index  "bill-comment-idx" :return :count})))
+
+(defn add-bill-vote-count [{:keys [bill_id] :as event}]
+	(let [vcount (far/get-item client-opts vote-count-table-name {:bill_id bill_id}
+								 {:return [:yes-count :no-count]})]
+		(if vcount
+			(merge event vcount)
+			(merge event {:yes-count 0 :no-count 0}))))
+
 (defn get-user-feed [user_id]
 	(let [feed (far/query client-opts userfeed-table-name {:user_id [:eq user_id]} {:limit 10})]
 		(if-not (empty? feed)
 			{:next-page 0
-			 :results #(sort-by :timestamp > feed)})
+			 :results   (->> (map add-bill-comment-count)
+										   (map add-bill-vote-count)
+											#(sort-by :timestamp >))})
 		feed))
 
 (defn persist-to-newsfeed [events]

@@ -60,6 +60,8 @@
                             :dynamo-userfeed-table-name          "userfeed"
                             :dynamo-follower-table-name          "userfollowers"
                             :dynamo-following-table-name         "userfollowing"
+                            :dynamo-comment-details-table-name	 "comment-details"
+                            :dynamo-vote-count-table     	 			 "vote-counts"
                             :es-url                              "http://localhost:9200"
                             :timeline-queue                      "redismq::queue_name::user-timelineevent-queue"
                             :email-host                          "smtp.mandrillapp.com"

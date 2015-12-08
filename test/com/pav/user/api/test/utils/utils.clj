@@ -22,6 +22,8 @@
 (def following-table-name (:dynamo-following-table-name env))
 (def timeline-table-name (:dynamo-usertimeline-table-name env))
 (def feed-table-name (:dynamo-userfeed-table-name env))
+(def comment-details-table-name (:dynamo-comment-details-table-name env))
+(def vote-count-table-name (:dynamo-vote-count-table env))
 
 (def redis-conn {:spec {:host "127.0.0.1" :port 6379}})
 
@@ -50,6 +52,8 @@
     (far/delete-table client-opts follower-table-name)
     (far/delete-table client-opts following-table-name)
 		(far/delete-table client-opts feed-table-name)
+		(far/delete-table client-opts vote-count-table-name)
+		(far/delete-table client-opts comment-details-table-name)
     (catch Exception e (println "Error occured when deleting table " e " table name: " user-table-name " client-opts " client-opts))))
 
 (defn create-user-table []
@@ -83,6 +87,16 @@
                       {:range-keydef [:follower :s]
                        :throughput {:read 5 :write 10}
                        :block? true})
+		(far/create-table client-opts vote-count-table-name [:bill_id :s]
+			{:throughput {:read 5 :write 10}
+			 :block? true})
+		(far/create-table client-opts comment-details-table-name [:comment_id :s]
+			{:gsindexes [{:name "bill-comment-idx"
+										:hash-keydef [:bill_id :s]
+										:range-keydef [:comment_id :s]
+										:throughput {:read 5 :write 10}}]
+			 :throughput {:read 5 :write 10}
+			 :block? true})
     (catch Exception e (println "Error occured with table setup " e " table name: " user-table-name " client-opts " client-opts))))
 
 (defn make-request
