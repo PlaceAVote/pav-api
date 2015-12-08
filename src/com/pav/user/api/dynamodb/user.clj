@@ -12,6 +12,7 @@
 (def user-table-name (:dynamo-user-table-name env))
 (def user-confirm-table-name (:dynamo-user-confirmation-table-name env))
 (def notification-table-name (:dynamo-notification-table-name env))
+(def userfeed-table-name (:dynamo-userfeed-table-name env))
 (def timeline-table-name (:dynamo-usertimeline-table-name env))
 (def follower-table-name (:dynamo-follower-table-name env))
 (def following-table-name (:dynamo-following-table-name env))
@@ -66,6 +67,11 @@
 (defn get-user-timeline [user_id]
 	{:next-page 0
 	 :results (far/query client-opts timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
+
+(defn persist-to-newsfeed [events]
+	(when events
+		(log/info "Events being persisted to users newsfeed " events)
+		(far/batch-write-item client-opts {userfeed-table-name {:put events}})))
 
 (defn build-follow-profile [profile]
   {:user_id (:user_id profile)

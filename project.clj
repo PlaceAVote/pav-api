@@ -25,7 +25,7 @@
                                                              org.clojure/tools.reader]]
                  [com.taoensso/faraday "1.8.0" :exclusions [org.clojure/tools.reader]]
                  [clojure-msgpack "1.1.2"]
-                 [clojurewerkz/elastisch "2.1.0"]
+                 [clojurewerkz/elastisch "2.2.0-beta4"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [clojurewerkz/mailer "1.2.0"]
                  [clj-http "2.0.0"]]
@@ -57,6 +57,7 @@
                             :dynamo-user-confirmation-table-name "user-confirmation-tokens"
                             :dynamo-notification-table-name      "notifications"
                             :dynamo-usertimeline-table-name      "usertimeline"
+                            :dynamo-userfeed-table-name          "userfeed"
                             :dynamo-follower-table-name          "userfollowers"
                             :dynamo-following-table-name         "userfollowing"
                             :es-url                              "http://localhost:9200"

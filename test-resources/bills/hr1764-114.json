@@ -1,0 +1,60 @@
+{
+  "votes": [],
+  "urls": {
+    "congress": "http://beta.congress.gov/bill/114th/house-bill/1764",
+    "govtrack": "https://www.govtrack.us/congress/bills/114/hr1764",
+    "opencongress": "https://www.opencongress.org/bill/hr1764-114"
+  },
+  "bill_id": "hr1764-114",
+  "last_action_at": "2015-08-18",
+  "number": "1764",
+  "short_title": "United States Chief Technology Officer Act",
+  "history": {
+    "active": false,
+    "awaiting_signature": false,
+    "enacted": false,
+    "vetoed": false
+  },
+  "congress": "114",
+  "keywords": [
+    "Advanced technology and technological innovations",
+    "Computer security and identity theft",
+    "Computers and information technology",
+    "Executive Office of the President",
+    "Executive agency funding and structure",
+    "Federal officials",
+    "Government operations and politics",
+    "Public contracts and procurement",
+    "Right of privacy",
+    "Scientific communication"
+  ],
+  "summary": "United States Chief Technology Officer Act<br /><br />Amends the National Science and Technology Policy, Organization, and Priorities Act of 1976 to authorize the President to appoint a United States Chief Technology Officer whose duties shall include advising the President and the Director of the Office of Science and Technology Policy on federal information systems, technology, data, and innovation policies and initiatives.",
+  "updated_at": "2015-11-21T06:35:20-05:00",
+  "bill_type": "hr",
+  "last_vote": null,
+  "status": "REFERRED",
+  "official_title": "To provide for the designation of the United States Chief Technology Officer.",
+  "related_bill_id": [
+    "hr1806-114"
+  ],
+  "last_action": {
+    "acted_at": "2015-08-18",
+    "in_committee": null,
+    "references": [],
+    "text": "Referred to the Subcommittee on Research and Technology.",
+    "type": "referral"
+  },
+  "introduced_at": "2015-04-14",
+  "sponsor_id": "02238",
+  "cosponsors_count": 6,
+  "subject": "Government operations and politics",
+  "last_vote_at": null,
+  "sponsor": {
+    "district": "11",
+    "name": "Loudermilk, Barry",
+    "state": "GA",
+    "thomas_id": "02238",
+    "title": "Rep",
+    "type": "person"
+  }
+}

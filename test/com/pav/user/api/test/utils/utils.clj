@@ -8,7 +8,8 @@
            [taoensso.faraday :as far]
            [msgpack.clojure-extensions]
            [clojurewerkz.elastisch.rest :refer [connect]]
-           [clojurewerkz.elastisch.rest.index :as esi]))
+           [clojurewerkz.elastisch.rest.index :as esi]
+					 [clojurewerkz.elastisch.rest.document :as esd]))
 
 (def client-opts {:access-key "<AWS_DYNAMODB_ACCESS_KEY>"
                   :secret-key "<AWS_DYNAMODB_SECRET_KEY>"
@@ -20,10 +21,20 @@
 (def follower-table-name (:dynamo-follower-table-name env))
 (def following-table-name (:dynamo-following-table-name env))
 (def timeline-table-name (:dynamo-usertimeline-table-name env))
+(def feed-table-name (:dynamo-userfeed-table-name env))
 
 (def redis-conn {:spec {:host "127.0.0.1" :port 6379}})
 
 (def es-connection (connect (:es-url env)))
+
+(def test-bills [(ch/parse-string (slurp "test-resources/bills/hr2-114.json") true)
+								 (ch/parse-string (slurp "test-resources/bills/hr1764-114.json") true)
+								 (ch/parse-string (slurp "test-resources/bills/hr2029-114.json") true)
+								 (ch/parse-string (slurp "test-resources/bills/s25-114.json") true)])
+
+(defn bootstrap-bills []
+	(doseq [bill test-bills]
+		(esd/create es-connection "congress" "bill" bill :id (:bill_id bill))))
 
 (defn flush-redis []
   (wcar redis-conn
@@ -38,6 +49,7 @@
     (far/delete-table client-opts timeline-table-name)
     (far/delete-table client-opts follower-table-name)
     (far/delete-table client-opts following-table-name)
+		(far/delete-table client-opts feed-table-name)
     (catch Exception e (println "Error occured when deleting table " e " table name: " user-table-name " client-opts " client-opts))))
 
 (defn create-user-table []
@@ -56,6 +68,10 @@
                        :throughput {:read 5 :write 10}
                        :block? true})
 		(far/create-table client-opts timeline-table-name [:user_id :s]
+                      {:range-keydef [:timestamp :n]
+                       :throughput {:read 5 :write 10}
+                       :block? true})
+		(far/create-table client-opts feed-table-name [:user_id :s]
                       {:range-keydef [:timestamp :n]
                        :throughput {:read 5 :write 10}
                        :block? true})
@@ -86,4 +102,6 @@
 
 (defn flush-user-index []
   (esi/delete es-connection "pav")
-  (esi/create es-connection "pav"))
+  (esi/delete es-connection "congress")
+  (esi/create es-connection "pav")
+  (esi/create es-connection "congress"))

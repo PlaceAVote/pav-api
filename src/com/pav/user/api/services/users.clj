@@ -4,13 +4,18 @@
             [com.pav.user.api.schema.user :refer [validate validate-login construct-error-msg]]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
-            [com.pav.user.api.elasticsearch.user :refer [index-user]]
+            [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile]]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log])
   (:import (java.util Date)))
+
+(defn pre-populate-newsfeed [{:keys [user_id created_at topics]}]
+	(let [bills (gather-latest-bills-by-subject topics)]
+		(if-not (empty? bills)
+			(dynamo-dao/persist-to-newsfeed (mapv #(assoc % :user_id user_id :timestamp created_at) bills)))))
 
 (defn persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
@@ -20,6 +25,7 @@
 			(redis-dao/create-user-profile profile)
 			(thread ;; Expensive call to mandril.  Execute in seperate thread.
 				(index-user (dissoc profile :token :password))
+        (pre-populate-newsfeed profile)
 				(send-confirmation-email profile)
 				(log/info "New user created " profile))
 		(catch Exception e (log/error (str "Error occured persisting user profile for " user_id "Exception: " e)))))

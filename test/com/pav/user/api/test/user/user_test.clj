@@ -7,7 +7,8 @@
                                                        flush-redis
                                                        persist-timeline-event
 																											 persist-notification-event
-                                                       flush-user-index]]
+                                                       flush-user-index
+                                                       bootstrap-bills]]
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [com.pav.user.api.authentication.authentication :refer [create-auth-token]]
@@ -23,7 +24,8 @@
                                       (delete-user-table)
                                       (create-user-table)
                                       (flush-redis)
-                                      (flush-user-index)))]
+                                      (flush-user-index)
+                                      (bootstrap-bills)))]
 
    (fact "Create a new user, will return 201 status and newly created user"
          (let [{status :status body :body} (pav-req :put "/user"
@@ -33,7 +35,7 @@
                                                :last_name "stuff"
                                                :dob "05/10/1984"
                                                :country_code "USA"
-                                               :topics ["Defence" "Arts"]})]
+                                               :topics ["Defense"]})]
            status => 201
            (keys (ch/parse-string body true)) => (contains [:user_id :token :email :first_name :last_name :dob :country_code
                                                             :topics :created_at :registered :public] :in-any-order)))
@@ -45,7 +47,7 @@
                                                 :dob "05/10/1984"
                                                 :country_code "USA"
                                                 :img_url "http://image.com/image.jpg"
-                                                :topics ["Defence" "Arts"]
+                                                :topics ["Defense"]
                                                 :token "token"})]
            status => 201
            (keys (ch/parse-string body true)) => (contains [:user_id :email :first_name :last_name :dob :country_code
@@ -59,7 +61,7 @@
                                                     :dob "05/10/1984"
                                                     :country_code "USA"
                                                     :img_url "http://image.com/image.jpg"
-                                                    :topics ["Defence" "Arts"]
+                                                    :topics ["Defense"]
                                                     :token "token"})]
           status => 400
           body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
@@ -72,7 +74,7 @@
                                                     :dob "05/10/1984"
                                                     :country_code "USA"
                                                     :img_url "http://image.com/image.jpg"
-                                                    :topics ["Defence" "Arts"]})]
+                                                    :topics ["Defense"]})]
           status => 400
           body => (ch/generate-string {:errors [{:token "A token is required for social media registerations and logins"}]})))
 
@@ -84,7 +86,7 @@
                           :last_name "stuff"
                           :dob "05/10/1984"
                           :country_code "USA"
-                          :topics ["Defence" "Arts"]})
+                          :topics ["Defense"]})
               {status :status body :body} (pav-req :put "/user"
                                                    {:email "john@stuff.com"
                                                     :password "stuff2"
@@ -92,7 +94,7 @@
                                                     :last_name "stuff"
                                                     :dob "05/10/1984"
                                                     :country_code "USA"
-                                                    :topics ["Defence" "Arts"]})]
+                                                    :topics ["Defense"]})]
           status => 409
           body => (ch/generate-string existing-user-error-msg)))
 
@@ -102,7 +104,7 @@
                                                 :dob "05/10/1984"
                                                 :country_code "USA"
                                                 :img_url "http://image.com/image.jpg"
-                                                :topics ["Defence" "Arts"]
+                                                :topics ["Defense" ]
                                                 :token "token"})
               {status :status body :body} (pav-req :put "/user/facebook"
                                                    {:email "john@stuff.com"
@@ -111,7 +113,7 @@
                                                     :dob "05/10/1984"
                                                     :country_code "USA"
                                                     :img_url "http://image.com/image.jpg"
-                                                    :topics ["Defence" "Arts"]
+                                                    :topics ["Defense"]
                                                     :token "token"})]
           status => 409
           body => (ch/generate-string existing-user-error-msg)))
@@ -122,7 +124,7 @@
                                                     :first_name "john" :last_name "stuff"
                                                     :dob "05/10/1984"
                                                     :country_code "USA"
-                                                    :topics ["Defence" "Arts"]})]
+                                                    :topics ["Defense"]})]
           status => 400
           body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
 
@@ -131,7 +133,7 @@
                                                                  :first_name "john" :last_name "stuff"
                                                                  :dob "05/10/1984"
                                                                  :country_code "USA"
-                                                                 :topics ["Defence" "Arts"]})]
+                                                                 :topics ["Defense"]})]
           status => 400
           body => (ch/generate-string {:errors [{:password "Password is a required field"}]})))
 
@@ -153,7 +155,7 @@
                                                              :last_name "stuff"
                                                              :dob "05/10/1984"
                                                              :country_code "USA"
-                                                             :topics ["Defence" "Arts"]})]
+                                                             :topics ["Defense"]})]
       status => 400
       body => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}]}) :in-any-order)))
 
@@ -164,7 +166,7 @@
                                                                  :last_name "stuff"
                                                                  :dob "05/10/1984"
                                                                  :country_code ""
-                                                                 :topics ["Defence" "Arts"]})]
+                                                                 :topics ["Defense"]})]
           status => 400
           body => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
 
@@ -175,7 +177,7 @@
                                                                  :last_name "stuff"
                                                                  :dob "05/10/1984"
                                                                  :country_code "UPA"
-                                                                 :topics ["Defence" "Arts"]})]
+                                                                 :topics ["Defense"]})]
           status => 400
           body => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
 
@@ -186,7 +188,7 @@
                                                                :last_name "stuff"
                                                                :dob "05/10/1984"
                                                                :country_code "USA"
-                                                               :topics ["Defence" "Arts"]})]
+                                                               :topics ["Defense" ]})]
         status => 400
         body => (contains (ch/generate-string {:errors [{:password "Password is a required field"}]}) :in-any-order)))
 
@@ -196,7 +198,7 @@
                                                                               :first_name "john" :last_name "stuff"
                                                                               :dob "05/10/1984"
                                                                               :country_code "USA"
-                                                                              :topics ["Defence" "Arts"]})) true)
+                                                                              :topics ["Defense" ]})) true)
                {status :status body :body} (pav-req :get "/user" token {})]
            status => 200
            (ch/parse-string body true) => (contains {:email "john@stuff.com"
@@ -204,7 +206,7 @@
                                                      :last_name "stuff"
                                                      :dob "05/10/1984"
                                                      :country_code "USA"
-                                                     :topics ["Defence" "Arts"]} :in-any-order)))
+                                                     :topics ["Defense"]} :in-any-order)))
 
   (fact "Retrieve a user by email, without authentication token"
         (let [{status :status} (pav-req :get "/user")]
@@ -217,7 +219,7 @@
                                        :last_name "stuff"
                                        :dob "05/10/1984"
                                        :country_code "USA"
-                                       :topics ["Defence" "Arts"]})
+                                       :topics ["Defense"]})
               {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "stuff2"})
               {retrieve-user-status :status user-profile :body} (pav-req :get "/user" (:token (ch/parse-string body true)) {})]
           status => 201
@@ -232,7 +234,7 @@
                                                 :dob "05/10/1984"
                                                 :country_code "USA"
                                                 :img_url "http://image.com/image.jpg"
-                                                :topics ["Defence" "Arts"]
+                                                :topics ["Defense"]
                                                 :token "token"})
               {status :status body :body} (pav-req :post "/user/facebook/authenticate" {:email "paul@facebook.com" :token "token"})
               {retrieve-user-status :status user-profile :body} (pav-req :get "/user" (:token (ch/parse-string body true)) {})]
@@ -248,7 +250,7 @@
                                        :last_name "stuff"
                                        :dob "05/10/1984"
                                        :country_code "USA"
-                                       :topics ["Defence" "Arts"]})
+                                       :topics ["Defense"]})
               {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "invalid"})]
           status => 401
           body => login-error-msg))
@@ -259,7 +261,7 @@
                                        :first_name "john" :last_name "stuff"
                                        :dob "05/10/1984"
                                        :country_code "USA"
-                                       :topics ["Defence" "Arts"]})
+                                       :topics ["Defense"]})
               {status :status body :body} (pav-req :post "/user/authenticate" {:password "stuff2"})]
           status => 400
           body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
@@ -274,7 +276,7 @@
                                        :first_name "john" :last_name "stuff"
                                        :dob "05/10/1984"
                                        :country_code "USA"
-                                       :topics ["Defence" "Arts"]})
+                                       :topics ["Defense" ]})
 							{token :token user_id :user_id} (ch/parse-string body true)
 							notification-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
 																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
@@ -303,7 +305,7 @@
                                                   :first_name "john" :last_name "stuff"
                                                   :dob "05/10/1984"
                                                   :country_code "USA"
-                                                  :topics ["Defence" "Arts"]})
+                                                  :topics ["Defense"]})
               {token :token user_id :user_id} (ch/parse-string body true)
               timeline-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
                                 :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
@@ -324,7 +326,7 @@
                                                   :first_name "john" :last_name "stuff"
                                                   :dob "05/10/1984"
                                                   :country_code "USA"
-                                                  :topics ["Defence" "Arts"]})
+                                                  :topics ["Defense"]})
               {token :token} (ch/parse-string body true)
               timeline-events [{:type "comment" :bill_id "s1182-114" :user_id "user102" :timestamp 1446479124991 :comment_id "comment:1"
                                 :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
@@ -345,14 +347,14 @@
                                                   :first_name "john" :last_name "stuff"
                                                   :dob "05/10/1984"
                                                   :country_code "USA"
-                                                  :topics ["Defence" "Arts"]})
+                                                  :topics ["Defense"]})
               {token :token} (ch/parse-string caller true)
               {search-user :body} (pav-req :put "/user" {:email "peter@pl.com"
                                                   :password "stuff2"
                                                   :first_name "peter" :last_name "pan"
                                                   :dob "05/10/1984"
                                                   :country_code "USA"
-                                                  :topics ["Defence" "Arts"]})
+                                                  :topics ["Defense"]})
               {user_id :user_id} (ch/parse-string search-user true)
               _ (pav-req :put (str "/user/follow") token {:user_id user_id})
               {status :status body :body} (pav-req :get (str "/user/" user_id "/profile") token {})]
@@ -368,7 +370,7 @@
                                                     :first_name "john" :last_name "stuff"
                                                     :dob "05/10/1984"
                                                     :country_code "USA"
-                                                    :topics ["Defence" "Arts"]})
+                                                    :topics ["Defense"]})
               {token :token} (ch/parse-string caller true)
               {status :status body :body} (pav-req :get "/user/me/profile" token {})]
           status => 200
@@ -380,12 +382,12 @@
         (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
                                                     :first_name "john" :last_name "stuff"
                                                     :dob "05/10/1984" :country_code "USA"
-                                                    :topics ["Defence" "Arts"]})
+                                                    :topics ["Defense" ]})
               {my_id :user_id token :token} (ch/parse-string follower true)
               {being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
                                                          :first_name "peter" :last_name "pan"
                                                          :dob "05/10/1984" :country_code "USA"
-                                                         :topics ["Defence" "Arts"]})
+                                                         :topics ["Defense"]})
               {pauls_user_id :user_id} (ch/parse-string being-followed true)
               {create_status :status} (pav-req :put (str "/user/follow") token {:user_id pauls_user_id})
               {my-following :body} (pav-req :get (str "/user/me/following") token {})
@@ -402,12 +404,12 @@
         (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
                                                       :first_name "john" :last_name "stuff"
                                                       :dob "05/10/1984" :country_code "USA"
-                                                      :topics ["Defence" "Arts"]})
+                                                      :topics ["Defense" ]})
               {token :token} (ch/parse-string follower true)
               {being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
                                                             :first_name "peter" :last_name "pan"
                                                             :dob "05/10/1984" :country_code "USA"
-                                                            :topics ["Defence" "Arts"]})
+                                                            :topics ["Defense"]})
               {pauls_user_id :user_id} (ch/parse-string being-followed true)
               _ (pav-req :put (str "/user/follow") token {:user_id pauls_user_id})
               {unfollow-status :status} (pav-req :delete (str "/user/unfollow") token {:user_id pauls_user_id})
@@ -421,7 +423,7 @@
         (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
                                                       :first_name "john" :last_name "stuff"
                                                       :dob "05/10/1984" :country_code "USA"
-                                                      :topics ["Defence" "Arts"]})
+                                                      :topics ["Defense"]})
               {token :token} (ch/parse-string follower true)
               {status :status} (pav-req :get (str "/user/token/validate?token=" token))]
           status => 200))
