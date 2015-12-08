@@ -92,8 +92,8 @@
 			{:next-page 0
 			 :results   (->> (map add-bill-comment-count)
 										   (map add-bill-vote-count)
-											#(sort-by :timestamp >))})
-		feed))
+											#(sort-by :timestamp >))}
+			feed)))
 
 (defn persist-to-newsfeed [events]
 	(when events
