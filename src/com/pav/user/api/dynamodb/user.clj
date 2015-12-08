@@ -96,8 +96,7 @@
 			{:next-page 0
 			 :results   (->> feed
 										 	 (mapv add-bill-comment-count)
-										   (mapv add-bill-vote-count)
-											 (sort-by :timestamp >))})))
+										   (mapv add-bill-vote-count))})))
 
 (defn persist-to-newsfeed [events]
 	(when events
