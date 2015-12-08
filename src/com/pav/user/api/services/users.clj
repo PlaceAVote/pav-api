@@ -38,6 +38,10 @@
         presentable-record (.presentable new-user-profile)]
     {:record presentable-record}))
 
+(defn delete-user [{:keys [user_id] :as user_profile}]
+	(dynamo-dao/delete-user user_id)
+	(redis-dao/delete-user-profile user_profile))
+
 (defn get-user-by-id [user_id]
   "Try retrieving user profile from redis, if this fails then retrieve from dynamodb and populate redis
   with user profile"

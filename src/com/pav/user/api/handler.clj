@@ -30,6 +30,7 @@
 (defroutes app-routes
   (GET "/docs" [] swagger-docs)
   (GET "/user" [] user)
+  (DELETE "/user" [] user)
   (GET "/user/me/profile" [] user-profile)
   (GET "/user/:user_id/profile" [user_id] user-profile)
   (GET "/user/me/feed" [] feed)

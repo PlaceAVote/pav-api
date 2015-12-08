@@ -47,12 +47,14 @@
 
 (defresource user
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
- :allowed-methods [:get]
+ :allowed-methods [:get :delete]
  :available-media-types ["application/json"]
  :exists? (fn [ctx]
            (if-not (nil? (get-in ctx [:request :params :user_id]))
             {:record (service/get-user-by-id (get-in ctx [:request :params :user_id]))}
             {:record (service/get-user-by-id (retrieve-user-id (:request ctx)))}))
+ :delete! (fn [ctx]
+						(service/delete-user (retrieve-user-details (:request ctx))))
  :handle-ok record-in-ctx)
 
 (defresource user-profile

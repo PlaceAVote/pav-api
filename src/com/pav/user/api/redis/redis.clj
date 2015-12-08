@@ -17,6 +17,10 @@
   (wcar redis-conn (do (car/hmset* (str "user:" user_id ":profile") (update-in user-profile [:created_at] bigint))
                        (car/set (str "email:" email ":id") user_id))))
 
+(defn delete-user-profile [{:keys [user_id email]}]
+	(wcar redis-conn (do (car/del (str "user:" user_id ":profile"))
+											 (car/del (str "email:" email ":id")))))
+
 (defn get-user-profile [user_id]
   (let [profile (wcar redis-conn (car/parse-map (car/hgetall (str "user:" user_id ":profile")) :keywordize))]
     (if-not (empty? profile)

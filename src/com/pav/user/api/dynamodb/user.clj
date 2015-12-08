@@ -39,6 +39,11 @@
    user-profile
    (catch Exception e (log/info (str "Error occured persisting new user-profile " e " to table " user-table-name)))))
 
+(defn delete-user [user_id]
+	(try
+		(far/delete-item client-opts user-table-name {:user_id user_id})
+	(catch Exception e (log/info "Error occured deleting user " user_id) e)))
+
 (defn update-user-token [user_id new-token]
   (try
    (far/update-item client-opts user-table-name {:user_id user_id} {:token [:put (:token new-token)]})
