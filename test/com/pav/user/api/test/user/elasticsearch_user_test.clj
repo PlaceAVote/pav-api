@@ -62,8 +62,8 @@
 												:dob     "05/10/1984" :img_url "http://img.com"}
 					_ (index-user user-profile)]))
 
-	(fact "Given a collection of topics containing the term Politics, return hr1764 in result set"
-		(let [_ (Thread/sleep 1000)
+	(fact "Given a collection of topics containing the term Politics & Defense, return hr1764 and hr2029 in result set"
+		(let [_ (Thread/sleep 3000)
 					results (gather-latest-bills-by-subject ["Politics" "Defense"])]
 			(count results) => 2
 			results => (contains [{:type           "bill"
