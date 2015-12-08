@@ -72,7 +72,8 @@
                        :throughput {:read 5 :write 10}
                        :block? true})
 		(far/create-table client-opts feed-table-name [:user_id :s]
-                      {:throughput {:read 5 :write 10}
+                      {:range-keydef [:event_id :s]
+                       :throughput {:read 5 :write 10}
                        :block? true})
     (far/create-table client-opts following-table-name [:user_id :s]
                       {:range-keydef [:following :s]

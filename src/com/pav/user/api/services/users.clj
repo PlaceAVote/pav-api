@@ -10,12 +10,15 @@
             [com.pav.user.api.domain.user :refer [new-user-profile]]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log])
-  (:import (java.util Date)))
+  (:import (java.util Date UUID)))
 
 (defn pre-populate-newsfeed [{:keys [user_id topics]}]
 	(let [bills (gather-latest-bills-by-subject topics)]
 		(if-not (empty? bills)
-			(dynamo-dao/persist-to-newsfeed (mapv #(assoc % :user_id user_id :timestamp (.getTime (Date.))) bills)))))
+			(dynamo-dao/persist-to-newsfeed
+				(mapv #(assoc % :event_id (.toString (UUID/randomUUID))
+												:user_id user_id
+												:timestamp (.getTime (Date.))) bills)))))
 
 (defn persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
