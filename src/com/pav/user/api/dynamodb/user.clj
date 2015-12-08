@@ -76,8 +76,11 @@
 	 :results (far/query client-opts timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
 
 (defn add-bill-comment-count [{:keys [bill_id] :as event}]
-	(assoc event :comment_count (far/query client-opts comment-details-table-name {:bill_id [:eq bill_id]}
-																{:index  "bill-comment-idx" :return :count})))
+	(let [ccount (far/query client-opts comment-details-table-name {:bill_id [:eq bill_id]}
+								 {:index  "bill-comment-idx" :return :count})]
+		(if (empty? ccount)
+			(assoc event :comment_count 0)
+			(assoc event :comment_count ccount))))
 
 (defn add-bill-vote-count [{:keys [bill_id] :as event}]
 	(let [vcount (far/get-item client-opts vote-count-table-name {:bill_id bill_id}
@@ -88,12 +91,13 @@
 
 (defn get-user-feed [user_id]
 	(let [feed (far/query client-opts userfeed-table-name {:user_id [:eq user_id]} {:limit 10})]
-		(if-not (empty? feed)
+		(if (empty? feed)
+			feed
 			{:next-page 0
-			 :results   (->> (map add-bill-comment-count)
+			 :results   (->> feed
+										 	 (map add-bill-comment-count)
 										   (map add-bill-vote-count)
-											#(sort-by :timestamp >))}
-			feed)))
+											 (sort-by :timestamp >))})))
 
 (defn persist-to-newsfeed [events]
 	(when events

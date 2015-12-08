@@ -439,14 +439,17 @@
 																			(flush-user-index)
 																			(bootstrap-bills)))]
 	(fact "Retrieve current users feed"
-		(let [{body :body} (pav-req :put "/user" {:email "john@pl.com"
+		(let [_ (Thread/sleep 3000)
+					{body :body} (pav-req :put "/user" {:email "john@pl.com"
 																							:password "stuff2"
-																							:first_name "john" :last_name "stuff"
+																							:first_name "john"
+																							:last_name "stuff"
 																							:dob "05/10/1984"
 																							:country_code "USA"
 																							:topics ["Defense"]})
-					{token :token user_id :user_id} (ch/parse-string body true)
-					_ (Thread/sleep 3000)
+					{token :token} (ch/parse-string body true)
+					_ (Thread/sleep 1000)
 					{status :status body :body} (pav-req :get "/user/feed" token {})
 					{next-page :next-page results :results} (ch/parse-string body true)]
-			status => 200)))
+			status => 200
+			next-page => 0)))
