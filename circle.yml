@@ -1,5 +1,8 @@
 machine:
   pre:
+    - wget https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-2.0.0.tar.gz
+    - tar -xvf elasticsearch-2.0.0.tar.gz
+    - elasticsearch-2.0.0/bin/elasticsearch: {background: true}
     - wget http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest
     - tar -xvzf dynamodb_local_latest
     - java -Xms256m -Xmx512m -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar --sharedDb:
@@ -11,7 +14,6 @@ machine:
     version: oraclejdk8
   services:
     - redis
-    - elasticsearch
 deployment:
   development:
     branch: master
