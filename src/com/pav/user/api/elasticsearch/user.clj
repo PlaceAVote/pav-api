@@ -18,7 +18,7 @@
 		(->> (esrsp/hits-from
 					 (esd/search connection "congress" "bill"
 						 :query (q/terms :keywords terms)
-						 :_source [:subject :bill_id :official_title :short_title :popular_title]
+						 :_source [:subject :bill_id :official_title :short_title :popular_title :summary]
 						 :sort  {:updated_at "desc"}))
 			(mapv merge-type-and-fields)))
 	)
