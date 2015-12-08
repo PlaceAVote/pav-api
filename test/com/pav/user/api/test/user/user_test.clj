@@ -8,7 +8,8 @@
                                                        persist-timeline-event
 																											 persist-notification-event
                                                        flush-user-index
-                                                       bootstrap-bills]]
+                                                       bootstrap-bills
+																											 create-comment]]
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [com.pav.user.api.authentication.authentication :refer [create-auth-token]]
@@ -446,8 +447,9 @@
 																							:last_name "stuff"
 																							:dob "05/10/1984"
 																							:country_code "USA"
-																							:topics ["Defense"]})
+																							:topics ["Politics" "Defense"]})
 					{token :token} (ch/parse-string body true)
+					_ (create-comment {:comment_id "101" :bill_id "hr1764-114"})
 					_ (Thread/sleep 1000)
 					{status :status body :body} (pav-req :get "/user/feed" token {})
 					{next-page :next-page results :results} (ch/parse-string body true)]

@@ -114,6 +114,9 @@
 	(doseq [event events]
 		(far/put-item client-opts notification-table-name event)))
 
+(defn create-comment [comment]
+	(far/put-item client-opts comment-details-table-name comment))
+
 (defn flush-user-index []
   (esi/delete es-connection "pav")
   (esi/delete es-connection "congress")

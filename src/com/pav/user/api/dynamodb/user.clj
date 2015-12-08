@@ -76,11 +76,8 @@
 	 :results (far/query client-opts timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
 
 (defn add-bill-comment-count [{:keys [bill_id] :as event}]
-	(let [ccount (far/query client-opts comment-details-table-name {:bill_id [:eq bill_id]}
-								 {:index  "bill-comment-idx" :return :count})]
-		(if (empty? ccount)
-			(assoc event :comment_count 0)
-			(assoc event :comment_count ccount))))
+	(let [ccount (count (far/query client-opts comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"}))]
+		(assoc event :comment_count ccount)))
 
 (defn add-bill-vote-count [{:keys [bill_id] :as event}]
 	(let [vcount (far/get-item client-opts vote-count-table-name {:bill_id bill_id}
