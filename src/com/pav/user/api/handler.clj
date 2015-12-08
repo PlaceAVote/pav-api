@@ -10,7 +10,7 @@
             [compojure.route :as route]
             [compojure.core :refer :all]
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
-                                                     confirm-user notifications timeline
+                                                     confirm-user notifications timeline feed
                                                      follow following followers unfollow
                                                      user-profile validate-token]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
@@ -32,6 +32,7 @@
   (GET "/user" [] user)
   (GET "/user/me/profile" [] user-profile)
   (GET "/user/:user_id/profile" [user_id] user-profile)
+  (GET "/user/me/feed" [] feed)
   (GET "/user/notifications" [] notifications)
   (GET "/user/me/timeline" [] timeline)
   (GET "/user/:user_id/timeline" [] timeline)

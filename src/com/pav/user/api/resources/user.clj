@@ -86,6 +86,12 @@
               (service/get-timeline (get-in ctx [:request :params :user_id]) (retrieve-page-param ctx))
               (service/get-timeline (retrieve-user-id (:request ctx)) (retrieve-page-param ctx)))))
 
+(defresource feed
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :allowed-methods [:get]
+ :available-media-types ["application/json"]
+ :handle-ok (fn [ctx] (service/get-feed (retrieve-user-id (:request ctx)))))
+
 (defresource follow
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:put]

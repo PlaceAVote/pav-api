@@ -68,6 +68,10 @@
 	{:next-page 0
 	 :results (far/query client-opts timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
 
+(defn get-user-feed [user_id]
+	{:next-page 0
+	 :results (far/query client-opts userfeed-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
+
 (defn persist-to-newsfeed [events]
 	(when events
 		(log/info "Events being persisted to users newsfeed " events)

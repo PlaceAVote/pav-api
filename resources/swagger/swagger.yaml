@@ -8,6 +8,25 @@ consumes:
 produces:
   - application/json
 paths:
+  /user/me/feed:
+    get:
+      description: Get the current users feed
+      parameters:
+        - name: Authorization
+          in: header
+          description: token to be passed as a header
+          required: true
+          type: string
+          items:
+            type: string
+            format: PAV_AUTH_TOKEN token
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Successful response
+        '401':
+          description: Not Authorized (Check Authentication Token)
   /user/{user_id}/timeline:
     get:
       description: Given a user ID then retrieve that users personal timeline

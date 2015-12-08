@@ -117,6 +117,9 @@
 (defn get-timeline [user from]
 	(dynamo-dao/get-user-timeline user))
 
+(defn get-feed [user]
+	(dynamo-dao/get-user-feed user))
+
 (defn publish-to-timeline [event]
   (redis-dao/publish-to-timeline event))
 
