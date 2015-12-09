@@ -396,7 +396,8 @@
               {my-followers :body} (pav-req :get (str "/user/me/followers") token {})
               {pauls-followers :body} (pav-req :get (str "/user/" pauls_user_id "/followers") token {})]
           create_status => 201
-          (ch/parse-string my-following true) => (contains {:user_id pauls_user_id :first_name "peter" :last_name "pan" :img_url nil})
+          (ch/parse-string my-following true) => (contains {:user_id pauls_user_id :first_name "peter" :last_name "pan" :img_url nil
+																														:follower_count 1})
           (ch/parse-string paul-following true) => []
           (ch/parse-string my-followers true) => []
           (ch/parse-string pauls-followers true) => (contains {:user_id my_id :first_name "john" :last_name "stuff" :img_url nil})))

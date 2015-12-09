@@ -149,17 +149,19 @@
 (defn unfollow-user [follower following]
   (dynamo-dao/unfollow-user follower following))
 
-(defn user-following [user_id]
-  (dynamo-dao/user-following user_id))
-
-(defn user-followers [user_id]
-  (dynamo-dao/user-followers user_id))
-
 (defn count-followers [user_id]
   (dynamo-dao/count-followers user_id))
 
 (defn count-following [user_id]
   (dynamo-dao/count-following user_id))
+
+(defn user-followers [user_id]
+	(dynamo-dao/user-followers user_id))
+
+(defn user-following [user_id]
+	(->> (dynamo-dao/user-following user_id)
+			 (mapv #(assoc % :follower_count (count-followers (:user_id %))))
+		   (sort-by :follower_count >)))
 
 (defn get-user-profile
   ([user_id]
