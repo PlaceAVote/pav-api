@@ -102,10 +102,11 @@
 			(far/put-item client-opts userfeed-table-name (assoc evt :timestamp (.getTime (Date.)))))))
 
 (defn build-follow-profile [profile]
-  {:user_id (:user_id profile)
-   :first_name (:first_name profile)
-   :last_name (:last_name profile)
-   :img_url (:img_url profile)})
+	(when profile
+		{:user_id    (:user_id profile)
+		 :first_name (:first_name profile)
+		 :last_name  (:last_name profile)
+		 :img_url    (:img_url profile)}))
 
 (defn retrieve-following-profile [following-info]
   (-> (far/get-item client-opts user-table-name {:user_id (:following following-info)})
@@ -128,11 +129,14 @@
 
 (defn user-following [user_id]
   (->> (far/query client-opts following-table-name {:user_id [:eq user_id]})
-       (map #(retrieve-following-profile %))))
+       (map #(retrieve-following-profile %))
+		   (remove nil?)))
 
 (defn user-followers [user_id]
   (->> (far/query client-opts follower-table-name {:user_id [:eq user_id]})
-       (map #(retrieve-follower-profile %))))
+       (map #(retrieve-follower-profile %))
+
+		   (remove nil?)))
 
 (defn following? [follower following]
   (if (empty? (far/get-item client-opts following-table-name {:user_id follower :following following}))
