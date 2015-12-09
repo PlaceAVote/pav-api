@@ -829,6 +829,10 @@
                 },
                 "img_url": {
                   "type": "string"
+                },
+                "follower_count": {
+                  "type": "number",
+                  "format": "number"
                 }
               }
             }
@@ -884,6 +888,10 @@
                 },
                 "img_url": {
                   "type": "string"
+                },
+                "follower_count": {
+                  "type": "number",
+                  "format": "number"
                 }
               }
             }

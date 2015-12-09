@@ -573,6 +573,9 @@ paths:
                 type: string
               img_url:
                 type: string
+              follower_count:
+                type: number
+                format: number
         '401':
           description: Not Authorized
   /user/{user_id}/following:
@@ -610,6 +613,9 @@ paths:
                 type: string
               img_url:
                 type: string
+              follower_count:
+                type: number
+                format: number
         '401':
           description: Not Authorized
   /user/me/followers:
