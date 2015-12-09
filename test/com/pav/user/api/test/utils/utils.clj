@@ -68,7 +68,10 @@
                       {:throughput {:read 5 :write 10}
                        :block? true})
     (far/create-table client-opts notification-table-name [:user_id :s]
-                      {:range-keydef [:timestamp :n]
+                      {:gsindexes [{:name "event_id-idx"
+																		:hash-keydef [:event_id :s]
+																		:throughput {:read 5 :write 10}}]
+											 :range-keydef [:timestamp :n]
                        :throughput {:read 5 :write 10}
                        :block? true})
 		(far/create-table client-opts timeline-table-name [:user_id :s]

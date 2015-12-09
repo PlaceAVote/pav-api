@@ -120,6 +120,9 @@
 (defn get-notifications [user]
   (dynamo-dao/get-notifications user))
 
+(defn mark-notification [id]
+	(dynamo-dao/mark-notification id))
+
 (defn get-timeline [user from]
 	(dynamo-dao/get-user-timeline user))
 

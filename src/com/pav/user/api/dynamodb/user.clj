@@ -71,6 +71,13 @@
 	{:next-page 0
 	 :results (far/query client-opts notification-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
 
+(defn mark-notification [id]
+	(let [notification (first
+											 (far/query client-opts notification-table-name {:event_id [:eq id]}
+												{:index "event_id-idx" :return [:user_id :timestamp]}))]
+		(when notification
+			(far/update-item client-opts notification-table-name notification {:read [:put true]}))))
+
 (defn get-user-timeline [user_id]
 	{:next-page 0
 	 :results (far/query client-opts timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})

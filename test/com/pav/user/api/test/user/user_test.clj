@@ -21,6 +21,12 @@
   ([method url token payload] (app (content-type (header (request method url (ch/generate-string payload))
                                                          "Authorization" (str "PAV_AUTH_TOKEN " token)) "application/json"))))
 
+(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
+								:country_code "USA" :topics ["Defense"]})
+
+(def test-fb-user {:email "paul@facebook.com" :first_name "john" :last_name "stuff" :dob "05/10/1984" :country_code "USA"
+									 :img_url "http://image.com/image.jpg" :topics ["Defense"] :token "token"})
+
 (against-background [(before :facts (do
                                       (delete-user-table)
                                       (create-user-table)
@@ -29,112 +35,47 @@
                                       (bootstrap-bills)))]
 
    (fact "Create a new user, will return 201 status and newly created user"
-         (let [{status :status body :body} (pav-req :put "/user"
-                                              {:email "john@stuff.com"
-                                               :password "stuff2"
-                                               :first_name "john"
-                                               :last_name "stuff"
-                                               :dob "05/10/1984"
-                                               :country_code "USA"
-                                               :topics ["Defense"]})]
+         (let [{status :status body :body} (pav-req :put "/user" test-user)]
            status => 201
            (keys (ch/parse-string body true)) => (contains [:user_id :token :email :first_name :last_name :dob :country_code
                                                             :topics :created_at :registered :public] :in-any-order)))
 
    (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
-         (let [{status :status body :body} (pav-req :put "/user/facebook"
-                                               {:email "paul@facebook.com"
-                                                :first_name "john" :last_name "stuff"
-                                                :dob "05/10/1984"
-                                                :country_code "USA"
-                                                :img_url "http://image.com/image.jpg"
-                                                :topics ["Defense"]
-                                                :token "token"})]
+         (let [{status :status body :body} (pav-req :put "/user/facebook" test-fb-user)]
            status => 201
            (keys (ch/parse-string body true)) => (contains [:user_id :email :first_name :last_name :dob :country_code
                                                             :img_url :topics :token :created_at :registered :public] :in-any-order)))
 
 
   (fact "Create a new user from facebook login, when email is missing, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user/facebook"
-                                                   {:first_name "john"
-                                                    :last_name "stuff"
-                                                    :dob "05/10/1984"
-                                                    :country_code "USA"
-                                                    :img_url "http://image.com/image.jpg"
-                                                    :topics ["Defense"]
-                                                    :token "token"})]
+        (let [{status :status body :body} (pav-req :put "/user/facebook" (dissoc test-fb-user :email))]
           status => 400
           body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
 
   (fact "Create a new user from facebook login, when token is missing, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user/facebook"
-                                                   {:email "john@stuff.com"
-                                                    :first_name "john"
-                                                    :last_name "stuff"
-                                                    :dob "05/10/1984"
-                                                    :country_code "USA"
-                                                    :img_url "http://image.com/image.jpg"
-                                                    :topics ["Defense"]})]
+        (let [{status :status body :body} (pav-req :put "/user/facebook" (dissoc test-fb-user :token))]
           status => 400
           body => (ch/generate-string {:errors [{:token "A token is required for social media registerations and logins"}]})))
 
   (fact "Create a new user, with an existing email, should return 409"
-        (let [_ (pav-req :put "/user"
-                         {:email "john@stuff.com"
-                          :password "stuff2"
-                          :first_name "john"
-                          :last_name "stuff"
-                          :dob "05/10/1984"
-                          :country_code "USA"
-                          :topics ["Defense"]})
-              {status :status body :body} (pav-req :put "/user"
-                                                   {:email "john@stuff.com"
-                                                    :password "stuff2"
-                                                    :first_name "john"
-                                                    :last_name "stuff"
-                                                    :dob "05/10/1984"
-                                                    :country_code "USA"
-                                                    :topics ["Defense"]})]
+        (let [_ (pav-req :put "/user" test-user)
+              {status :status body :body} (pav-req :put "/user" test-user)]
           status => 409
           body => (ch/generate-string existing-user-error-msg)))
 
   (fact "Create a new facebook user, with an existing email, should return 409"
-        (let [_ (pav-req :put "/user/facebook" {:email "john@stuff.com"
-                                                :first_name "john" :last_name "stuff"
-                                                :dob "05/10/1984"
-                                                :country_code "USA"
-                                                :img_url "http://image.com/image.jpg"
-                                                :topics ["Defense" ]
-                                                :token "token"})
-              {status :status body :body} (pav-req :put "/user/facebook"
-                                                   {:email "john@stuff.com"
-                                                    :first_name "john"
-                                                    :last_name "stuff"
-                                                    :dob "05/10/1984"
-                                                    :country_code "USA"
-                                                    :img_url "http://image.com/image.jpg"
-                                                    :topics ["Defense"]
-                                                    :token "token"})]
+        (let [_ (pav-req :put "/user/facebook" test-fb-user)
+              {status :status body :body} (pav-req :put "/user/facebook" test-fb-user)]
           status => 409
           body => (ch/generate-string existing-user-error-msg)))
 
   (fact "Create a new user, when the payload is missing an email, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user"
-                                                   {:password "stuff2"
-                                                    :first_name "john" :last_name "stuff"
-                                                    :dob "05/10/1984"
-                                                    :country_code "USA"
-                                                    :topics ["Defense"]})]
+        (let [{status :status body :body} (pav-req :put "/user" (dissoc test-user :email))]
           status => 400
           body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
 
   (fact "Create a new user, when the payload is missing a password, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user" {:email "john@stuff.com"
-                                                                 :first_name "john" :last_name "stuff"
-                                                                 :dob "05/10/1984"
-                                                                 :country_code "USA"
-                                                                 :topics ["Defense"]})]
+        (let [{status :status body :body} (pav-req :put "/user" (dissoc test-user :password))]
           status => 400
           body => (ch/generate-string {:errors [{:password "Password is a required field"}]})))
 
@@ -150,77 +91,27 @@
                                                            :topics "Please specify a list of topics."}]}) :in-any-order)))
 
   (fact "Create a new user, when the email is invalid, return 400 with appropriate error message"
-    (let [{status :status body :body} (pav-req :put "/user" {:email "johnstuffcom"
-                                                             :password "stuff2"
-                                                             :first_name "john"
-                                                             :last_name "stuff"
-                                                             :dob "05/10/1984"
-                                                             :country_code "USA"
-                                                             :topics ["Defense"]})]
+    (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :email "johnstuffcom"))]
       status => 400
       body => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}]}) :in-any-order)))
 
   (fact "Create a new user, when the country is invalid, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user" {:email "john@stuff.com"
-                                                                 :password "stuff2"
-                                                                 :first_name "john"
-                                                                 :last_name "stuff"
-                                                                 :dob "05/10/1984"
-                                                                 :country_code ""
-                                                                 :topics ["Defense"]})]
+        (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :country_code ""))]
           status => 400
           body => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
 
   (fact "Create a new user, when the country code is invalid, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user" {:email "john@stuff.com"
-                                                                 :password "stuff2"
-                                                                 :first_name "john"
-                                                                 :last_name "stuff"
-                                                                 :dob "05/10/1984"
-                                                                 :country_code "UPA"
-                                                                 :topics ["Defense"]})]
+        (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :country_code "UPA"))]
           status => 400
           body => (contains (ch/generate-string {:errors [{:country_code "Country Code is a required field.  Please Specify Country Code"}]}) :in-any-order)))
 
   (fact "Create a new user, when the password is invalid, return 400 with appropriate error message"
-      (let [{status :status body :body} (pav-req :put "/user" {:email "john@stuff.com"
-                                                               :password ""
-                                                               :first_name "john"
-                                                               :last_name "stuff"
-                                                               :dob "05/10/1984"
-                                                               :country_code "USA"
-                                                               :topics ["Defense" ]})]
+      (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :password ""))]
         status => 400
         body => (contains (ch/generate-string {:errors [{:password "Password is a required field"}]}) :in-any-order)))
 
-  (fact "Retrieve a user profile by authentication token"
-         (let [{:keys [token]} (ch/parse-string (:body (pav-req :put "/user" {:email "john@stuff.com"
-                                                                              :password "stuff2"
-                                                                              :first_name "john" :last_name "stuff"
-                                                                              :dob "05/10/1984"
-                                                                              :country_code "USA"
-                                                                              :topics ["Defense" ]})) true)
-               {status :status body :body} (pav-req :get "/user" token {})]
-           status => 200
-           (ch/parse-string body true) => (contains {:email "john@stuff.com"
-                                                     :first_name "john"
-                                                     :last_name "stuff"
-                                                     :dob "05/10/1984"
-                                                     :country_code "USA"
-                                                     :topics ["Defense"]} :in-any-order)))
-
-  (fact "Retrieve a user by email, without authentication token"
-        (let [{status :status} (pav-req :get "/user")]
-          status => 401))
-
   (fact "Create token for user when logging on"
-        (let [_ (pav-req :put "/user" {:email "john@stuff.com"
-                                       :password "stuff2"
-                                       :first_name "john"
-                                       :last_name "stuff"
-                                       :dob "05/10/1984"
-                                       :country_code "USA"
-                                       :topics ["Defense"]})
+        (let [_ (pav-req :put "/user" test-user)
               {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "stuff2"})
               {retrieve-user-status :status user-profile :body} (pav-req :get "/user" (:token (ch/parse-string body true)) {})]
           status => 201
@@ -229,14 +120,7 @@
           (keys (ch/parse-string body true)) => (contains [:token])))
 
   (fact "Create token for facebook user when logging on"
-        (let [_ (pav-req :put "/user/facebook" {:email "paul@facebook.com"
-                                                :first_name "john"
-                                                :last_name "stuff"
-                                                :dob "05/10/1984"
-                                                :country_code "USA"
-                                                :img_url "http://image.com/image.jpg"
-                                                :topics ["Defense"]
-                                                :token "token"})
+        (let [_ (pav-req :put "/user/facebook" test-fb-user)
               {status :status body :body} (pav-req :post "/user/facebook/authenticate" {:email "paul@facebook.com" :token "token"})
               {retrieve-user-status :status user-profile :body} (pav-req :get "/user" (:token (ch/parse-string body true)) {})]
           status => 201
@@ -245,24 +129,13 @@
           (keys (ch/parse-string body true)) => (contains [:token])))
 
   (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
-        (let [_ (pav-req :put "/user" {:email "john@stuff.com"
-                                       :password "stuff2"
-                                       :first_name "john"
-                                       :last_name "stuff"
-                                       :dob "05/10/1984"
-                                       :country_code "USA"
-                                       :topics ["Defense"]})
+        (let [_ (pav-req :put "/user" test-user)
               {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "invalid"})]
           status => 401
           body => login-error-msg))
 
-  (fact "Create token for user, when payload doesn't contain an email then returns 400 with suitable error message"
-        (let [_ (pav-req :put "/user" {:email "john@stuff.com"
-                                       :password "stuff2"
-                                       :first_name "john" :last_name "stuff"
-                                       :dob "05/10/1984"
-                                       :country_code "USA"
-                                       :topics ["Defense"]})
+  (fact "Create token for user, when authentication payload doesn't contain an email then returns 400 with suitable error message"
+        (let [_ (pav-req :put "/user" test-user)
               {status :status body :body} (pav-req :post "/user/authenticate" {:password "stuff2"})]
           status => 400
           body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
@@ -272,25 +145,37 @@
           status => 401))
 
   (fact "Retrieve users notifications"
-        (let [{body :body} (pav-req :put "/user" {:email "john@pl.com"
-                                       :password "stuff2"
-                                       :first_name "john" :last_name "stuff"
-                                       :dob "05/10/1984"
-                                       :country_code "USA"
-                                       :topics ["Defense" ]})
+        (let [{body :body} (pav-req :put "/user" test-user)
 							{token :token user_id :user_id} (ch/parse-string body true)
 							notification-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
-																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
-																:score 0 :body "Comment text goes here!!"}
-															 {:type "vote" :bill_id "s1182-114" :user_id user_id
-																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
-																:timestamp 1446462364297}]
+																		:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+																		:score 0 :body "Comment text goes here!!" :event_id "10"}
+																	 {:type "vote" :bill_id "s1182-114" :user_id user_id
+																		:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+																		:timestamp 1446462364297 :event_id "11"}]
 							_ (persist-notification-event notification-events)
 							{status :status body :body} (pav-req :get "/user/notifications" token {})
 							{next-page :next-page results :results} (ch/parse-string body true)]
 					status => 200
 					next-page => 0
 					results => (contains notification-events)))
+
+	(fact "Retrieve user notifications, mark notification as read"
+		(let [{body :body} (pav-req :put "/user" test-user)
+					{token :token user_id :user_id} (ch/parse-string body true)
+					notification-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
+																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+																:score 0 :body "Comment text goes here!!" :event_id "10"}
+															 {:type "vote" :bill_id "s1182-114" :user_id user_id
+																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+																:timestamp 1446462364297 :event_id "11"}]
+					_ (persist-notification-event notification-events)
+					{status :status} (pav-req :post "/user/notification/10/mark" token {})
+					{body :body} (pav-req :get "/user/notifications" token {})
+					{next-page :next-page results :results} (ch/parse-string body true)]
+			status => 201
+			next-page => 0
+			(first results) => (contains {:read true})))
 
   (fact "Retrieving user notifications without Authentication token, results in 401"
         (let [{status :status} (pav-req :get "/user/notifications" "token" {})]
@@ -301,12 +186,7 @@
           status => 401))
 
   (fact "Retrieve current users activity timeline"
-        (let [{body :body} (pav-req :put "/user" {:email "john@pl.com"
-                                                  :password "stuff2"
-                                                  :first_name "john" :last_name "stuff"
-                                                  :dob "05/10/1984"
-                                                  :country_code "USA"
-                                                  :topics ["Defense"]})
+        (let [{body :body} (pav-req :put "/user" test-user)
               {token :token user_id :user_id} (ch/parse-string body true)
               timeline-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
                                 :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
@@ -322,12 +202,7 @@
           results => (contains timeline-events)))
 
   (fact "Retrieve a users activity timeline"
-        (let [{body :body} (pav-req :put "/user" {:email "john@pl.com"
-                                                  :password "stuff2"
-                                                  :first_name "john" :last_name "stuff"
-                                                  :dob "05/10/1984"
-                                                  :country_code "USA"
-                                                  :topics ["Defense"]})
+        (let [{body :body} (pav-req :put "/user" test-user)
               {token :token} (ch/parse-string body true)
               timeline-events [{:type "comment" :bill_id "s1182-114" :user_id "user102" :timestamp 1446479124991 :comment_id "comment:1"
                                 :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
@@ -343,12 +218,7 @@
           results => (contains timeline-events)))
 
   (fact "Retrieve a users profile in relation to current user"
-        (let [{caller :body} (pav-req :put "/user" {:email "john@pl.com"
-                                                  :password "stuff2"
-                                                  :first_name "john" :last_name "stuff"
-                                                  :dob "05/10/1984"
-                                                  :country_code "USA"
-                                                  :topics ["Defense"]})
+        (let [{caller :body} (pav-req :put "/user" test-user)
               {token :token} (ch/parse-string caller true)
               {search-user :body} (pav-req :put "/user" {:email "peter@pl.com"
                                                   :password "stuff2"
@@ -366,12 +236,7 @@
                                                  :total_following 0})))
 
   (fact "Retrieve the current users profile"
-        (let [{caller :body} (pav-req :put "/user" {:email "john@pl.com"
-                                                    :password "stuff2"
-                                                    :first_name "john" :last_name "stuff"
-                                                    :dob "05/10/1984"
-                                                    :country_code "USA"
-                                                    :topics ["Defense"]})
+        (let [{caller :body} (pav-req :put "/user" test-user)
               {token :token} (ch/parse-string caller true)
               {status :status body :body} (pav-req :get "/user/me/profile" token {})]
           status => 200
@@ -380,10 +245,7 @@
                                                  :total_following 0})))
 
   (fact "Follow/following another user"
-        (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
-                                                    :first_name "john" :last_name "stuff"
-                                                    :dob "05/10/1984" :country_code "USA"
-                                                    :topics ["Defense" ]})
+        (let [{follower :body} (pav-req :put "/user" test-user)
               {my_id :user_id token :token} (ch/parse-string follower true)
               {being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
                                                          :first_name "peter" :last_name "pan"
@@ -403,10 +265,7 @@
           (ch/parse-string pauls-followers true) => (contains {:user_id my_id :first_name "john" :last_name "stuff" :img_url nil})))
 
   (fact "Unfollow user"
-        (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
-                                                      :first_name "john" :last_name "stuff"
-                                                      :dob "05/10/1984" :country_code "USA"
-                                                      :topics ["Defense" ]})
+        (let [{follower :body} (pav-req :put "/user" test-user)
               {token :token} (ch/parse-string follower true)
               {being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
                                                             :first_name "peter" :last_name "pan"
@@ -422,33 +281,18 @@
           (ch/parse-string pauls-followers true) => []))
 
   (fact "Verify the JWT Token"
-        (let [{follower :body} (pav-req :put "/user" {:email "john@pl.com" :password "stuff2"
-                                                      :first_name "john" :last_name "stuff"
-                                                      :dob "05/10/1984" :country_code "USA"
-                                                      :topics ["Defense"]})
+        (let [{follower :body} (pav-req :put "/user" test-user)
               {token :token} (ch/parse-string follower true)
               {status :status} (pav-req :get (str "/user/token/validate?token=" token))]
           status => 200))
 
   (fact "Verify the JWT Token, when invalid, return 401."
        (let [{status :status} (pav-req :get "/user/token/validate?token=rubbish")]
-        status => 401)))
+        status => 401))
 
-(against-background [(before :facts (do
-																			(delete-user-table)
-																			(create-user-table)
-																			(flush-redis)
-																			(flush-user-index)
-																			(bootstrap-bills)))]
 	(fact "Retrieve current users feed"
 		(let [_ (Thread/sleep 3000)
-					{body :body} (pav-req :put "/user" {:email "john@pl.com"
-																							:password "stuff2"
-																							:first_name "john"
-																							:last_name "stuff"
-																							:dob "05/10/1984"
-																							:country_code "USA"
-																							:topics ["Politics" "Defense"]})
+					{body :body} (pav-req :put "/user" (assoc test-user :topics ["Defense" "Politics"]))
 					{token :token} (ch/parse-string body true)
 					_ (create-comment {:comment_id "101" :bill_id "hr1764-114"})
 					_ (Thread/sleep 1000)

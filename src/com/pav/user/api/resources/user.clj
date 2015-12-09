@@ -79,6 +79,12 @@
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx] (service/get-notifications (retrieve-user-id (:request ctx)))))
 
+(defresource mark-notification [id]
+	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+	:allowed-methods [:post]
+	:available-media-types ["application/json"]
+	:post! (service/mark-notification id))
+
 (defresource timeline
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]

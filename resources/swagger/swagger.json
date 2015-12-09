@@ -218,6 +218,43 @@
         }
       }
     },
+    "/user/notification/{event_id}/mark": {
+      "post": {
+        "description": "Mark notification if user has read it",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "description": "Event ID associated with Notification",
+            "required": true,
+            "type": "string",
+            "format": "string"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "token to be passed as a header",
+            "required": true,
+            "type": "string",
+            "items": {
+              "type": "string",
+              "format": "PAV_AUTH_TOKEN token"
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
     "/user/notifications": {
       "get": {
         "description": "Get the current users notifications",
