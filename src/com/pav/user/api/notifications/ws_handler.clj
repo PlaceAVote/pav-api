@@ -27,7 +27,7 @@
 (defn start-notification-listener []
 	(log/info "Starting Notification Pub/Sub Listener")
 	(try
-		(car/with-new-pubsub-listener redis-conn
+		(car/with-new-pubsub-listener (:spec redis-conn)
 		 {redis-notification-pubsub notify-client}
 		 (car/subscribe redis-notification-pubsub))
 		(log/info "Started Notification Pub/Sub Listener")
