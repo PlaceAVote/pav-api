@@ -26,9 +26,13 @@
 
 (defn start-notification-listener []
 	(log/info "Starting Notification Pub/Sub Listener")
-	(car/with-new-pubsub-listener redis-conn
-	 {redis-notification-pubsub notify-client}
-	 (car/subscribe redis-notification-pubsub)))
+	(try
+		(car/with-new-pubsub-listener redis-conn
+		 {redis-notification-pubsub notify-client}
+		 (car/subscribe redis-notification-pubsub))
+		(log/info "Started Notification Pub/Sub Listener")
+		(catch Exception e (log/error "Error occured starting Notification Pub/Sub Listener for " redis-conn
+												 " on topic" redis-notification-pubsub e))))
 
 (defn connect! [{:keys [user_id]} channel]
 	(log/info "Channel Open for " user_id)
