@@ -3,12 +3,14 @@
 						[clojure.tools.logging :as log]
 						[com.pav.user.api.utils.utils :refer [retrieve-user-id unpack-redis-msg to-json]]
 						[com.pav.user.api.authentication.authentication :as auth]
+						[com.pav.user.api.redis.redis :refer [redis-conn]]
 						[taoensso.carmine :as car]
 						[environ.core :refer [env]]))
 
+;; Holds all currently connected users to this node.
 (defonce channels (atom []))
 
-(def redis-conn {:spec {:uri (:redis-url env)}})
+;;Redis Notification Topic
 (def redis-notification-pubsub (:redis-notification-pubsub env))
 
 (defn notify-client [[_ _ msg]]
