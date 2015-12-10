@@ -159,7 +159,9 @@
   (dynamo-dao/count-following user_id))
 
 (defn user-followers [user_id]
-	(dynamo-dao/user-followers user_id))
+	(->> (dynamo-dao/user-followers user_id)
+		   (mapv #(assoc % :follower_count (count-followers (:user_id %))))
+			 (sort-by :follower_count >)))
 
 (defn user-following [user_id]
 	(->> (dynamo-dao/user-following user_id)
