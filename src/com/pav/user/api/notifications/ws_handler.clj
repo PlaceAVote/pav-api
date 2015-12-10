@@ -22,9 +22,11 @@
 				 (send! (:channel client) (to-json m))))
 		(catch Exception e (log/error "Exception occured processing notification from redis pub/sub, MESSAGE: " msg ", ERROR: " e)))))
 
-(car/with-new-pubsub-listener redis-conn
-	{redis-notification-pubsub notify-client}
-	(car/subscribe redis-notification-pubsub))
+(defn start-notification-listener []
+	(log/info "Starting Notification Pub/Sub Listener")
+	(car/with-new-pubsub-listener redis-conn
+	 {redis-notification-pubsub notify-client}
+	 (car/subscribe redis-notification-pubsub)))
 
 (defn connect! [{:keys [user_id]} channel]
 	(log/info "Channel Open for " user_id)

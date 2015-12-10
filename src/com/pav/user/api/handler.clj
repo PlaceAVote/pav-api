@@ -13,7 +13,7 @@
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
                                                      user-profile validate-token]]
-						[com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler]]
+						[com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
             [liberator.dev :refer [wrap-trace]]
@@ -23,7 +23,8 @@
 
 
 (defn init []
-  (log/info "API is starting"))
+  (log/info "API is starting")
+	(start-notification-listener))
 
 (defn destroy []
   (log/info "API is shutting down"))
