@@ -13,6 +13,7 @@
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
                                                      user-profile validate-token]]
+						[com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
             [liberator.dev :refer [wrap-trace]]
@@ -35,6 +36,7 @@
   (GET "/user/:user_id/profile" [user_id] user-profile)
   (GET "/user/feed" [] feed)
   (GET "/user/notifications" [] notifications)
+	(GET "/user/notifications/ws" [token] ws-notification-handler)
   (POST "/user/notification/:event_id/mark" [event_id] (mark-notification event_id))
   (GET "/user/me/timeline" [] timeline)
   (GET "/user/:user_id/timeline" [] timeline)

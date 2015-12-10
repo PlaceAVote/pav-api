@@ -9,17 +9,12 @@
 																											 persist-notification-event
                                                        flush-user-index
                                                        bootstrap-bills
-																											 create-comment]]
+																											 create-comment
+																											 pav-req]]
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [com.pav.user.api.authentication.authentication :refer [create-auth-token]]
             [cheshire.core :as ch]))
-
-(defn pav-req
-  ([method url] (app (content-type (request method url) "application/json")))
-  ([method url payload] (app (content-type (request method url (ch/generate-string payload)) "application/json")))
-  ([method url token payload] (app (content-type (header (request method url (ch/generate-string payload))
-                                                         "Authorization" (str "PAV_AUTH_TOKEN " token)) "application/json"))))
 
 (def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
 								:country_code "USA" :topics ["Defense"]})

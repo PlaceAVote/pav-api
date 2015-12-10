@@ -125,3 +125,10 @@
   (esi/delete es-connection "congress")
   (esi/create es-connection "pav")
   (esi/create es-connection "congress"))
+
+
+(defn pav-req
+	([method url] (app (content-type (request method url) "application/json")))
+	([method url payload] (app (content-type (request method url (ch/generate-string payload)) "application/json")))
+	([method url token payload] (app (content-type (header (request method url (ch/generate-string payload))
+																									 "Authorization" (str "PAV_AUTH_TOKEN " token)) "application/json"))))

@@ -62,6 +62,7 @@
                             :dynamo-following-table-name         "userfollowing"
                             :dynamo-comment-details-table-name	 "comment-details"
                             :dynamo-vote-count-table     	 			 "vote-counts"
+														:redis-notification-pubsub					 "redis::notifications::pubsub"
                             :es-url                              "http://localhost:9200"
                             :timeline-queue                      "redismq::queue_name::user-timelineevent-queue"
                             :email-host                          "smtp.mandrillapp.com"

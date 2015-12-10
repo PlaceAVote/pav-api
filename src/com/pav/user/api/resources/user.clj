@@ -73,7 +73,7 @@
  :available-media-types ["application/json"]
  :post! (service/update-registration token))
 
-(defresource notifications [email]
+(defresource notifications
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]
  :available-media-types ["application/json"]

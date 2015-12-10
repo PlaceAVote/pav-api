@@ -15,9 +15,12 @@
      :on-error   (fn [req _]
                    (log/error (str "Token not present or is malformed " req)))}))
 
+(defn unpack-token [token]
+	(jws/unsign token (ks/public-key (:auth-pub-key env)) {:alg :rs256}))
+
 (defn token-valid? [token]
   (try
-    (-> (jws/unsign token (ks/public-key (:auth-pub-key env)) {:alg :rs256})
+    (-> (unpack-token token)
         (contains? :user_id))
   (catch Exception e
     (log/warn token e)

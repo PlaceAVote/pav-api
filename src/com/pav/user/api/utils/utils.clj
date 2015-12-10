@@ -1,4 +1,7 @@
-(ns com.pav.user.api.utils.utils)
+(ns com.pav.user.api.utils.utils
+	(:require [msgpack.core :as msg]
+						[msgpack.clojure-extensions]
+						[cheshire.core :as ch]))
 
 (defn record-in-ctx [ctx]
   (get ctx :record))
@@ -16,3 +19,10 @@
 (defn retrieve-user-id [payload]
   (-> (retrieve-user-details payload)
       :user_id))
+
+(defn unpack-redis-msg [msg]
+	(-> (msg/unpack msg)
+		  (ch/parse-string true)))
+
+(defn to-json [msg]
+	(ch/generate-string msg))
