@@ -11,21 +11,409 @@
   "produces": [
     "application/json"
   ],
+  "parameters": {
+    "ConfirmTokenParam": {
+      "name": "confirm-token",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "format": "string"
+    },
+    "TokenParam": {
+      "name": "Authorization",
+      "in": "header",
+      "description": "token to be passed as a header",
+      "required": true,
+      "type": "string",
+      "items": {
+        "type": "string",
+        "format": "PAV_AUTH_TOKEN token"
+      }
+    },
+    "UserIDParam": {
+      "name": "user_id",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "format": "string"
+    },
+    "PageParam": {
+      "name": "page",
+      "in": "query",
+      "required": false,
+      "type": "string",
+      "format": "string"
+    },
+    "NotificationIDParam": {
+      "name": "event_id",
+      "in": "path",
+      "description": "Event ID associated with Notification",
+      "required": true,
+      "type": "string",
+      "format": "string"
+    },
+    "LoginBodyParam": {
+      "name": "Login",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/LoginBody"
+      }
+    },
+    "FacebookLoginBodyParam": {
+      "name": "Login",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/FacebookLoginBody"
+      }
+    },
+    "UserFollowBodyParam": {
+      "name": "User to follow",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/UserFollowBody"
+      }
+    },
+    "TokenBodyParam": {
+      "name": "token",
+      "in": "query",
+      "required": true,
+      "type": "string",
+      "format": "string"
+    },
+    "NewFacebookUserProfileBodyParam": {
+      "name": "NewUser",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/NewFacebookUserProfileBody"
+      }
+    },
+    "NewUserProfileBodyParam": {
+      "name": "NewUser",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/NewUserProfileBody"
+      }
+    }
+  },
+  "definitions": {
+    "UserProfileResponse": {
+      "title": "UserProfile",
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "dob": {
+          "type": "string",
+          "format": "01/10/1999"
+        },
+        "country_code": {
+          "type": "string",
+          "format": "USA"
+        },
+        "following": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "total_followers": {
+          "type": "number",
+          "format": "number"
+        },
+        "total_following": {
+          "type": "number",
+          "format": "number"
+        }
+      }
+    },
+    "NewFacebookUserProfileBody": {
+      "title": "NewUserProfile",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "test@place.com"
+        },
+        "token": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "dob": {
+          "type": "string",
+          "format": "01/10/1999"
+        },
+        "country_code": {
+          "type": "string",
+          "format": "USA"
+        },
+        "img_url": {
+          "type": "string",
+          "format": "string"
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "[Defence, Arts]"
+          }
+        }
+      }
+    },
+    "NewUserProfileBody": {
+      "title": "NewUserProfile",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "test@place.com"
+        },
+        "password": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "dob": {
+          "type": "string",
+          "format": "01/10/1999"
+        },
+        "country_code": {
+          "type": "string",
+          "format": "USA"
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "[Defence, Arts]"
+          }
+        }
+      }
+    },
+    "NewUserProfileResponse": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "test@place.com"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "dob": {
+          "type": "string",
+          "format": "01/10/1999"
+        },
+        "country_code": {
+          "type": "string",
+          "format": "USA"
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "[Defence, Arts]"
+          }
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "UserFollowBody": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "UserFollowingRecords": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/UserFollowingRecord"
+      }
+    },
+    "UserFollowingRecord": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "img_url": {
+          "type": "string"
+        },
+        "follower_count": {
+          "type": "number",
+          "format": "number"
+        }
+      }
+    },
+    "FacebookLoginBody": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "test@place.com"
+        },
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "LoginBody": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "test@place.com"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "NewTokenResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "FeedEventRecords": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FeedEventRecord"
+      }
+    },
+    "FeedEventRecord": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "type": {
+          "type": "string",
+          "format": "string"
+        },
+        "timestamp": {
+          "type": "number",
+          "format": "number"
+        }
+      }
+    },
+    "TimelineEventRecords": {
+      "type": "object",
+      "properties": {
+        "next-page": {
+          "type": "number",
+          "format": "If equal to zero then there are no more results"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TimelineEventRecord"
+          }
+        }
+      }
+    },
+    "TimelineEventRecord": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "type": {
+          "type": "string",
+          "format": "string"
+        },
+        "timestamp": {
+          "type": "number",
+          "format": "number"
+        }
+      }
+    },
+    "NotificationRecords": {
+      "type": "object",
+      "properties": {
+        "next-page": {
+          "type": "number",
+          "format": "If equal to zero then there are no more results"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NotificationRecord"
+          }
+        }
+      }
+    },
+    "NotificationRecord": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "format": "reply"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "timestamp": {
+          "type": "number",
+          "format": "number"
+        },
+        "read": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    }
+  },
   "paths": {
     "/user/feed": {
       "get": {
         "description": "Get the current users feed",
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -33,7 +421,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful response"
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/FeedEventRecords"
+            }
           },
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
@@ -46,29 +437,13 @@
         "description": "Given a user ID then retrieve that users personal timeline",
         "parameters": [
           {
-            "name": "user_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "string"
+            "$ref": "#/parameters/UserIDParam"
           },
           {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "string"
+            "$ref": "#/parameters/PageParam"
           },
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -78,53 +453,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "type": "object",
-              "properties": {
-                "next-page": {
-                  "type": "number",
-                  "format": "If equal to zero then there are no more results"
-                },
-                "results": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "type": "string",
-                        "format": "comment"
-                      },
-                      "comment_id": {
-                        "type": "string",
-                        "format": "string"
-                      },
-                      "user_id": {
-                        "type": "string",
-                        "format": "string"
-                      },
-                      "bill_id": {
-                        "type": "string",
-                        "format": "string"
-                      },
-                      "timestamp": {
-                        "type": "number",
-                        "format": "number"
-                      },
-                      "bill_title": {
-                        "type": "string",
-                        "format": "string"
-                      },
-                      "score": {
-                        "type": "number",
-                        "format": "number"
-                      },
-                      "body": {
-                        "type": "string",
-                        "format": "string"
-                      }
-                    }
-                  }
-                }
-              }
+              "$ref": "#/definitions/TimelineEventRecords"
             }
           },
           "401": {
@@ -135,25 +464,13 @@
     },
     "/user/me/timeline": {
       "get": {
-        "description": "Get the current users personal timeline.  This endpoint powers the activity feed",
+        "description": "Given a user ID then retrieve that users personal timeline",
         "parameters": [
           {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "string"
+            "$ref": "#/parameters/PageParam"
           },
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -163,53 +480,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "type": "object",
-              "properties": {
-                "next-page": {
-                  "type": "number",
-                  "format": "If equal to zero then there are no more results"
-                },
-                "results": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "type": "string",
-                        "format": "comment"
-                      },
-                      "comment_id": {
-                        "type": "string",
-                        "format": "string"
-                      },
-                      "user_id": {
-                        "type": "string",
-                        "format": "string"
-                      },
-                      "bill_id": {
-                        "type": "string",
-                        "format": "string"
-                      },
-                      "timestamp": {
-                        "type": "number",
-                        "format": "number"
-                      },
-                      "bill_title": {
-                        "type": "string",
-                        "format": "string"
-                      },
-                      "score": {
-                        "type": "number",
-                        "format": "number"
-                      },
-                      "body": {
-                        "type": "string",
-                        "format": "string"
-                      }
-                    }
-                  }
-                }
-              }
+              "$ref": "#/definitions/TimelineEventRecords"
             }
           },
           "401": {
@@ -223,23 +494,10 @@
         "description": "Mark notification if user has read it",
         "parameters": [
           {
-            "name": "event_id",
-            "in": "path",
-            "description": "Event ID associated with Notification",
-            "required": true,
-            "type": "string",
-            "format": "string"
+            "$ref": "#/parameters/NotificationIDParam"
           },
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -260,15 +518,7 @@
         "description": "Get the current users notifications",
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -278,44 +528,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "format": "reply"
-                  },
-                  "comment_id": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "from_user_id": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "from_name": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "user_id": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "bill_id": {
-                    "type": "string",
-                    "format": "string"
-                  },
-                  "timestamp": {
-                    "type": "number",
-                    "format": "number"
-                  },
-                  "checked": {
-                    "type": "boolean",
-                    "format": "boolean"
-                  }
-                }
-              }
+              "$ref": "#/definitions/NotificationRecords"
             }
           },
           "401": {
@@ -329,47 +542,7 @@
         "description": "Register new user",
         "parameters": [
           {
-            "name": "NewUser",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "title": "NewUserProfile",
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "token": {
-                  "type": "string"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "dob": {
-                  "type": "string",
-                  "format": "01/10/1999"
-                },
-                "country_code": {
-                  "type": "string",
-                  "format": "USA"
-                },
-                "img_url": {
-                  "type": "string",
-                  "format": "string"
-                },
-                "topics": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "[Defence, Arts]"
-                  }
-                }
-              }
-            }
+            "$ref": "#/parameters/NewFacebookUserProfileBodyParam"
           }
         ],
         "tags": [
@@ -379,42 +552,7 @@
           "201": {
             "description": "Successful response",
             "schema": {
-              "title": "UserProfile",
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                },
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "dob": {
-                  "type": "string",
-                  "format": "01/10/1999"
-                },
-                "country_code": {
-                  "type": "string",
-                  "format": "USA"
-                },
-                "topics": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "[Defence, Arts]"
-                  }
-                },
-                "token": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/NewUserProfileResponse"
             }
           },
           "400": {
@@ -425,18 +563,10 @@
     },
     "/user/me/profile": {
       "get": {
-        "description": "Gets current users profile.",
+        "description": "Given a user_id retrieve user profile in relation to current user.",
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -446,36 +576,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "title": "UserProfile",
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "dob": {
-                  "type": "string",
-                  "format": "01/10/1999"
-                },
-                "country_code": {
-                  "type": "string",
-                  "format": "USA"
-                },
-                "total_followers": {
-                  "type": "number",
-                  "format": "number"
-                },
-                "total_following": {
-                  "type": "number",
-                  "format": "number"
-                }
-              }
+              "$ref": "#/definitions/UserProfileResponse"
             }
           },
           "401": {
@@ -489,22 +590,10 @@
         "description": "Given a user_id retrieve user profile in relation to current user.",
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           },
           {
-            "name": "user_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "string"
+            "$ref": "#/parameters/UserIDParam"
           }
         ],
         "tags": [
@@ -514,40 +603,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "title": "UserProfile",
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "dob": {
-                  "type": "string",
-                  "format": "01/10/1999"
-                },
-                "country_code": {
-                  "type": "string",
-                  "format": "USA"
-                },
-                "following": {
-                  "type": "boolean",
-                  "format": "boolean"
-                },
-                "total_followers": {
-                  "type": "number",
-                  "format": "number"
-                },
-                "total_following": {
-                  "type": "number",
-                  "format": "number"
-                }
-              }
+              "$ref": "#/definitions/UserProfileResponse"
             }
           },
           "401": {
@@ -557,109 +613,11 @@
       }
     },
     "/user": {
-      "get": {
-        "description": "Gets `UserProfile` object.",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
-          }
-        ],
-        "tags": [
-          "Users"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "schema": {
-              "title": "UserProfile",
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                },
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "dob": {
-                  "type": "string",
-                  "format": "01/10/1999"
-                },
-                "country_code": {
-                  "type": "string",
-                  "format": "USA"
-                },
-                "topics": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "[Defence, Arts]"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Not Authorized (Check Authentication Token)"
-          }
-        }
-      },
       "put": {
         "description": "Register new user",
         "parameters": [
           {
-            "name": "NewUser",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "title": "NewUserProfile",
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "password": {
-                  "type": "string"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "dob": {
-                  "type": "string",
-                  "format": "01/10/1999"
-                },
-                "country_code": {
-                  "type": "string",
-                  "format": "USA"
-                },
-                "topics": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "[Defence, Arts]"
-                  }
-                }
-              }
-            }
+            "$ref": "#/parameters/NewUserProfileBodyParam"
           }
         ],
         "tags": [
@@ -669,42 +627,7 @@
           "201": {
             "description": "Successful response",
             "schema": {
-              "title": "UserProfile",
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                },
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "dob": {
-                  "type": "string",
-                  "format": "01/10/1999"
-                },
-                "country_code": {
-                  "type": "string",
-                  "format": "USA"
-                },
-                "topics": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "[Defence, Arts]"
-                  }
-                },
-                "token": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/NewUserProfileResponse"
             }
           },
           "400": {
@@ -718,22 +641,7 @@
         "description": "Authenticate existing user",
         "parameters": [
           {
-            "name": "Login",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "title": "Login Details",
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "password": {
-                  "type": "string"
-                }
-              }
-            }
+            "$ref": "#/parameters/LoginBodyParam"
           }
         ],
         "tags": [
@@ -743,13 +651,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "title": "New Token",
-              "type": "object",
-              "properties": {
-                "token": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/NewTokenResponse"
             }
           },
           "401": {
@@ -763,22 +665,7 @@
         "description": "Authenticate existing user",
         "parameters": [
           {
-            "name": "Login",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "title": "Login Details",
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string",
-                  "format": "test@place.com"
-                },
-                "token": {
-                  "type": "string"
-                }
-              }
-            }
+            "$ref": "#/parameters/FacebookLoginBodyParam"
           }
         ],
         "tags": [
@@ -788,13 +675,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "title": "New Token",
-              "type": "object",
-              "properties": {
-                "token": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/NewTokenResponse"
             }
           },
           "401": {
@@ -808,11 +689,7 @@
         "description": "Confirm token sent in users email",
         "parameters": [
           {
-            "name": "confirm-token",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "string"
+            "$ref": "#/parameters/ConfirmTokenParam"
           }
         ],
         "tags": [
@@ -833,15 +710,7 @@
         "description": "Get users the current logged in user is following",
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -851,27 +720,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "title": "Following Profile",
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "img_url": {
-                  "type": "string"
-                },
-                "follower_count": {
-                  "type": "number",
-                  "format": "number"
-                }
-              }
+              "$ref": "#/definitions/UserFollowingRecords"
             }
           },
           "401": {
@@ -885,22 +734,10 @@
         "description": "Given a user id, retrieve users they are following",
         "parameters": [
           {
-            "name": "user_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "string"
+            "$ref": "#/parameters/UserIDParam"
           },
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -910,27 +747,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "title": "Following Profile",
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "img_url": {
-                  "type": "string"
-                },
-                "follower_count": {
-                  "type": "number",
-                  "format": "number"
-                }
-              }
+              "$ref": "#/definitions/UserFollowingRecords"
             }
           },
           "401": {
@@ -944,15 +761,7 @@
         "description": "Get users the current logged in user is followed by",
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -962,23 +771,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "title": "Followers Profile",
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "img_url": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/UserFollowingRecords"
             }
           },
           "401": {
@@ -992,22 +785,10 @@
         "description": "Given a user id, retrieve users they are being followed by",
         "parameters": [
           {
-            "name": "user_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "string"
+            "$ref": "#/parameters/UserIDParam"
           },
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -1017,23 +798,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "title": "Followers Profile",
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "img_url": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/UserFollowingRecords"
             }
           },
           "401": {
@@ -1047,29 +812,10 @@
         "description": "Follow a user",
         "parameters": [
           {
-            "name": "User to follow",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                }
-              }
-            }
+            "$ref": "#/parameters/UserFollowBodyParam"
           },
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -1090,29 +836,10 @@
         "description": "Unfollow a user",
         "parameters": [
           {
-            "name": "User to unfollow",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "user_id": {
-                  "type": "string",
-                  "format": "string"
-                }
-              }
-            }
+            "$ref": "#/parameters/UserFollowBodyParam"
           },
           {
-            "name": "Authorization",
-            "in": "header",
-            "description": "token to be passed as a header",
-            "required": true,
-            "type": "string",
-            "items": {
-              "type": "string",
-              "format": "PAV_AUTH_TOKEN token"
-            }
+            "$ref": "#/parameters/TokenParam"
           }
         ],
         "tags": [
@@ -1133,11 +860,7 @@
         "description": "Validate Authentication Token",
         "parameters": [
           {
-            "name": "token",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "format": "string"
+            "$ref": "#/parameters/TokenBodyParam"
           }
         ],
         "tags": [
