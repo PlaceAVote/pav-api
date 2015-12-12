@@ -45,7 +45,7 @@
       "format": "string"
     },
     "NotificationIDParam": {
-      "name": "event_id",
+      "name": "notification_id",
       "in": "path",
       "description": "Event ID associated with Notification",
       "required": true,
@@ -429,6 +429,34 @@
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
           }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/feed",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
+          }
         }
       }
     },
@@ -459,6 +487,36 @@
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
           }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/timeline",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization",
+            "integration.request.path.user_id": "method.request.path.user_id",
+            "integration.request.querystring.page": "method.request.querystring.page"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
+          }
         }
       }
     },
@@ -486,10 +544,39 @@
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
           }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/timeline",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization",
+            "integration.request.querystring.page": "method.request.querystring.page"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
+          }
         }
       }
     },
-    "/user/notification/{event_id}/mark": {
+    "/user/notification/{notification_id}/mark": {
       "post": {
         "description": "Mark notification if user has read it",
         "parameters": [
@@ -509,6 +596,35 @@
           },
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
+          }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "post",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/notification/{notification_id}/mark",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization",
+            "integration.request.path.notification_id": "method.request.path.notification_id"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "201": {
+              "statusCode": "201",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
           }
         }
       }
@@ -534,6 +650,34 @@
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
           }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/notifications",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
+          }
         }
       }
     },
@@ -558,6 +702,31 @@
           "400": {
             "description": "Bad Request (Check body of request)"
           }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "put",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/facebook",
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "201": {
+              "statusCode": "201",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
+          }
         }
       }
     },
@@ -581,6 +750,34 @@
           },
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
+          }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/profile",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
           }
         }
       }
@@ -609,6 +806,35 @@
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
           }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/profile",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization",
+            "integration.request.path.user_id": "method.request.path.user_id"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
+          }
         }
       }
     },
@@ -632,6 +858,31 @@
           },
           "400": {
             "description": "Bad Request (Check body of request)"
+          }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "put",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user",
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "201": {
+              "statusCode": "201",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
           }
         }
       }
@@ -657,6 +908,31 @@
           "401": {
             "description": "Not Authorized"
           }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "post",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/authenticate",
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "201": {
+              "statusCode": "201",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
+          }
         }
       }
     },
@@ -672,7 +948,7 @@
           "Users"
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Successful response",
             "schema": {
               "$ref": "#/definitions/NewTokenResponse"
@@ -680,6 +956,31 @@
           },
           "401": {
             "description": "Not Authorized"
+          }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "post",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/facebook/authenticate",
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "201": {
+              "statusCode": "201",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
           }
         }
       }
@@ -701,6 +1002,34 @@
           },
           "401": {
             "description": "Confirmation token is invalid"
+          }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "post",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/confirm/{confirm-token}",
+          "requestParameters": {
+            "integration.request.path.confirm-token": "method.request.path.confirm-token"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "201": {
+              "statusCode": "201",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
           }
         }
       }
@@ -725,6 +1054,34 @@
           },
           "401": {
             "description": "Not Authorized"
+          }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/following",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
           }
         }
       }
@@ -753,6 +1110,35 @@
           "401": {
             "description": "Not Authorized"
           }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/following",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization",
+            "integration.request.path.user_id": "method.request.path.user_id"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
+          }
         }
       }
     },
@@ -776,6 +1162,34 @@
           },
           "401": {
             "description": "Not Authorized"
+          }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/followers",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
           }
         }
       }
@@ -804,6 +1218,35 @@
           "401": {
             "description": "Not Authorized"
           }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/followers",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization",
+            "integration.request.path.user_id": "method.request.path.user_id"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
+          }
         }
       }
     },
@@ -827,6 +1270,34 @@
           },
           "401": {
             "description": "Not Authorized"
+          }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "put",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/follow",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
           }
         }
       }
@@ -852,6 +1323,34 @@
           "401": {
             "description": "Not Authorized"
           }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "delete",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/unfollow",
+          "requestParameters": {
+            "integration.request.header.Authorization": "method.request.header.Authorization"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "204": {
+              "statusCode": "204",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
+          }
         }
       }
     },
@@ -872,6 +1371,34 @@
           },
           "401": {
             "description": "Token invalid"
+          }
+        },
+        "x-amazon-apigateway-auth": {
+          "type": "none"
+        },
+        "x-amazon-apigateway-integration": {
+          "type": "http",
+          "httpMethod": "get",
+          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/token/validate",
+          "requestParameters": {
+            "integration.request.querystring.token": "method.request.querystring.token"
+          },
+          "requestTemplates": {
+            "application/json": null
+          },
+          "responses": {
+            "200": {
+              "statusCode": "200",
+              "responseTemplates": {
+                "application/json": null
+              }
+            },
+            "default": {
+              "statusCode": "401",
+              "responseTemplates": {
+                "text/plain": null
+              }
+            }
           }
         }
       }
