@@ -21,12 +21,11 @@ deployment:
       - convox login $CONVOX_GRID_HOST --password $CONVOX_API_KEY
       - convox switch development
       - convox deploy
-  production:
-   release:
-     tag: /release-.*/
-     owner: circleci
-     commands:
-       - lein uberjar
-       - convox login $CONVOX_GRID_HOST --password $CONVOX_API_KEY
-       - convox switch production
-       - convox deploy
+  release:
+    tag: /release-.*/
+    owner: circleci
+    commands:
+      - lein uberjar
+      - convox login $CONVOX_GRID_HOST --password $CONVOX_API_KEY
+      - convox switch production
+      - convox deploy
