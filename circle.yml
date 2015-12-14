@@ -18,11 +18,11 @@ deployment:
     branch: master
     commands:
       - lein uberjar
-      - convox login $CONVOX_DEV_HOST --password CONVOX_DEV_PWD
+      - convox login $CONVOX_DEV_HOST --password $CONVOX_DEV_PWD
       - convox deploy
   production:
     branch: release
     commands:
       - lein uberjar
-      - convox login $CONVOX_PROD_HOST --password CONVOX_PROD_PWD
+      - convox login $CONVOX_PROD_HOST --password $CONVOX_PROD_PWD
       - convox deploy
