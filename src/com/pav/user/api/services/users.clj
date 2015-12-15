@@ -9,15 +9,21 @@
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile]]
             [clojure.core.async :refer [thread]]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+						[clojure.core.memoize :as memo])
   (:import (java.util Date UUID)))
 
+(def gather-cached-bills
+	"Retrieve cached bills that match previous topic arguments.  For performance purposes."
+	(memo/ttl gather-latest-bills-by-subject :ttl/threshold 3600000))
+
 (defn pre-populate-newsfeed [{:keys [user_id topics]}]
-	(let [bills (gather-latest-bills-by-subject topics)]
+	(let [bills (gather-cached-bills topics)]
 		(if-not (empty? bills)
 			(dynamo-dao/persist-to-newsfeed
 				(mapv #(assoc % :event_id (.toString (UUID/randomUUID))
 												:user_id user_id) bills)))))
+
 
 (defn persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
@@ -25,9 +31,9 @@
 		(try
 			(dynamo-dao/create-user profile)
 			(redis-dao/create-user-profile profile)
+      (pre-populate-newsfeed profile)
 			(thread ;; Expensive call to mandril.  Execute in seperate thread.
 				(index-user (dissoc profile :token :password))
-        (pre-populate-newsfeed profile)
 				(send-confirmation-email profile)
 				(log/info "New user created " profile))
 		(catch Exception e (log/error (str "Error occured persisting user profile for " user_id "Exception: " e)))))
