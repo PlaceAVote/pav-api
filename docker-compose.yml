@@ -6,8 +6,7 @@ web:
     - AUTH_PRIV_KEY_PWD=password
     - AUTH_PUB_KEY=/app/resources/pav_auth_pubkey.pem
     - AUTH_PUB_KEY_PWD=password
-    - PORT=8080
-    - SSLPORT=8443
     - LEIN_ROOT=1
   ports:
     - 8080:8080
+    - 443:8080
