@@ -9,7 +9,8 @@
 
 (defn token-handler [env]
   (jws-backend
-    {:secret  (ks/public-key (:auth-pub-key env))
+    {:secret  (ks/public-key (or (:auth-pub-key env)
+                                 "resources/pav_auth_pubkey.pem"))
      :options {:alg :rs256}
      :token-name "PAV_AUTH_TOKEN"
      :on-error   (fn [req _]

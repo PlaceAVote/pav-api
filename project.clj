@@ -30,7 +30,11 @@
                  [clojurewerkz/mailer "1.2.0"]
                  [clj-http "2.0.0"]
                  [org.clojure/core.memoize "0.5.8"]]
-  :plugins [[lein-environ "1.0.0"]]
+  :plugins [[lein-environ "1.0.0"]
+						[lein-release "1.0.5"]]
+	:lein-release {:scm :git
+								 :deploy-via :lein-install
+								 :build-uberjar true}
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
   :main system
