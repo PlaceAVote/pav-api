@@ -68,8 +68,8 @@
                       {:throughput {:read 5 :write 10}
                        :block? true})
     (far/create-table client-opts notification-table-name [:user_id :s]
-                      {:gsindexes [{:name "event_id-idx"
-																		:hash-keydef [:event_id :s]
+                      {:gsindexes [{:name "notification_id-idx"
+																		:hash-keydef [:notification_id :s]
 																		:throughput {:read 5 :write 10}}]
 											 :range-keydef [:timestamp :n]
                        :throughput {:read 5 :write 10}

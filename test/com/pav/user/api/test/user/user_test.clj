@@ -144,10 +144,10 @@
 							{token :token user_id :user_id} (ch/parse-string body true)
 							notification-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
 																		:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
-																		:score 0 :body "Comment text goes here!!" :event_id "10"}
+																		:score 0 :body "Comment text goes here!!" :notification_id "10"}
 																	 {:type "vote" :bill_id "s1182-114" :user_id user_id
 																		:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
-																		:timestamp 1446462364297 :event_id "11"}]
+																		:timestamp 1446462364297 :notification_id "11"}]
 							_ (persist-notification-event notification-events)
 							{status :status body :body} (pav-req :get "/user/notifications" token {})
 							{next-page :next-page results :results} (ch/parse-string body true)]
@@ -160,10 +160,10 @@
 					{token :token user_id :user_id} (ch/parse-string body true)
 					notification-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
 																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
-																:score 0 :body "Comment text goes here!!" :event_id "10"}
+																:score 0 :body "Comment text goes here!!" :notification_id "10"}
 															 {:type "vote" :bill_id "s1182-114" :user_id user_id
 																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
-																:timestamp 1446462364297 :event_id "11"}]
+																:timestamp 1446462364297 :notification_id "11"}]
 					_ (persist-notification-event notification-events)
 					{status :status} (pav-req :post "/user/notification/10/mark" token {})
 					{body :body} (pav-req :get "/user/notifications" token {})

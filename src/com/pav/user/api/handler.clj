@@ -38,7 +38,7 @@
   (GET "/user/feed" [] feed)
   (GET "/user/notifications" [] notifications)
 	(GET "/user/notifications/ws" [token] ws-notification-handler)
-  (POST "/user/notification/:event_id/mark" [event_id] (mark-notification event_id))
+  (POST "/user/notification/:notification_id/mark" [notification_id] (mark-notification notification_id))
   (GET "/user/me/timeline" [] timeline)
   (GET "/user/:user_id/timeline" [] timeline)
   (GET "/user/me/following" [] following)

@@ -73,8 +73,8 @@
 
 (defn mark-notification [id]
 	(let [notification (first
-											 (far/query client-opts notification-table-name {:event_id [:eq id]}
-												{:index "event_id-idx" :return [:user_id :timestamp]}))]
+											 (far/query client-opts notification-table-name {:notification_id [:eq id]}
+												{:index "notification_id-idx" :return [:user_id :timestamp]}))]
 		(when notification
 			(far/update-item client-opts notification-table-name notification {:read [:put true]}))))
 
