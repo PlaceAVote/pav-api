@@ -9,12 +9,12 @@
 
 (defn token-handler [env]
   (jws-backend
-    {:secret  (ks/public-key (or (:auth-pub-key env)
-                                 "resources/pav_auth_pubkey.pem"))
-     :options {:alg :rs256}
+    {:secret     (ks/public-key (or (:auth-pub-key env)
+                                  "resources/pav_auth_pubkey.pem"))
+     :options    {:alg :rs256}
      :token-name "PAV_AUTH_TOKEN"
      :on-error   (fn [req _]
-                   (log/error (str "Token not present or is malformed " req)))}))
+                   (log/warn (str "Token not present or is malformed " (-> req :headers))))}))
 
 (defn unpack-token [token]
 	(jws/unsign token (ks/public-key (:auth-pub-key env)) {:alg :rs256}))
