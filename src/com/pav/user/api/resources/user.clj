@@ -94,7 +94,7 @@
 (defresource confirm-password-reset
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
-	:post! (fn [ctx] (let [{token :reset-token password :new_password} (get-in ctx [:request :body])]
+	:post! (fn [ctx] (let [{token :reset_token password :new_password} (get-in ctx [:request :body])]
 										 (service/confirm-password-reset token password))))
 
 (defresource timeline

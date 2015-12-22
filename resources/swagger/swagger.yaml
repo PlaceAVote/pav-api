@@ -54,6 +54,12 @@ parameters:
     required: true
     schema:
       $ref: "#/definitions/FacebookLoginBody"
+  ConfirmPasswordResetBodyParam:
+    name: Confirm New Password
+    in: body
+    required: true
+    schema:
+      $ref: "#/definitions/ConfirmPasswordBody"
   UserFollowBodyParam:
     name: User to follow
     in: body
@@ -79,6 +85,16 @@ parameters:
     schema:
       $ref: "#/definitions/NewUserProfileBody"
 definitions:
+  ConfirmPasswordBody:
+    title: ConfirmPassword
+    type: object
+    properties:
+      reset_token:
+        type: string
+        format: string
+      new_password:
+        type: string
+        format: string
   UserProfileResponse:
     title: UserProfile
     type: object
@@ -655,6 +671,34 @@ paths:
             statusCode: "401"
             responseTemplates:
               text/plain:
+  /password/reset:
+    post:
+      description: Authenticate existing user
+      parameters:
+        - name: email
+          in: query
+          required: true
+          type: string
+          format: string
+      tags:
+        - Users
+      responses:
+        '201':
+          description: Successful response
+        '401':
+          description: Not Authorized
+  /password/reset/confirm:
+    post:
+      description: Authenticate existing user
+      parameters:
+        - $ref: "#/parameters/ConfirmPasswordResetBodyParam"
+      tags:
+        - Users
+      responses:
+        '201':
+          description: Successful response
+        '401':
+          description: Not Authorized
   /user/confirm/{confirm-token}:
     post:
       description: Confirm token sent in users email
