@@ -155,3 +155,7 @@
 
 (defn count-following [user_id]
   (count (far/query client-opts following-table-name {:user_id [:eq user_id]})))
+
+(defn update-user-password [user_id password]
+  (far/update-item client-opts user-table-name {:user_id user_id}
+    {:password [:put password]}))

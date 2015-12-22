@@ -51,8 +51,8 @@
  :available-media-types ["application/json"]
  :exists? (fn [ctx]
            (if-not (nil? (get-in ctx [:request :params :user_id]))
-            {:record (service/get-user-by-id (get-in ctx [:request :params :user_id]))}
-            {:record (service/get-user-by-id (retrieve-user-id (:request ctx)))}))
+            {:record (service/get-presentable-user-by-id (get-in ctx [:request :params :user_id]))}
+            {:record (service/get-presentable-user-by-id (retrieve-user-id (:request ctx)))}))
  :delete! (fn [ctx]
 						(service/delete-user (retrieve-user-details (:request ctx))))
  :handle-ok record-in-ctx)
@@ -84,6 +84,18 @@
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
 	:post! (service/mark-notification id))
+
+(defresource reset-password [email]
+	:authorized? (service/user-exist? {:email email})
+	:allowed-methods [:post]
+	:available-media-types ["application/json"]
+	:post! (service/issue-password-reset-request email))
+
+(defresource confirm-password-reset
+	:allowed-methods [:post]
+	:available-media-types ["application/json"]
+	:post! (fn [ctx] (let [{token :reset-token password :new_password} (get-in ctx [:request :body])]
+										 (service/confirm-password-reset token password))))
 
 (defresource timeline
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))

@@ -74,5 +74,7 @@
                             :email-user                          "team@placeavote.com"
                             :email-pass                          "password"
                             :email-mode                          "test"
-                            :email-port                          "587"}
+                            :email-port                          "587"
+                            :mandril-api-key 										 "key"
+                            :mandril-pwd-reset-template					 "password-reset-template-dev"}
              :plugins      [[lein-midje "3.1.3"]]}})

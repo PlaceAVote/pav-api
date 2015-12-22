@@ -36,3 +36,17 @@
 
 (defn update-facebook-token [user_id new-facebook-token new-token]
   (wcar redis-conn (car/hmset (str "user:" user_id ":profile") :token (:token new-token) :facebook_token new-facebook-token)))
+
+(defn create-password-reset-token [email reset-token]
+	(wcar redis-conn
+		(car/set (str "reset-token:" reset-token ":useremail") email)
+		(car/set (str "useremail:" email ":reset-token") reset-token)))
+
+(defn retrieve-password-reset-token-by-useremail [email]
+	(wcar redis-conn (car/get (str "useremail:" email ":reset-token"))))
+
+(defn retrieve-useremail-by-reset-token [token]
+	(wcar redis-conn (car/get (str "reset-token:" token ":useremail"))))
+
+(defn update-user-password [user_id password]
+	(wcar redis-conn (car/hmset* (str "user:" user_id ":profile") {:password password})))

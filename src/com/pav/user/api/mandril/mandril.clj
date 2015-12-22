@@ -5,13 +5,18 @@
                                               with-settings
                                               with-delivery-mode]]
             [clojure.tools.logging :as log]
-            [environ.core :refer [env]]))
+            [environ.core :refer [env]]
+						[cheshire.core :as ch]
+						[clj-http.client :as client]))
 
 (def host (:email-host env))
 (def from (:email-user env))
 (def password (:email-pass env))
 (def mode (keyword (:email-mode env)))
 (def port (:email-port env))
+(def mandril-api-key (:mandril-api-key env))
+(def password-reset-template (:mandril-pwd-reset-template env))
+
 
 (defn send-email [first_name last_name confirmation-token email]
   (try
@@ -30,3 +35,28 @@
 (defn send-confirmation-email [{first_name :first_name last_name :last_name
                                 email :email confirmation_token :confirmation-token}]
   (send-email first_name last_name confirmation_token email))
+
+(defn build-email-header [api-key template]
+	{:key api-key :template_name template
+	 :template_content [] :async true})
+
+(defn build-pwd-reset-body
+	[message {:keys [email first_name last_name]} token]
+	(-> {:message {:to                [{:email email :type "to"}]
+								 :important         false
+								 :inline_css        true
+								 :merge             true
+								 :merge_language    "handlebars"
+								 :global_merge_vars [{:name "first_name" :content first_name}
+																		 {:name "last_name" :content last_name}
+																		 {:name "reset_token" :content token}]}}
+		(merge message)))
+
+(defn send-password-reset-email [user token]
+	(let [body (-> (build-email-header mandril-api-key password-reset-template)
+							 	 (build-pwd-reset-body user token)
+							 	 ch/generate-string)]
+		(log/info "Email Body being sent to mandril " body)
+		(try
+			(client/post "https://mandrillapp.com/api/1.0/messages/send-template.json" {:body body})
+			(catch Exception e (log/error "Error sending email " e)))))

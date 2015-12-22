@@ -14,7 +14,8 @@
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [com.pav.user.api.authentication.authentication :refer [create-auth-token]]
-            [cheshire.core :as ch]))
+            [cheshire.core :as ch]
+            [com.pav.user.api.redis.redis :as redis-dao]))
 
 (def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
 								:country_code "USA" :topics ["Defense"]})
@@ -295,4 +296,24 @@
 					{status :status body :body} (pav-req :get "/user/feed" token {})
 					{next-page :next-page results :results} (ch/parse-string body true)]
 			status => 200
-			next-page => 0)))
+			next-page => 0))
+
+  (fact "Reset existing user password"
+    (let [test-user {:email     "john@placeavote.com" :password "stuff2" :first_name "john"
+                     :last_name "stuff" :dob "05/10/1984" :country_code "USA" :topics ["Defense"]}
+          _ (pav-req :put "/user" test-user)
+          _ (pav-req :post (str "/password/reset?email=" (:email test-user)))
+          reset-token (redis-dao/retrieve-password-reset-token-by-useremail (:email test-user))
+          _ (pav-req :post "/password/reset/confirm" {:new_password "password1" :reset-token reset-token})
+          {status :status} (pav-req :post "/user/authenticate" {:email (:email test-user) :password "password1"})]
+      status => 201)))
+
+(against-background [(before :facts (do
+                                      (delete-user-table)
+                                      (create-user-table)
+                                      (flush-redis)
+                                      (flush-user-index)
+                                      (bootstrap-bills)))]
+  (fact "Try resetting password with invalid email, should return 401"
+    (let [{status :status} (pav-req :post (str "/password/reset?email=rubbish@em.com"))]
+      status => 401)))
