@@ -42,6 +42,11 @@
 		(car/set (str "reset-token:" reset-token ":useremail") email)
 		(car/set (str "useremail:" email ":reset-token") reset-token)))
 
+(defn delete-password-reset-token [email reset-token]
+	(wcar redis-conn
+		(car/del (str "reset-token:" reset-token ":useremail") email)
+		(car/del (str "useremail:" email ":reset-token") reset-token)))
+
 (defn retrieve-password-reset-token-by-useremail [email]
 	(wcar redis-conn (car/get (str "useremail:" email ":reset-token"))))
 

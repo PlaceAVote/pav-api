@@ -209,6 +209,7 @@
 			(redis-dao/create-password-reset-token (:email user) reset-token))))
 
 (defn confirm-password-reset [reset-token new-password]
-	(let [{user_id :user_id} (get-user-by-email (redis-dao/retrieve-useremail-by-reset-token reset-token))]
+	(let [{user_id :user_id email :email} (get-user-by-email (redis-dao/retrieve-useremail-by-reset-token reset-token))]
 		(when user_id
-			(update-user-password user_id new-password))))
+			(update-user-password user_id new-password)
+			(redis-dao/delete-password-reset-token email reset-token))))
