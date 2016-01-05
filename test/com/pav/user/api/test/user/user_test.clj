@@ -2,8 +2,7 @@
   (:use midje.sweet)
   (:require [com.pav.user.api.handler :refer [app]]
             [com.pav.user.api.test.utils.utils :refer [make-request parse-response-body
-                                                       create-user-table
-                                                       delete-user-table
+																											 flush-dynamo-tables
                                                        flush-redis
                                                        persist-timeline-event
 																											 persist-notification-event
@@ -24,8 +23,7 @@
 									 :img_url "http://image.com/image.jpg" :topics ["Defense"] :token "token"})
 
 (against-background [(before :facts (do
-                                      (delete-user-table)
-                                      (create-user-table)
+                                      (flush-dynamo-tables)
                                       (flush-redis)
                                       (flush-user-index)
                                       (bootstrap-bills)))]
@@ -213,70 +211,6 @@
           next-page => 0
           results => (contains timeline-events)))
 
-  (fact "Retrieve a users profile in relation to current user"
-        (let [{caller :body} (pav-req :put "/user" test-user)
-              {token :token} (ch/parse-string caller true)
-              {search-user :body} (pav-req :put "/user" {:email "peter@pl.com"
-                                                  :password "stuff2"
-                                                  :first_name "peter" :last_name "pan"
-                                                  :dob "05/10/1984"
-                                                  :country_code "USA"
-                                                  :topics ["Defense"]})
-              {user_id :user_id} (ch/parse-string search-user true)
-              _ (pav-req :put (str "/user/follow") token {:user_id user_id})
-              {status :status body :body} (pav-req :get (str "/user/" user_id "/profile") token {})]
-          status => 200
-          (ch/parse-string body true) => (merge (dissoc (ch/parse-string search-user true) :email :topics :token)
-                                                {:following true
-                                                 :total_followers 1
-                                                 :total_following 0})))
-
-  (fact "Retrieve the current users profile"
-        (let [{caller :body} (pav-req :put "/user" test-user)
-              {token :token} (ch/parse-string caller true)
-              {status :status body :body} (pav-req :get "/user/me/profile" token {})]
-          status => 200
-          (ch/parse-string body true) => (merge (dissoc (ch/parse-string caller true) :email :topics :token)
-                                                {:total_followers 0
-                                                 :total_following 0})))
-
-  (fact "Follow/following another user"
-        (let [{follower :body} (pav-req :put "/user" test-user)
-              {my_id :user_id token :token} (ch/parse-string follower true)
-              {being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
-                                                         :first_name "peter" :last_name "pan"
-                                                         :dob "05/10/1984" :country_code "USA"
-                                                         :topics ["Defense"]})
-              {pauls_user_id :user_id} (ch/parse-string being-followed true)
-              {create_status :status} (pav-req :put (str "/user/follow") token {:user_id pauls_user_id})
-              {my-following :body} (pav-req :get (str "/user/me/following") token {})
-              {paul-following :body} (pav-req :get (str "/user/" pauls_user_id "/following") token {})
-              {my-followers :body} (pav-req :get (str "/user/me/followers") token {})
-              {pauls-followers :body} (pav-req :get (str "/user/" pauls_user_id "/followers") token {})]
-          create_status => 201
-          (ch/parse-string my-following true) => (contains {:user_id pauls_user_id :first_name "peter" :last_name "pan" :img_url nil
-																														:follower_count 1})
-          (ch/parse-string paul-following true) => []
-          (ch/parse-string my-followers true) => []
-          (ch/parse-string pauls-followers true) => (contains {:user_id my_id :first_name "john" :last_name "stuff" :img_url nil
-																															 :follower_count 0})))
-
-  (fact "Unfollow user"
-        (let [{follower :body} (pav-req :put "/user" test-user)
-              {token :token} (ch/parse-string follower true)
-              {being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
-                                                            :first_name "peter" :last_name "pan"
-                                                            :dob "05/10/1984" :country_code "USA"
-                                                            :topics ["Defense"]})
-              {pauls_user_id :user_id} (ch/parse-string being-followed true)
-              _ (pav-req :put (str "/user/follow") token {:user_id pauls_user_id})
-              {unfollow-status :status} (pav-req :delete (str "/user/unfollow") token {:user_id pauls_user_id})
-              {my-following :body} (pav-req :get (str "/user/me/following") token {})
-              {pauls-followers :body} (pav-req :get (str "/user/" pauls_user_id "/followers") token {})]
-          unfollow-status => 204
-          (ch/parse-string my-following true) => []
-          (ch/parse-string pauls-followers true) => []))
-
   (fact "Verify the JWT Token"
         (let [{follower :body} (pav-req :put "/user" test-user)
               {token :token} (ch/parse-string follower true)
@@ -306,14 +240,8 @@
           reset-token (redis-dao/retrieve-password-reset-token-by-useremail (:email test-user))
           _ (pav-req :post "/password/reset/confirm" {:new_password "password1" :reset_token reset-token})
           {status :status} (pav-req :post "/user/authenticate" {:email (:email test-user) :password "password1"})]
-      status => 201)))
+      status => 201))
 
-(against-background [(before :facts (do
-                                      (delete-user-table)
-                                      (create-user-table)
-                                      (flush-redis)
-                                      (flush-user-index)
-                                      (bootstrap-bills)))]
-  (fact "Try resetting password with invalid email, should return 401"
-    (let [{status :status} (pav-req :post (str "/password/reset?email=rubbish@em.com"))]
-      status => 401)))
+	(fact "Try resetting password with invalid email, should return 401"
+		(let [{status :status} (pav-req :post (str "/password/reset?email=rubbish@em.com"))]
+			status => 401)))

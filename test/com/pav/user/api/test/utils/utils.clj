@@ -43,7 +43,7 @@
         (car/flushall)
         (car/flushdb)))
 
-(defn delete-user-table []
+(defn delete-dynamo-tables []
   (try
     (far/delete-table client-opts user-table-name)
     (far/delete-table client-opts user-confirm-table-name)
@@ -56,7 +56,7 @@
 		(far/delete-table client-opts comment-details-table-name)
     (catch Exception e (println "Error occured when deleting table " e " table name: " user-table-name " client-opts " client-opts))))
 
-(defn create-user-table []
+(defn create-dynamo-tables []
   (try
     (far/create-table client-opts user-table-name [:user_id :s]
                       {:gsindexes [{:name "user-email-idx"
@@ -101,6 +101,10 @@
 			 :throughput {:read 5 :write 10}
 			 :block? true})
     (catch Exception e (println "Error occured with table setup " e " table name: " user-table-name " client-opts " client-opts))))
+
+(defn flush-dynamo-tables []
+  (delete-dynamo-tables)
+  (create-dynamo-tables))
 
 (defn make-request
   ([method url payload]
