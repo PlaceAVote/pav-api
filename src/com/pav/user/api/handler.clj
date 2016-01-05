@@ -12,7 +12,8 @@
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
-                                                     user-profile validate-token reset-password confirm-password-reset]]
+                                                     user-profile validate-token reset-password confirm-password-reset
+																										 user-settings]]
 						[com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
@@ -33,6 +34,8 @@
   (GET "/docs" [] swagger-docs)
   (GET "/user" [] user)
   (DELETE "/user" [] user)
+	(POST "/user/me/settings" [] user-settings)
+	(GET "/user/me/settings" [] user-settings)
   (GET "/user/me/profile" [] user-profile)
   (GET "/user/:user_id/profile" [user_id] user-profile)
   (GET "/user/feed" [] feed)

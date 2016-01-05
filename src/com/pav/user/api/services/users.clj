@@ -193,6 +193,14 @@
     (-> (get-user-profile user_id)
         (assoc :following (following? current-user user_id)))))
 
+(defn update-account-settings [user_id param-map]
+	(dynamo-dao/update-account-settings user_id param-map)
+	(redis-dao/update-account-settings user_id param-map))
+
+(defn get-account-settings [user_id]
+	(-> (get-presentable-user-by-id user_id)
+		(select-keys [:public])))
+
 (defn validate-token [token]
   (token-valid? token))
 

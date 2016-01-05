@@ -159,3 +159,9 @@
 (defn update-user-password [user_id password]
   (far/update-item client-opts user-table-name {:user_id user_id}
     {:password [:put password]}))
+
+(defn update-account-settings [user_id param-map]
+	(far/update-item client-opts user-table-name {:user_id user_id}
+		(into {}
+			(for [[k v] param-map]
+				[k [:put v]]))))

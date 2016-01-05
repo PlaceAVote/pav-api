@@ -55,3 +55,6 @@
 
 (defn update-user-password [user_id password]
 	(wcar redis-conn (car/hmset* (str "user:" user_id ":profile") {:password password})))
+
+(defn update-account-settings [user_id param-map]
+	(wcar redis-conn (car/hmset* (str "user:" user_id ":profile") param-map)))

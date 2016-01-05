@@ -57,6 +57,14 @@
 						(service/delete-user (retrieve-user-details (:request ctx))))
  :handle-ok record-in-ctx)
 
+(defresource user-settings
+	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+	:allowed-methods [:post :get]
+	:available-media-types ["application/json"]
+	:post! (fn [ctx] (service/update-account-settings (retrieve-user-id (:request ctx)) (get-in ctx [:request :params])))
+	:handle-ok (fn [ctx]
+							 (service/get-account-settings (retrieve-user-id (:request ctx)))))
+
 (defresource user-profile
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]
