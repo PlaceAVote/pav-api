@@ -4,17 +4,13 @@
             [com.pav.user.api.test.utils.utils :refer [make-request parse-response-body
 																											 flush-dynamo-tables
                                                        flush-redis
-                                                       persist-timeline-event
-																											 persist-notification-event
                                                        flush-user-index
                                                        bootstrap-bills
-																											 create-comment
 																											 pav-req]]
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [com.pav.user.api.authentication.authentication :refer [create-auth-token]]
-            [cheshire.core :as ch]
-            [com.pav.user.api.redis.redis :as redis-dao]))
+            [cheshire.core :as ch]))
 
 (def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
 								:country_code "USA" :topics ["Defense"]})
@@ -136,28 +132,4 @@
 
   (fact "Given confirmation token, when invalid, then return 401."
         (let [{status :status} (pav-req :post "/user/confirm/1234")]
-          status => 401))
-
-  (fact "Verify the JWT Token"
-        (let [{follower :body} (pav-req :put "/user" test-user)
-              {token :token} (ch/parse-string follower true)
-              {status :status} (pav-req :get (str "/user/token/validate?token=" token))]
-          status => 200))
-
-  (fact "Verify the JWT Token, when invalid, return 401."
-       (let [{status :status} (pav-req :get "/user/token/validate?token=rubbish")]
-        status => 401))
-
-  (fact "Reset existing user password"
-    (let [test-user {:email     "john@placeavote.com" :password "stuff2" :first_name "john"
-                     :last_name "stuff" :dob "05/10/1984" :country_code "USA" :topics ["Defense"]}
-          _ (pav-req :put "/user" test-user)
-          _ (pav-req :post (str "/password/reset?email=" (:email test-user)))
-          reset-token (redis-dao/retrieve-password-reset-token-by-useremail (:email test-user))
-          _ (pav-req :post "/password/reset/confirm" {:new_password "password1" :reset_token reset-token})
-          {status :status} (pav-req :post "/user/authenticate" {:email (:email test-user) :password "password1"})]
-      status => 201))
-
-	(fact "Try resetting password with invalid email, should return 401"
-		(let [{status :status} (pav-req :post (str "/password/reset?email=rubbish@em.com"))]
-			status => 401)))
+          status => 401)))
