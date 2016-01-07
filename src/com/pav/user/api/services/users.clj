@@ -57,6 +57,7 @@
 					user-from-dynamodb)))))
 
 (defn- get-user-by-email [email]
+	"Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
 	(let [user-from-redis (redis-dao/get-user-profile-by-email email)]
 		(if user-from-redis
 			user-from-redis
@@ -65,10 +66,22 @@
 					(redis-dao/create-user-profile user-from-dynamodb)
 					user-from-dynamodb)))))
 
-(defn update-user-token [{:keys [email token]} origin]
+(defn- get-user-by-facebook-id [facebook_id]
+	"Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
+	(let [user-from-redis (redis-dao/get-user-profile-by-facebook-id facebook_id)]
+		(if user-from-redis
+			user-from-redis
+			(let [user-from-dynamodb (dynamo-dao/get-user-profile-by-facebook-id facebook_id)]
+				(when user-from-dynamodb
+					(redis-dao/create-user-profile user-from-dynamodb)
+					user-from-dynamodb)))))
+
+(defn update-user-token [{:keys [email token id]} origin]
   "Take current users email and token and update these values in databases.  Token can only be passed for facebook
   authentications"
-  (let [{:keys [user_id] :as current-user} (get-user-by-email email)
+  (let [{:keys [user_id] :as current-user} (case origin
+																						 :facebook (get-user-by-facebook-id id)
+																						 :pav (get-user-by-email email))
         new-token (create-token-for current-user)]
     (case origin
       :pav      (do (redis-dao/update-token user_id new-token)
@@ -87,10 +100,10 @@
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 
-(defn user-exist? [{email :email}]
-  (if (empty? (get-user-by-email email))
-    false
-    true))
+(defn user-exist? [{email :email facebook_id :id}]
+	(if facebook_id
+		(not (empty? (get-user-by-facebook-id facebook_id)))
+		(not (empty? (get-user-by-email email)))))
 
 (defn check-pwd [user existing-user]
   (h/check (:password user) (:password existing-user)))

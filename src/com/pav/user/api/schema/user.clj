@@ -33,7 +33,8 @@
 	 :img_url      s/Str
 	 :topics       [s/Str]
 	 :token        s/Str
-	 :gender			 s/Str})
+	 :gender			 s/Str
+	 :id					 s/Str})
 
 (def UserRecord
 	{:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
@@ -51,8 +52,8 @@
    :password (s/both (s/pred (complement empty?)) s/Str)})
 
 (def FacebookLogin
-  {:email    (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
-   :token    s/Str})
+	{:id    s/Str
+	 :token s/Str})
 
 (defn validate [user origin]
   (case origin
@@ -74,7 +75,8 @@
         (= :topics k) {k "Please specify a list of topics."}
         (= :token k) {k "A token is required for social media registerations and logins"}
         (= :img_url k) {k "A IMG URL is required for social media registerations and logins"}
-				(= :gender k) {k "Please specify a gender"}))
+				(= :gender k) {k "Please specify a gender"}
+				(= :id k) {k "Please specify a facebook id"}))
 
 (defn construct-error-msg [errors]
   (log/error (str "An Error has occured " errors))

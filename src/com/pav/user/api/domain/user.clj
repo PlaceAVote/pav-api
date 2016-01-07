@@ -41,7 +41,7 @@
 	(create-token-for [profile]
 		(assign-new-token (dissoc profile :password :token))))
 
-(defrecord FacebookUserProfile [user_id email facebook_token first_name last_name dob country_code
+(defrecord FacebookUserProfile [user_id email facebook_token facebook_id first_name last_name dob country_code
                                 created_at public registered token topics confirmation-token]
   Profiles
   (presentable [profile]
@@ -61,7 +61,7 @@
     :facebook (map->FacebookUserProfile (->
 																					user-profile
 																					assoc-common-attributes
-																					(merge {:facebook_token (:token user-profile)})
+																					(merge {:facebook_token (:token user-profile) :facebook_id (:id user-profile)})
 																					assign-new-token))
     nil))
 

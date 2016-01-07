@@ -15,7 +15,7 @@
 								:country_code "USA" :topics ["Defense"] :gender "male"})
 
 (def test-fb-user {:email "paul@facebook.com" :first_name "john" :last_name "stuff" :dob "05/10/1984" :country_code "USA"
-									 :img_url "http://image.com/image.jpg" :topics ["Defense"] :token "token" :gender "male"})
+									 :img_url "http://image.com/image.jpg" :topics ["Defense"] :token "token" :gender "male" :id "818181"})
 
 (def client-opts {:access-key "<AWS_DYNAMODB_ACCESS_KEY>"
                   :secret-key "<AWS_DYNAMODB_SECRET_KEY>"
@@ -67,7 +67,10 @@
     (far/create-table client-opts user-table-name [:user_id :s]
                       {:gsindexes [{:name "user-email-idx"
                                     :hash-keydef [:email :s]
-                                    :throughput {:read 5 :write 10}}]
+                                    :throughput {:read 5 :write 10}}
+																	 {:name "fbid-idx"
+																		:hash-keydef [:facebook_id :s]
+																		:throughput {:read 5 :write 10}}]
                        :throughput {:read 5 :write 10}
                        :block? true})
     (far/create-table client-opts user-confirm-table-name [:confirmation-token :s]

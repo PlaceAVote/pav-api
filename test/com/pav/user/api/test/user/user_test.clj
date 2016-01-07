@@ -65,7 +65,8 @@
 																											{:country_code "Country Code is a required field.  Please Specify Country Code"}
 																											{:topics "Please specify a list of topics."}
 																											{:token "A token is required for social media registerations and logins"}
-																											{:gender "Please specify a gender"}]}) :in-any-order)))
+																											{:gender "Please specify a gender"}
+																											{:id "Please specify a facebook id"}]}) :in-any-order)))
 
   (fact "Create a new user, when the email is invalid, return 400 with appropriate error message"
     (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :email "johnstuffcom"))]
@@ -95,7 +96,7 @@
 
   (fact "Create token for facebook user when logging on"
         (let [_ (pav-req :put "/user/facebook" test-fb-user)
-              {status :status body :body} (pav-req :post "/user/facebook/authenticate" {:email "paul@facebook.com" :token "token"})]
+              {status :status body :body} (pav-req :post "/user/facebook/authenticate" (select-keys test-fb-user [:id :token]))]
           status => 201
           (keys (ch/parse-string body true)) => (contains [:token])))
 

@@ -31,6 +31,12 @@
         convert-to-correct-profile-type)
     (catch Exception e (log/info (str "Error occured retrieving user by email " e)))))
 
+(defn get-user-profile-by-facebook-id [facebook_id]
+	(try
+		(-> (first (far/query client-opts user-table-name {:facebook_id [:eq facebook_id]} {:index "fbid-idx"}))
+			convert-to-correct-profile-type)
+		(catch Exception e (log/info (str "Error occured retrieving user by email " e)))))
+
 (defn create-confirmation-record [user_id token]
   (far/put-item client-opts user-confirm-table-name {:user_id user_id
                                                      :confirmation-token token}))
