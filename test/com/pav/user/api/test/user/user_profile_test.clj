@@ -10,20 +10,18 @@
 (def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
 								:country_code "USA" :topics ["Defense"]})
 
+(def searchable-profile {:email "peter@pl.com" :password "stuff2" :first_name "peter" :last_name "pan" :dob "05/10/1984"
+												 :country_code "USA" :topics ["Defense"]})
+
 (against-background [(before :facts (do
 																			(flush-dynamo-tables)
 																			(flush-redis)
 																			(flush-user-index)
 																			(bootstrap-bills)))]
-	(fact "Retrieve a users profile in relation to current user"
+	(future-fact "Retrieve a users profile in relation to current user"
 		(let [{caller :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string caller true)
-					{search-user :body} (pav-req :put "/user" {:email "peter@pl.com"
-																										 :password "stuff2"
-																										 :first_name "peter" :last_name "pan"
-																										 :dob "05/10/1984"
-																										 :country_code "USA"
-																										 :topics ["Defense"]})
+					{search-user :body} (pav-req :put "/user" searchable-profile)
 					{user_id :user_id} (ch/parse-string search-user true)
 					_ (pav-req :put (str "/user/follow") token {:user_id user_id})
 					{status :status body :body} (pav-req :get (str "/user/" user_id "/profile") token {})]
@@ -33,7 +31,7 @@
 																				:total_followers 1
 																				:total_following 0})))
 
-	(fact "Retrieve the current users profile"
+	(future-fact "Retrieve the current users profile"
 		(let [{caller :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string caller true)
 					{status :status body :body} (pav-req :get "/user/me/profile" token {})]
@@ -45,10 +43,7 @@
 	(fact "Follow/following another user"
 		(let [{follower :body} (pav-req :put "/user" test-user)
 					{my_id :user_id token :token} (ch/parse-string follower true)
-					{being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
-																												:first_name "peter" :last_name "pan"
-																												:dob "05/10/1984" :country_code "USA"
-																												:topics ["Defense"]})
+					{being-followed :body} (pav-req :put "/user" searchable-profile)
 					{pauls_user_id :user_id} (ch/parse-string being-followed true)
 					{create_status :status} (pav-req :put (str "/user/follow") token {:user_id pauls_user_id})
 					{my-following :body} (pav-req :get (str "/user/me/following") token {})
@@ -66,10 +61,7 @@
 	(fact "Unfollow user"
 		(let [{follower :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string follower true)
-					{being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
-																												:first_name "peter" :last_name "pan"
-																												:dob "05/10/1984" :country_code "USA"
-																												:topics ["Defense"]})
+					{being-followed :body} (pav-req :put "/user" searchable-profile)
 					{pauls_user_id :user_id} (ch/parse-string being-followed true)
 					_ (pav-req :put (str "/user/follow") token {:user_id pauls_user_id})
 					{unfollow-status :status} (pav-req :delete (str "/user/unfollow") token {:user_id pauls_user_id})

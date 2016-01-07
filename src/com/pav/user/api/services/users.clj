@@ -7,7 +7,7 @@
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email send-password-reset-email]]
-            [com.pav.user.api.domain.user :refer [new-user-profile]]
+            [com.pav.user.api.domain.user :refer [new-user-profile presentable]]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
 						[clojure.core.memoize :as memo])
@@ -40,10 +40,7 @@
 
 (defn create-user-profile [user & [origin]]
   "Create new user profile, specify :facebook as the origin by default all uses are pav"
-  (let [new-user-profile (-> (new-user-profile user (or origin :pav))
-                             persist-user-profile)
-        presentable-record (.presentable new-user-profile)]
-    {:record presentable-record}))
+	{:record (-> (new-user-profile user (or origin :pav)) persist-user-profile (select-keys [:token :user_id]))})
 
 (defn delete-user [{:keys [user_id] :as user_profile}]
 	(dynamo-dao/delete-user user_id)
@@ -54,22 +51,22 @@
   with user profile"
   (let [user-from-redis (redis-dao/get-user-profile user_id)]
     (if user-from-redis
-      (.presentable user-from-redis)
+      (presentable user-from-redis)
       (let [user-from-dynamodb (dynamo-dao/get-user-by-id user_id)]
         (when user-from-dynamodb
           (redis-dao/create-user-profile user-from-dynamodb)
-          (.presentable user-from-dynamodb))))))
+          (presentable user-from-dynamodb))))))
 
 (defn get-presentable-user-by-email [email]
   "Try retrieving user profile from redis, if this fails then retrieve from dynamodb and populate redis
   with user profile"
   (let [user-from-redis (redis-dao/get-user-profile-by-email email)]
     (if user-from-redis
-      (.presentable user-from-redis)
+      (presentable user-from-redis)
       (let [user-from-dynamodb (dynamo-dao/get-user-by-email email)]
         (when user-from-dynamodb
           (redis-dao/create-user-profile user-from-dynamodb)
-          (.presentable user-from-dynamodb))))))
+          (presentable user-from-dynamodb))))))
 
 (defn get-user-by-email [email]
 	(let [user-from-redis (redis-dao/get-user-profile-by-email email)]

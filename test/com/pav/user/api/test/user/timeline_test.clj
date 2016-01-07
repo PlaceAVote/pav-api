@@ -1,7 +1,8 @@
 (ns com.pav.user.api.test.user.timeline-test
 	(:use midje.sweet)
 	(:require [cheshire.core :as ch]
-						[com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables
+						[com.pav.user.api.test.utils.utils :refer [make-request parse-response-body
+																											 flush-dynamo-tables
 																											 flush-redis
 																											 persist-timeline-event
 																											 flush-user-index

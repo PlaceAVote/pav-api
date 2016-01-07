@@ -32,8 +32,6 @@
 
 (defroutes app-routes
   (GET "/docs" [] swagger-docs)
-  (GET "/user" [] user)
-  (DELETE "/user" [] user)
 	(POST "/user/me/settings" [] user-settings)
 	(GET "/user/me/settings" [] user-settings)
   (GET "/user/me/profile" [] user-profile)
@@ -50,6 +48,7 @@
   (GET "/user/:user_id/followers" [user_id] followers)
   (GET "/user/token/validate" [] validate-token)
   (PUT "/user" _ create)
+	(DELETE "/user" [] user)
   (PUT "/user/follow" _ follow)
   (DELETE "/user/unfollow" _ unfollow)
   (PUT "/user/facebook" _ create-facebook)

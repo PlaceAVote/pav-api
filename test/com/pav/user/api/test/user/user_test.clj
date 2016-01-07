@@ -24,17 +24,15 @@
                                       (flush-user-index)
                                       (bootstrap-bills)))]
 
-   (fact "Create a new user, will return 201 status and newly created user"
+   (fact "Create a new user, will return 201 status and newly created token"
          (let [{status :status body :body} (pav-req :put "/user" test-user)]
            status => 201
-           (keys (ch/parse-string body true)) => (contains [:user_id :token :email :first_name :last_name :dob :country_code
-                                                            :topics :created_at :registered :public] :in-any-order)))
+           (keys (ch/parse-string body true)) => (contains [:user_id :token] :in-any-order)))
 
    (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
          (let [{status :status body :body} (pav-req :put "/user/facebook" test-fb-user)]
            status => 201
-           (keys (ch/parse-string body true)) => (contains [:user_id :email :first_name :last_name :dob :country_code
-                                                            :img_url :topics :token :created_at :registered :public] :in-any-order)))
+           (keys (ch/parse-string body true)) => (contains [:user_id :token] :in-any-order)))
 
 
   (fact "Create a new user from facebook login, when email is missing, return 400 with appropriate error message"
@@ -102,20 +100,14 @@
 
   (fact "Create token for user when logging on"
         (let [_ (pav-req :put "/user" test-user)
-              {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "stuff2"})
-              {retrieve-user-status :status user-profile :body} (pav-req :get "/user" (:token (ch/parse-string body true)) {})]
+              {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "stuff2"})]
           status => 201
-          retrieve-user-status => 200
-          (keys (ch/parse-string user-profile true)) => (contains [:user_id])
           (keys (ch/parse-string body true)) => (contains [:token])))
 
   (fact "Create token for facebook user when logging on"
         (let [_ (pav-req :put "/user/facebook" test-fb-user)
-              {status :status body :body} (pav-req :post "/user/facebook/authenticate" {:email "paul@facebook.com" :token "token"})
-              {retrieve-user-status :status user-profile :body} (pav-req :get "/user" (:token (ch/parse-string body true)) {})]
+              {status :status body :body} (pav-req :post "/user/facebook/authenticate" {:email "paul@facebook.com" :token "token"})]
           status => 201
-          retrieve-user-status => 200
-          (keys (ch/parse-string user-profile true)) => (contains [:user_id])
           (keys (ch/parse-string body true)) => (contains [:token])))
 
   (fact "Create token for user that doesn't exist, returns 401 with suitable error message"

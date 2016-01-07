@@ -46,14 +46,16 @@
 
 (defn new-user-profile [user-profile origin]
   (case origin
-    :pav      (-> (map->UserProfile         (-> user-profile
-                                                assoc-common-attributes
-                                                hash-password
-                                                assign-new-token)))
-    :facebook (-> (map->FacebookUserProfile (-> user-profile
-                                                assoc-common-attributes
-                                                (merge {:facebook_token (:token user-profile)})
-                                                assign-new-token)))
+    :pav 			(map->UserProfile (->
+																	user-profile
+															 		assoc-common-attributes
+																	hash-password
+																	assign-new-token))
+    :facebook (map->FacebookUserProfile (->
+																					user-profile
+																					assoc-common-attributes
+																					(merge {:facebook_token (:token user-profile)})
+																					assign-new-token))
     nil))
 
 (defn convert-to-correct-profile-type [user-profile]
