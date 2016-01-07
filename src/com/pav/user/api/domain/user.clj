@@ -15,7 +15,7 @@
       (assoc :user_id (.toString (UUID/randomUUID))
              :created_at (.getTime (Date.))
              :confirmation-token (.toString (UUID/randomUUID)))
-      (merge {:registered false :public true})))
+      (merge {:public true})))
 
 (defn hash-password [user-profile]
   (update-in user-profile [:password] h/encrypt))
