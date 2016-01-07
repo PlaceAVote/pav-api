@@ -10,6 +10,9 @@
 (def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
 								:country_code "USA" :topics ["Defense"]})
 
+(def test-fb-user {:email "paul@facebook.com" :first_name "john" :last_name "stuff" :dob "05/10/1984" :country_code "USA"
+									 :img_url "http://image.com/image.jpg" :topics ["Defense"] :token "token"})
+
 (def searchable-profile {:email "peter@pl.com" :password "stuff2" :first_name "peter" :last_name "pan" :dob "05/10/1984"
 												 :country_code "USA" :topics ["Defense"]})
 
@@ -18,27 +21,33 @@
 																			(flush-redis)
 																			(flush-user-index)
 																			(bootstrap-bills)))]
-	(future-fact "Retrieve a users profile in relation to current user"
+	(fact "Retrieve a users profile in relation to current user"
 		(let [{caller :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string caller true)
 					{search-user :body} (pav-req :put "/user" searchable-profile)
 					{user_id :user_id} (ch/parse-string search-user true)
 					_ (pav-req :put (str "/user/follow") token {:user_id user_id})
-					{status :status body :body} (pav-req :get (str "/user/" user_id "/profile") token {})]
+					{status :status body :body} (update-in (pav-req :get (str "/user/" user_id "/profile") token {}) [:body]
+																				#(ch/parse-string % true))]
 			status => 200
-			(ch/parse-string body true) => (merge (dissoc (ch/parse-string search-user true) :email :topics :token)
-																			 {:following true
-																				:total_followers 1
-																				:total_following 0})))
+			(keys body) => [:user_id :first_name :last_name :country_code :public :total_followers :total_following :following]
+			body => (contains {:total_followers 1 :total_following 0 :following true} :in-any-order)))
 
-	(future-fact "Retrieve the current users profile"
+	(fact "Retrieve the current users profile"
 		(let [{caller :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string caller true)
-					{status :status body :body} (pav-req :get "/user/me/profile" token {})]
+					{status :status body :body} (update-in (pav-req :get "/user/me/profile" token {}) [:body] #(ch/parse-string % true))]
 			status => 200
-			(ch/parse-string body true) => (merge (dissoc (ch/parse-string caller true) :email :topics :token)
-																			 {:total_followers 0
-																				:total_following 0})))
+			(keys body) => (contains [:user_id :first_name :last_name :country_code :public :total_followers :total_following] :in-any-order)
+			body => (contains {:total_followers 0 :total_following 0} :in-any-order)))
+
+	(fact "Retrieve the current users profile when the users origin is facebook"
+		(let [{caller :body} (pav-req :put "/user/facebook" test-fb-user)
+					{token :token} (ch/parse-string caller true)
+					{status :status body :body} (update-in (pav-req :get "/user/me/profile" token {}) [:body] #(ch/parse-string % true))]
+			status => 200
+			(keys body) => (contains [:user_id :first_name :last_name :country_code :public :total_followers :img_url :total_following] :in-any-order)
+			body => (contains {:total_followers 0 :total_following 0} :in-any-order)))
 
 	(fact "Follow/following another user"
 		(let [{follower :body} (pav-req :put "/user" test-user)

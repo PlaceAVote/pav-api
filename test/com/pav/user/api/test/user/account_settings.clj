@@ -14,7 +14,7 @@
 																			(flush-redis)
 																			(flush-user-index)))]
 
-	(fact "Change a public user profile to private"
+	(future-fact "Change a public user profile to private"
 		(let [{body :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string body true)
 					_ (pav-req :post "/user/me/settings?public=false" token {})

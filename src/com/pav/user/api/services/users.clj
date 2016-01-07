@@ -7,7 +7,7 @@
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email send-password-reset-email]]
-            [com.pav.user.api.domain.user :refer [new-user-profile presentable]]
+            [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for]]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
 						[clojure.core.memoize :as memo])
@@ -17,7 +17,7 @@
 	"Retrieve cached bills that match previous topic arguments.  For performance purposes."
 	(memo/ttl gather-latest-bills-by-subject :ttl/threshold 3600000))
 
-(defn pre-populate-newsfeed [{:keys [user_id topics]}]
+(defn- pre-populate-newsfeed [{:keys [user_id topics]}]
 	(let [bills (gather-cached-bills topics)]
 		(if-not (empty? bills)
 			(dynamo-dao/persist-to-newsfeed
@@ -25,7 +25,7 @@
 												:user_id user_id) bills)))))
 
 
-(defn persist-user-profile [{:keys [user_id] :as profile}]
+(defn- persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
 	(when profile
 		(try
@@ -46,29 +46,17 @@
 	(dynamo-dao/delete-user user_id)
 	(redis-dao/delete-user-profile user_profile))
 
-(defn get-presentable-user-by-id [user_id]
-  "Try retrieving user profile from redis, if this fails then retrieve from dynamodb and populate redis
-  with user profile"
-  (let [user-from-redis (redis-dao/get-user-profile user_id)]
-    (if user-from-redis
-      (presentable user-from-redis)
-      (let [user-from-dynamodb (dynamo-dao/get-user-by-id user_id)]
-        (when user-from-dynamodb
-          (redis-dao/create-user-profile user-from-dynamodb)
-          (presentable user-from-dynamodb))))))
+(defn- get-user-by-id [user_id]
+	"Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
+	(let [user-from-redis (redis-dao/get-user-profile user_id)]
+		(if user-from-redis
+			user-from-redis
+			(let [user-from-dynamodb (dynamo-dao/get-user-by-id user_id)]
+				(when user-from-dynamodb
+					(redis-dao/create-user-profile user-from-dynamodb)
+					user-from-dynamodb)))))
 
-(defn get-presentable-user-by-email [email]
-  "Try retrieving user profile from redis, if this fails then retrieve from dynamodb and populate redis
-  with user profile"
-  (let [user-from-redis (redis-dao/get-user-profile-by-email email)]
-    (if user-from-redis
-      (presentable user-from-redis)
-      (let [user-from-dynamodb (dynamo-dao/get-user-by-email email)]
-        (when user-from-dynamodb
-          (redis-dao/create-user-profile user-from-dynamodb)
-          (presentable user-from-dynamodb))))))
-
-(defn get-user-by-email [email]
+(defn- get-user-by-email [email]
 	(let [user-from-redis (redis-dao/get-user-profile-by-email email)]
 		(if user-from-redis
 			user-from-redis
@@ -80,8 +68,8 @@
 (defn update-user-token [{:keys [email token]} origin]
   "Take current users email and token and update these values in databases.  Token can only be passed for facebook
   authentications"
-  (let [{:keys [user_id] :as current-user} (get-presentable-user-by-email email)
-        new-token (create-auth-token (dissoc current-user :password :token))]
+  (let [{:keys [user_id] :as current-user} (get-user-by-email email)
+        new-token (create-token-for current-user)]
     (case origin
       :pav      (do (redis-dao/update-token user_id new-token)
                     (dynamo-dao/update-user-token user_id new-token))
@@ -99,8 +87,8 @@
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 
-(defn user-exist? [user]
-  (if (empty? (get-presentable-user-by-email (get-in user [:email])))
+(defn user-exist? [{email :email}]
+  (if (empty? (get-user-by-email email))
     false
     true))
 
@@ -181,8 +169,8 @@
 
 (defn get-user-profile
   ([user_id]
-    (-> (get-presentable-user-by-id user_id)
-        (dissoc :email :token :topics)
+    (-> (get-user-by-id user_id)
+        profile-info
         (assoc :total_followers (count-followers user_id))
         (assoc :total_following (count-following user_id))))
   ([current-user user_id]
@@ -193,9 +181,7 @@
 	(dynamo-dao/update-account-settings user_id param-map)
 	(redis-dao/update-account-settings user_id param-map))
 
-(defn get-account-settings [user_id]
-	(-> (get-presentable-user-by-id user_id)
-		(select-keys [:public])))
+(defn get-account-settings [user_id])
 
 (defn validate-token [token]
   (token-valid? token))
@@ -206,7 +192,7 @@
 		(redis-dao/update-user-password user_id hashed-pwd)))
 
 (defn issue-password-reset-request [email]
-	(let [user (get-presentable-user-by-email email)
+	(let [user (get-user-by-email email)
 				reset-token (.toString (UUID/randomUUID))]
 		(when user
 			(send-password-reset-email user reset-token)

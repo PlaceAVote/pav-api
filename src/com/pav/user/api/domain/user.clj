@@ -20,29 +20,36 @@
 (defn hash-password [user-profile]
   (update-in user-profile [:password] h/encrypt))
 
+(defn- extract-profile-info [profile]
+	(select-keys profile [:user_id :first_name :last_name :country_code :public :img_url]))
+
 (defprotocol Profiles
-  (assigntoken [profile]
-    "Assign new token to user profile")
   (presentable [profile]
-    "Remove sensitive information from user profiles"))
+    "Remove sensitive information from user profiles")
+	(profile-info [profile]
+		"Return user profile information")
+	(create-token-for [profile]
+		"Assign a new token to the profile"))
 
 (defrecord UserProfile [user_id email password first_name last_name dob country_code
                         created_at public registered token topics confirmation-token]
   Profiles
   (presentable [profile]
     (dissoc profile :password :confirmation-token))
-  (assigntoken [profile]
-    (-> (create-auth-token (dissoc profile :password :token))
-        (merge profile))))
+	(profile-info [profile]
+		(extract-profile-info profile))
+	(create-token-for [profile]
+		(assign-new-token (dissoc profile :password :token))))
 
 (defrecord FacebookUserProfile [user_id email facebook_token first_name last_name dob country_code
                                 created_at public registered token topics confirmation-token]
   Profiles
   (presentable [profile]
     (dissoc profile :facebook_token :confirmation-token))
-  (assigntoken [profile]
-    (-> (create-auth-token (dissoc profile :token))
-        (merge profile {:facebook_token (:token profile)}))))
+	(profile-info [profile]
+		(extract-profile-info profile))
+	(create-token-for [profile]
+		(assign-new-token (dissoc profile :token))))
 
 (defn new-user-profile [user-profile origin]
   (case origin
