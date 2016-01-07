@@ -3,11 +3,9 @@
 	(:require [com.pav.user.api.test.utils.utils :refer [flush-redis
 																											 flush-dynamo-tables
 																											 flush-user-index
+																											 test-user
 																											 pav-req]]
 						[cheshire.core :as ch]))
-
-(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
-								:country_code "USA" :topics ["Defense"]})
 
 (against-background [(before :facts (do
 																			(flush-dynamo-tables)

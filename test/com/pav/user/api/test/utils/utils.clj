@@ -11,6 +11,12 @@
            [clojurewerkz.elastisch.rest.index :as esi]
 					 [clojurewerkz.elastisch.rest.document :as esd]))
 
+(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
+								:country_code "USA" :topics ["Defense"] :gender "male"})
+
+(def test-fb-user {:email "paul@facebook.com" :first_name "john" :last_name "stuff" :dob "05/10/1984" :country_code "USA"
+									 :img_url "http://image.com/image.jpg" :topics ["Defense"] :token "token" :gender "male"})
+
 (def client-opts {:access-key "<AWS_DYNAMODB_ACCESS_KEY>"
                   :secret-key "<AWS_DYNAMODB_SECRET_KEY>"
                   :endpoint "http://localhost:8000"})

@@ -11,38 +11,40 @@
 (def iso3-codes (into #{} (map retrieve-iso3-country-code (Locale/getISOCountries))))
 
 (def User
-  {:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
-   :password     (s/both (s/pred (complement empty?)) s/Str)
-   :first_name   s/Str
-   :last_name    s/Str
-   :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
-   :country_code (s/both s/Str
-                         (s/pred (complement empty?))
-                         (s/pred #(contains? iso3-codes %)))
-   :topics [s/Str]})
+	{:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+	 :password     (s/both (s/pred (complement empty?)) s/Str)
+	 :first_name   s/Str
+	 :last_name    s/Str
+	 :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
+	 :country_code (s/both s/Str
+									 (s/pred (complement empty?))
+									 (s/pred #(contains? iso3-codes %)))
+	 :topics       [s/Str]
+	 :gender       s/Str})
 
 (def FacebookUser
-  {:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
-   :first_name   s/Str
-   :last_name    s/Str
-   :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
-   :country_code (s/both s/Str
-                         (s/pred (complement empty?))
-                         (s/pred #(contains? iso3-codes %)))
-   :img_url s/Str
-   :topics [s/Str]
-   :token s/Str})
+	{:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+	 :first_name   s/Str
+	 :last_name    s/Str
+	 :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
+	 :country_code (s/both s/Str
+									 (s/pred (complement empty?))
+									 (s/pred #(contains? iso3-codes %)))
+	 :img_url      s/Str
+	 :topics       [s/Str]
+	 :token        s/Str
+	 :gender			 s/Str})
 
 (def UserRecord
-  {:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
-   :first_name   s/Str
-   :last_name    s/Str
-   :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
-   :country_code (s/both s/Str
-                         (s/pred (complement empty?))
-                         (s/pred #(contains? iso3-codes %)))
-   :topics [s/Str]
-   :token s/Str})
+	{:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+	 :first_name   s/Str
+	 :last_name    s/Str
+	 :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
+	 :country_code (s/both s/Str
+									 (s/pred (complement empty?))
+									 (s/pred #(contains? iso3-codes %)))
+	 :topics       [s/Str]
+	 :token        s/Str})
 
 (def UserLogin
   {:email    (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
@@ -71,7 +73,8 @@
         (= :dob k) {k "Date of birth is a required field"}
         (= :topics k) {k "Please specify a list of topics."}
         (= :token k) {k "A token is required for social media registerations and logins"}
-        (= :img_url k) {k "A IMG URL is required for social media registerations and logins"}))
+        (= :img_url k) {k "A IMG URL is required for social media registerations and logins"}
+				(= :gender k) {k "Please specify a gender"}))
 
 (defn construct-error-msg [errors]
   (log/error (str "An Error has occured " errors))

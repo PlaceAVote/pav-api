@@ -6,17 +6,13 @@
                                                        flush-redis
                                                        flush-user-index
                                                        bootstrap-bills
+																											 test-user
+																											 test-fb-user
 																											 pav-req]]
             [ring.mock.request :refer [request body content-type header]]
             [com.pav.user.api.resources.user :refer [existing-user-error-msg login-error-msg]]
             [com.pav.user.api.authentication.authentication :refer [create-auth-token]]
             [cheshire.core :as ch]))
-
-(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
-								:country_code "USA" :topics ["Defense"]})
-
-(def test-fb-user {:email "paul@facebook.com" :first_name "john" :last_name "stuff" :dob "05/10/1984" :country_code "USA"
-									 :img_url "http://image.com/image.jpg" :topics ["Defense"] :token "token"})
 
 (against-background [(before :facts (do
                                       (flush-dynamo-tables)
@@ -34,17 +30,6 @@
            status => 201
            (keys (ch/parse-string body true)) => (contains [:user_id :token] :in-any-order)))
 
-
-  (fact "Create a new user from facebook login, when email is missing, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user/facebook" (dissoc test-fb-user :email))]
-          status => 400
-          body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
-
-  (fact "Create a new user from facebook login, when token is missing, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user/facebook" (dissoc test-fb-user :token))]
-          status => 400
-          body => (ch/generate-string {:errors [{:token "A token is required for social media registerations and logins"}]})))
-
   (fact "Create a new user, with an existing email, should return 409"
         (let [_ (pav-req :put "/user" test-user)
               {status :status body :body} (pav-req :put "/user" test-user)]
@@ -57,26 +42,30 @@
           status => 409
           body => (ch/generate-string existing-user-error-msg)))
 
-  (fact "Create a new user, when the payload is missing an email, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user" (dissoc test-user :email))]
-          status => 400
-          body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
+  (fact "Create a new user, when the payload is empty, return 400 with appropriate error messages"
+		(let [{status :status body :body} (pav-req :put "/user" {})]
+			status => 400
+			body => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}
+																											{:password "Password is a required field"}
+																											{:first_name "First Name is a required field"}
+																											{:last_name "Last Name is a required field"}
+																											{:dob "Date of birth is a required field"}
+																											{:country_code "Country Code is a required field.  Please Specify Country Code"}
+																											{:topics "Please specify a list of topics."}
+																											{:gender "Please specify a gender"}]}) :in-any-order)))
 
-  (fact "Create a new user, when the payload is missing a password, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user" (dissoc test-user :password))]
-          status => 400
-          body => (ch/generate-string {:errors [{:password "Password is a required field"}]})))
-
-  (fact "Create a new user, when the payload is empty, return 400 with appropriate error message"
-        (let [{status :status body :body} (pav-req :put "/user" {})]
-          status => 400
-          body => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}
-                                                          {:password "Password is a required field"}
-                                                          {:first_name "First Name is a required field"}
-                                                          {:last_name "Last Name is a required field"}
-                                                          {:dob "Date of birth is a required field"}
-                                                          {:country_code "Country Code is a required field.  Please Specify Country Code"
-                                                           :topics "Please specify a list of topics."}]}) :in-any-order)))
+	(fact "Create a new facebook user, when the payload is empty, return 400 with appropriate error messages"
+		(let [{status :status body :body} (pav-req :put "/user/facebook" {})]
+			status => 400
+			body => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}
+																											{:first_name "First Name is a required field"}
+																											{:last_name "Last Name is a required field"}
+																											{:img_url "A IMG URL is required for social media registerations and logins"}
+																											{:dob "Date of birth is a required field"}
+																											{:country_code "Country Code is a required field.  Please Specify Country Code"}
+																											{:topics "Please specify a list of topics."}
+																											{:token "A token is required for social media registerations and logins"}
+																											{:gender "Please specify a gender"}]}) :in-any-order)))
 
   (fact "Create a new user, when the email is invalid, return 400 with appropriate error message"
     (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :email "johnstuffcom"))]
@@ -124,4 +113,5 @@
 
   (fact "Given confirmation token, when invalid, then return 401."
         (let [{status :status} (pav-req :post "/user/confirm/1234")]
-          status => 401)))
+          status => 401))
+	)

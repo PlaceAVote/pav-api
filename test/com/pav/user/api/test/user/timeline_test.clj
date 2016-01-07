@@ -7,10 +7,8 @@
 																											 persist-timeline-event
 																											 flush-user-index
 																											 bootstrap-bills
+																											 test-user
 																											 pav-req]]))
-
-(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
-								:country_code "USA" :topics ["Defense"]})
 
 (against-background [(before :facts (do
 																			(flush-redis)

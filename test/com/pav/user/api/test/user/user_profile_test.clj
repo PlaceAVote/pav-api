@@ -4,17 +4,14 @@
 																											 flush-redis
 																											 flush-user-index
 																											 bootstrap-bills
+																											 test-user
+																											 test-fb-user
 																											 pav-req]]
 						[cheshire.core :as ch]))
 
-(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
-								:country_code "USA" :topics ["Defense"]})
-
-(def test-fb-user {:email "paul@facebook.com" :first_name "john" :last_name "stuff" :dob "05/10/1984" :country_code "USA"
-									 :img_url "http://image.com/image.jpg" :topics ["Defense"] :token "token"})
 
 (def searchable-profile {:email "peter@pl.com" :password "stuff2" :first_name "peter" :last_name "pan" :dob "05/10/1984"
-												 :country_code "USA" :topics ["Defense"]})
+												 :country_code "USA" :topics ["Defense"] :gender "male"})
 
 (against-background [(before :facts (do
 																			(flush-dynamo-tables)

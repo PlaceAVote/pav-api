@@ -4,11 +4,9 @@
 																											 flush-redis
 																											 flush-user-index
 																											 bootstrap-bills
+																											 test-user
 																											 pav-req]]
 						[com.pav.user.api.redis.redis :as redis-dao]))
-
-(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
-								:country_code "USA" :topics ["Defense"]})
 
 (against-background [(before :facts (do
 																			(flush-redis)
@@ -17,9 +15,7 @@
 																			(bootstrap-bills)))]
 
 	(fact "Reset existing user password"
-		(let [test-user {:email     "john@placeavote.com" :password "stuff2" :first_name "john"
-										 :last_name "stuff" :dob "05/10/1984" :country_code "USA" :topics ["Defense"]}
-					_ (pav-req :put "/user" test-user)
+		(let [_ (pav-req :put "/user" test-user)
 					_ (pav-req :post (str "/password/reset?email=" (:email test-user)))
 					reset-token (redis-dao/retrieve-password-reset-token-by-useremail (:email test-user))
 					_ (pav-req :post "/password/reset/confirm" {:new_password "password1" :reset_token reset-token})
