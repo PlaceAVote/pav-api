@@ -106,9 +106,6 @@ definitions:
         type: string
       last_name:
         type: string
-      dob:
-        type: string
-        format: 01/10/1999
       country_code:
         type: string
         format: USA
@@ -148,6 +145,9 @@ definitions:
         items:
           type: string
           format: '[Defence, Arts]'
+      gender:
+        type: string
+        format: string
   NewUserProfileBody:
     title: NewUserProfile
     type: object
@@ -172,30 +172,15 @@ definitions:
         items:
           type: string
           format: '[Defence, Arts]'
+      gender:
+        type: string
+        format: string
   NewUserProfileResponse:
     type: object
     properties:
       user_id:
         type: string
         format: string
-      email:
-        type: string
-        format: test@place.com
-      first_name:
-        type: string
-      last_name:
-        type: string
-      dob:
-        type: string
-        format: 01/10/1999
-      country_code:
-        type: string
-        format: USA
-      topics:
-        type: array
-        items:
-          type: string
-          format: '[Defence, Arts]'
       token:
         type: string
   UserFollowBody:
@@ -226,11 +211,12 @@ definitions:
   FacebookLoginBody:
     type: object
     properties:
-      email:
+      id:
         type: string
-        format: test@place.com
+        format: string
       token:
         type: string
+        format: string
   LoginBody:
     type: object
     properties:
@@ -322,25 +308,6 @@ paths:
             $ref: "#/definitions/FeedEventRecords"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/feed
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/{user_id}/timeline:
     get:
       description: Given a user ID then retrieve that users personal timeline
@@ -357,27 +324,6 @@ paths:
             $ref: "#/definitions/TimelineEventRecords"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/timeline
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.path.user_id: "method.request.path.user_id"
-          integration.request.querystring.page: "method.request.querystring.page"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/me/timeline:
     get:
       description: Given a user ID then retrieve that users personal timeline
@@ -393,26 +339,6 @@ paths:
             $ref: "#/definitions/TimelineEventRecords"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/timeline
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.querystring.page: "method.request.querystring.page"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/notification/{notification_id}/mark:
     post:
       description: Mark notification if user has read it
@@ -426,26 +352,6 @@ paths:
           description: Successful response
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: post
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/notification/{notification_id}/mark
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.path.notification_id: "method.request.path.notification_id"
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/notifications:
     get:
       description: Get the current users notifications
@@ -460,25 +366,6 @@ paths:
             $ref: "#/definitions/NotificationRecords"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/notifications
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/facebook:
     put:
       description: Register new user
@@ -493,23 +380,6 @@ paths:
             $ref: "#/definitions/NewUserProfileResponse"
         '400':
           description: Bad Request (Check body of request)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: put
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/facebook
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/me/profile:
     get:
       description: Given a user_id retrieve user profile in relation to current user.
@@ -524,25 +394,6 @@ paths:
             $ref: "#/definitions/UserProfileResponse"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/profile
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/{user_id}/profile:
     get:
       description: Given a user_id retrieve user profile in relation to current user.
@@ -558,26 +409,6 @@ paths:
             $ref: "#/definitions/UserProfileResponse"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/profile
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.path.user_id: "method.request.path.user_id"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user:
     put:
       description: Register new user
@@ -592,23 +423,6 @@ paths:
             $ref: "#/definitions/NewUserProfileResponse"
         '400':
           description: Bad Request (Check body of request)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: put
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/authenticate:
     post:
       description: Authenticate existing user
@@ -623,23 +437,6 @@ paths:
             $ref: "#/definitions/NewTokenResponse"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: post
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/authenticate
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/facebook/authenticate:
     post:
       description: Authenticate existing user
@@ -654,23 +451,6 @@ paths:
             $ref: "#/definitions/NewTokenResponse"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: post
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/facebook/authenticate
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /password/reset:
     post:
       description: Authenticate existing user
@@ -711,25 +491,6 @@ paths:
           description: Successful response
         '401':
           description: Confirmation token is invalid
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: post
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/confirm/{confirm-token}
-        requestParameters:
-          integration.request.path.confirm-token: "method.request.path.confirm-token"
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/me/following:
     get:
       description: Get users the current logged in user is following
@@ -744,25 +505,6 @@ paths:
             $ref: "#/definitions/UserFollowingRecords"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/following
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/{user_id}/following:
     get:
       description: Given a user id, retrieve users they are following
@@ -778,26 +520,6 @@ paths:
             $ref: "#/definitions/UserFollowingRecords"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/following
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.path.user_id: "method.request.path.user_id"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/me/followers:
     get:
       description: Get users the current logged in user is followed by
@@ -812,25 +534,6 @@ paths:
             $ref: "#/definitions/UserFollowingRecords"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/followers
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/{user_id}/followers:
     get:
       description: Given a user id, retrieve users they are being followed by
@@ -846,26 +549,6 @@ paths:
             $ref: "#/definitions/UserFollowingRecords"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/followers
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.path.user_id: "method.request.path.user_id"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/follow:
     put:
       description: Follow a user
@@ -879,25 +562,6 @@ paths:
           description: Successful response
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: put
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/follow
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/unfollow:
     delete:
       description: Unfollow a user
@@ -911,26 +575,6 @@ paths:
           description: Successful response
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: delete
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/unfollow
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          204:
-            statusCode: "204"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
-      
   /user/token/validate:
     get:
       description: Validate Authentication Token
@@ -943,22 +587,3 @@ paths:
           description: Successful response
         '401':
           description: Token invalid
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/token/validate
-        requestParameters:
-          integration.request.querystring.token: "method.request.querystring.token"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
