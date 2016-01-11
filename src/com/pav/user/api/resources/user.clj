@@ -55,9 +55,11 @@
 
 (defresource user-settings
 	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+	:malformed? (fn [ctx] (service/validate-settings-update (get-in ctx [:request :body])))
 	:allowed-methods [:post :get]
 	:available-media-types ["application/json"]
-	:post! (fn [ctx] (service/update-account-settings (retrieve-user-id (:request ctx)) (get-in ctx [:request :params])))
+	:post! (fn [ctx] (service/update-account-settings (retrieve-user-id (:request ctx)) (get-in ctx [:request :body])))
+	:handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors])))
 	:handle-ok (fn [ctx]
 							 (service/get-account-settings (retrieve-user-id (:request ctx)))))
 

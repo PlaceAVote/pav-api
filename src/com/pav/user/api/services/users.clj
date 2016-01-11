@@ -1,7 +1,7 @@
 (ns com.pav.user.api.services.users
   (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
-            [com.pav.user.api.schema.user :refer [validate validate-login construct-error-msg]]
+            [com.pav.user.api.schema.user :refer [validate validate-login validate-settings construct-error-msg]]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject]]
@@ -104,6 +104,12 @@
   (let [result (validate-login user origin)]
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
+
+(defn validate-settings-update [payload]
+	(if (seq payload)
+		(let [result (validate-settings payload)]
+		 (if (seq result)
+			 {:errors (construct-error-msg result)}))))
 
 (defn facebook-user-exists? [email facebook_id]
 	"Function to aid migration for existing facebook users without a facebook ID."

@@ -56,6 +56,14 @@
 	 :id    s/Str
 	 :token s/Str})
 
+(def AccountSettingUpdate
+	{(s/optional-key :email)      (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+	 (s/optional-key :first_name) s/Str
+	 (s/optional-key :last_name)  s/Str
+	 (s/optional-key :dob)        #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
+	 (s/optional-key :public)     s/Bool
+	 (s/optional-key :gender)     s/Str})
+
 (defn validate [user origin]
   (case origin
     :pav (s/check User user)
@@ -65,6 +73,9 @@
   (case origin
     :pav (s/check UserLogin user)
     :facebook (s/check FacebookLogin user)))
+
+(defn validate-settings [settings]
+	(s/check AccountSettingUpdate settings))
 
 (defn find-suitable-error [[k _]]
   (cond (= :email k) {k "A valid email address is a required"}
@@ -77,7 +88,8 @@
         (= :token k) {k "A token is required for social media registerations and logins"}
         (= :img_url k) {k "A IMG URL is required for social media registerations and logins"}
 				(= :gender k) {k "Please specify a gender"}
-				(= :id k) {k "Please specify a facebook id"}))
+				(= :id k) {k "Please specify a facebook id"}
+				:else {k "field is unknown"}))
 
 (defn construct-error-msg [errors]
   (log/error (str "An Error has occured " errors))
