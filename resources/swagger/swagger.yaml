@@ -254,6 +254,9 @@ definitions:
       social_login:
         type: boolean
         format: boolean
+      img_url:
+        type: string
+        format: string
   FeedEventRecords:
     type: array
     items:
