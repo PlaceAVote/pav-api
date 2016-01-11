@@ -47,25 +47,53 @@ parameters:
     in: body
     required: true
     schema:
-      $ref: "#/definitions/LoginBody"
+      type: object
+      properties:
+        email:
+          type: string
+          format: string
+        password:
+          type: string
   FacebookLoginBodyParam:
     name: Login
     in: body
     required: true
     schema:
-      $ref: "#/definitions/FacebookLoginBody"
+      type: object
+      properties:
+        id:
+          type: string
+          format: string
+        email:
+          type: string
+          format: string
+        token:
+          type: string
+          format: string
   ConfirmPasswordResetBodyParam:
     name: Confirm New Password
     in: body
     required: true
     schema:
-      $ref: "#/definitions/ConfirmPasswordBody"
+      title: ConfirmPassword
+      type: object
+      properties:
+        reset_token:
+          type: string
+          format: string
+        new_password:
+          type: string
+          format: string
   UserFollowBodyParam:
     name: User to follow
     in: body
     required: true
     schema:
-      $ref: "#/definitions/UserFollowBody"
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: string 
   TokenBodyParam:
     name: token
     in: query
@@ -77,24 +105,73 @@ parameters:
     in: body
     required: true
     schema:
-      $ref: "#/definitions/NewFacebookUserProfileBody"
+      title: NewUserProfile
+      type: object
+      properties:
+        email:
+          type: string
+          format: string
+        id:
+          type: string
+          format: string
+        token:
+          type: string
+          format: string
+        first_name: 
+          type: string
+          format: string
+        last_name:
+          type: string
+          format: string
+        dob:
+          type: string
+          format: string
+        country_code:
+          type: string
+          format: USA
+        img_url:
+          type: string
+          format: string
+        topics:
+          type: array
+          items:
+            type: string
+            format: '[Defence, Arts]'
+        gender:
+          type: string
+          format: string
   NewUserProfileBodyParam:
     name: NewUser
     in: body
     required: true
     schema:
-      $ref: "#/definitions/NewUserProfileBody"
+      title: NewUserProfile
+      type: object
+      properties:
+        email:
+          type: string
+          format: test@place.com
+        password:
+          type: string
+        first_name: 
+          type: string
+        last_name:
+          type: string
+        dob:
+          type: string
+          format: 01/10/1999
+        country_code:
+          type: string
+          format: USA
+        topics:
+          type: array
+          items:
+            type: string
+            format: '[Defence, Arts]'
+        gender:
+          type: string
+          format: string
 definitions:
-  ConfirmPasswordBody:
-    title: ConfirmPassword
-    type: object
-    properties:
-      reset_token:
-        type: string
-        format: string
-      new_password:
-        type: string
-        format: string
   UserProfileResponse:
     title: UserProfile
     type: object
@@ -118,63 +195,6 @@ definitions:
       total_following:
         type: number
         format: number
-  NewFacebookUserProfileBody:
-    title: NewUserProfile
-    type: object
-    properties:
-      email:
-        type: string
-        format: test@place.com
-      token:
-        type: string
-      first_name: 
-        type: string
-      last_name:
-        type: string
-      dob:
-        type: string
-        format: 01/10/1999
-      country_code:
-        type: string
-        format: USA
-      img_url:
-        type: string
-        format: string
-      topics:
-        type: array
-        items:
-          type: string
-          format: '[Defence, Arts]'
-      gender:
-        type: string
-        format: string
-  NewUserProfileBody:
-    title: NewUserProfile
-    type: object
-    properties:
-      email:
-        type: string
-        format: test@place.com
-      password:
-        type: string
-      first_name: 
-        type: string
-      last_name:
-        type: string
-      dob:
-        type: string
-        format: 01/10/1999
-      country_code:
-        type: string
-        format: USA
-      topics:
-        type: array
-        items:
-          type: string
-          format: '[Defence, Arts]'
-      gender:
-        type: string
-        format: string
   NewUserProfileResponse:
     type: object
     properties:
@@ -183,12 +203,6 @@ definitions:
         format: string
       token:
         type: string
-  UserFollowBody:
-    type: object
-    properties:
-      user_id:
-        type: string
-        format: string  
   UserFollowingRecords:
     type: array
     items:
@@ -208,26 +222,6 @@ definitions:
         follower_count:
           type: number
           format: number
-  FacebookLoginBody:
-    type: object
-    properties:
-      id:
-        type: string
-        format: string
-      email:
-        type: string
-        format: string
-      token:
-        type: string
-        format: string
-  LoginBody:
-    type: object
-    properties:
-      email:
-        type: string
-        format: string
-      password:
-        type: string
   NewTokenResponse:
     type: object
     properties:
