@@ -8,6 +8,31 @@ consumes:
 produces:
   - application/json
 parameters:
+  AccountSettingsUpdateParam:
+    name: AccountSettingsUpdate
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        email:
+          type: string
+          format: string
+        first_name:
+          type: string
+          format: string
+        last_name:
+          type: string
+          format: string
+        gender:
+          type: string
+          format: string
+        dob:
+          type: string
+          format: string
+        public:
+          type: boolean
+          format: boolean
   ConfirmTokenParam:
     name: confirm-token
     in: path
@@ -365,6 +390,20 @@ paths:
             $ref: "#/definitions/AccountSettingsResponse"
         '401':
           description: Not Authorized (Check Authentication Token)
+    post:
+      description: Update users account settings
+      parameters:
+        - $ref: "#/parameters/TokenParam"
+        - $ref: "#/parameters/AccountSettingsUpdateParam"
+      tags:
+        - Users
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: "#/definitions/AccountSettingsResponse"
+        '401':
+          description: Not Authorized (Check Authentication Token)  
   /user/me/timeline:
     get:
       description: Given a user ID then retrieve that users personal timeline
