@@ -8,7 +8,7 @@
 (def connection (connect (:es-url env)))
 
 (defn index-user [user]
-  (esd/create connection "pav" "users" user :id (:user_id user)))
+  (esd/put connection "pav" "users" (:user_id user) user))
 
 (defn merge-type-and-fields [hit]
 	(merge {:type (:_type hit)} (:_source hit)))

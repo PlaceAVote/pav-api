@@ -82,8 +82,10 @@
 (defn update-user-password [user_id password]
 	(wcar redis-conn (car/hmset* (upk user_id) {:password password})))
 
-(defn update-account-settings [user_id param-map]
-	(wcar redis-conn (car/hmset* (upk user_id) param-map)))
+(defn update-account-settings [user_id {:keys [email] :as param-map}]
+	(wcar redis-conn (car/hmset* (upk user_id) param-map))
+	(if email
+		(wcar redis-conn (car/set (uek email) user_id))))
 
 (defn assign-facebook-id [user_id facebook_id]
 	(wcar redis-conn

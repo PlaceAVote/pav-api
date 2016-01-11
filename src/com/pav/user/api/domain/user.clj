@@ -31,7 +31,9 @@
 	(create-token-for [profile]
 		"Assign a new token to the profile")
 	(account-settings [profile]
-		"Retrieve account settings for user"))
+		"Retrieve account settings for user")
+	(indexable-profile [profile]
+		"Prepare User profile for indexing to ES"))
 
 (defrecord UserProfile [user_id email password first_name last_name dob country_code
                         created_at public registered token topics confirmation-token]
@@ -44,7 +46,9 @@
 		(assign-new-token (dissoc profile :password :token)))
 	(account-settings [profile]
 		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url])
-			  (assoc :social_login false))))
+			  (assoc :social_login false)))
+	(indexable-profile [profile]
+		(dissoc profile :password :token)))
 
 (defrecord FacebookUserProfile [user_id email facebook_token facebook_id first_name last_name dob country_code
                                 created_at public registered token topics confirmation-token]
@@ -57,7 +61,9 @@
 		(assign-new-token (dissoc profile :token)))
 	(account-settings [profile]
 		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url])
-			  (assoc :social_login true))))
+			  (assoc :social_login true)))
+	(indexable-profile [profile]
+		(dissoc profile :token :facebook_token :facebook_id)))
 
 (defn new-user-profile [user-profile origin]
   (case origin

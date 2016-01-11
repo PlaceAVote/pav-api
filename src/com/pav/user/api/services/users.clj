@@ -8,7 +8,7 @@
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email send-password-reset-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
-																									account-settings]]
+																									account-settings indexable-profile]]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
 						[clojure.core.memoize :as memo])
@@ -34,7 +34,7 @@
 			(redis-dao/create-user-profile profile)
       (pre-populate-newsfeed profile)
 			(thread ;; Expensive call to mandril.  Execute in seperate thread.
-				(index-user (dissoc profile :token :password))
+				(index-user (indexable-profile profile))
 				(send-confirmation-email profile))
 		(catch Exception e (log/error (str "Error occured persisting user profile for " user_id "Exception: " e)))))
   profile)
@@ -210,9 +210,17 @@
     (-> (get-user-profile user_id)
         (assoc :following (following? current-user user_id)))))
 
+(defn- update-user-profile [user_id param-map]
+	(-> (get-user-by-id user_id)
+			(merge param-map)
+			indexable-profile
+			index-user))
+
 (defn update-account-settings [user_id param-map]
-	(dynamo-dao/update-account-settings user_id param-map)
-	(redis-dao/update-account-settings user_id param-map))
+	(when (seq param-map)
+		(dynamo-dao/update-account-settings user_id param-map)
+		(redis-dao/update-account-settings user_id param-map)
+		(update-user-profile user_id param-map)))
 
 (defn get-account-settings [user_id]
 	(-> (get-user-by-id user_id)
