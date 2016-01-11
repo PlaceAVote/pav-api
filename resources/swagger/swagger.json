@@ -310,6 +310,43 @@
         }
       }
     },
+    "AccountSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "dob": {
+          "type": "string",
+          "format": "string"
+        },
+        "first_name": {
+          "type": "string",
+          "format": "string"
+        },
+        "last_name": {
+          "type": "string",
+          "format": "string"
+        },
+        "gender": {
+          "type": "string",
+          "format": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "string"
+        },
+        "public": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "social_login": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
     "FeedEventRecords": {
       "type": "array",
       "items": {
@@ -449,6 +486,30 @@
             "description": "Successful response",
             "schema": {
               "$ref": "#/definitions/TimelineEventRecords"
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/user/me/settings": {
+      "get": {
+        "description": "Given a users token.  Retrieve there account settings",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/AccountSettingsResponse"
             }
           },
           "401": {
