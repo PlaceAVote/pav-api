@@ -214,6 +214,9 @@ definitions:
       id:
         type: string
         format: string
+      email:
+        type: string
+        format: string
       token:
         type: string
         format: string
@@ -222,7 +225,7 @@ definitions:
     properties:
       email:
         type: string
-        format: test@place.com
+        format: string
       password:
         type: string
   NewTokenResponse:
