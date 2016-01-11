@@ -43,7 +43,7 @@
 	(create-token-for [profile]
 		(assign-new-token (dissoc profile :password :token)))
 	(account-settings [profile]
-		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email])
+		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url])
 			  (assoc :social_login false))))
 
 (defrecord FacebookUserProfile [user_id email facebook_token facebook_id first_name last_name dob country_code
@@ -56,7 +56,7 @@
 	(create-token-for [profile]
 		(assign-new-token (dissoc profile :token)))
 	(account-settings [profile]
-		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email])
+		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url])
 			  (assoc :social_login true))))
 
 (defn new-user-profile [user-profile origin]

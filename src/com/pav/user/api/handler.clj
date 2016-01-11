@@ -65,8 +65,6 @@
       (wrap-authentication (token-handler env))
       (wrap-json-body {:keywords? true})
       (handler/site)
-      (wrap-base-url)
-      (wrap-trace :header :ui)
       (wrap-cors :access-control-allow-origin [#".*"]
                  :access-control-allow-methods [:get :put :post :delete :options])
       (wrap-json-response)))

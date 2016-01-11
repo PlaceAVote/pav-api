@@ -20,7 +20,7 @@
 			status => 200
 			(ch/parse-string body true) =>
 				(merge {:user_id user_id :public true :social_login false}
-					(select-keys test-user [:first_name :last_name :dob :gender :email]))))
+					(select-keys test-user [:first_name :last_name :dob :gender :email :img_url]))))
 
 	(fact "Retrieve a facebook users account settings"
 		(let [{body :body} (pav-req :put "/user/facebook" test-fb-user)
@@ -29,7 +29,7 @@
 			status => 200
 			(ch/parse-string body true) =>
 			(merge {:user_id user_id :public true :social_login true}
-				(select-keys test-fb-user [:first_name :last_name :dob :gender :email]))))
+				(select-keys test-fb-user [:first_name :last_name :dob :gender :email :img_url]))))
 
 	(future-fact "Change a public user profile to private"
 		(let [{body :body} (pav-req :put "/user" test-user)
