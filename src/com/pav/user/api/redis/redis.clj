@@ -25,7 +25,7 @@
 
 (defn get-user-profile [user_id]
   (let [profile (wcar redis-conn (car/parse-map (car/hgetall (str "user:" user_id ":profile")) :keywordize))]
-    (if-not (empty? profile)
+    (if (seq profile)
       (convert-to-correct-profile-type profile)
       nil)))
 
@@ -64,3 +64,8 @@
 
 (defn update-account-settings [user_id param-map]
 	(wcar redis-conn (car/hmset* (str "user:" user_id ":profile") param-map)))
+
+(defn assign-facebook-id [user_id facebook_id]
+	(wcar redis-conn
+		(car/hmset* (str "user:" user_id ":profile") {:facebook_id facebook_id})
+		(car/set (str "facebookid:" facebook_id ":id") user_id)))

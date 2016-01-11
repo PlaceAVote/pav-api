@@ -79,15 +79,19 @@
 (defn update-user-token [{:keys [email token id]} origin]
   "Take current users email and token and update these values in databases.  Token can only be passed for facebook
   authentications"
-  (let [{:keys [user_id] :as current-user} (case origin
-																						 :facebook (get-user-by-facebook-id id)
+  (let [{:keys [user_id facebook_id] :as current-user} (case origin
+																						 :facebook (or (get-user-by-facebook-id id)
+																												   (get-user-by-email email))
 																						 :pav (get-user-by-email email))
         new-token (create-token-for current-user)]
     (case origin
       :pav      (do (redis-dao/update-token user_id new-token)
                     (dynamo-dao/update-user-token user_id new-token))
       :facebook (do (redis-dao/update-facebook-token user_id token new-token)
-                    (dynamo-dao/update-facebook-user-token user_id token new-token)))
+                    (dynamo-dao/update-facebook-user-token user_id token new-token)
+										(if (nil? facebook_id)
+											(dynamo-dao/assign-facebook-id user_id facebook_id)
+											(redis-dao/assign-facebook-id user_id facebook_id))))
     new-token))
 
 (defn validate-user-payload [user origin]
@@ -100,9 +104,18 @@
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 
+(defn facebook-user-exists? [email facebook_id]
+	"Function to aid migration for existing facebook users without a facebook ID."
+	(let [facebook-user (get-user-by-facebook-id facebook_id)]
+
+		(if (seq facebook-user)
+			true
+			(not (empty? (get-user-by-email email))))))
+
 (defn user-exist? [{email :email facebook_id :id}]
+	"Check if user exists using there email or facebook ID"
 	(if facebook_id
-		(not (empty? (get-user-by-facebook-id facebook_id)))
+		(facebook-user-exists? email facebook_id)
 		(not (empty? (get-user-by-email email)))))
 
 (defn check-pwd [user existing-user]

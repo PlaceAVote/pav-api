@@ -171,3 +171,7 @@
 		(into {}
 			(for [[k v] param-map]
 				[k [:put v]]))))
+
+(defn assign-facebook-id [user_id facebook_id]
+	(far/update-item client-opts user-table-name {:user_id user_id}
+		{:facebook_id [:put facebook_id]}))

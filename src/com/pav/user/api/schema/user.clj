@@ -52,7 +52,8 @@
    :password (s/both (s/pred (complement empty?)) s/Str)})
 
 (def FacebookLogin
-	{:id    s/Str
+	{:email    (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+	 :id    s/Str
 	 :token s/Str})
 
 (defn validate [user origin]
