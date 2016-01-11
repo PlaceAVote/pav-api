@@ -14,18 +14,23 @@
   (wcar redis-conn (car-mq/enqueue timeline-queue (-> (ch/generate-string event) msg/pack))))
 
 (defn upk [user_id]
+	"Create user profile key"
 	(str "user:" user_id ":profile"))
 
 (defn uek [email]
+	"Create reverse lookup key using the users email"
 	(str "email:" email ":id"))
 
 (defn ufbidk [facebook_id]
+	"Create reverse lookup key using a users facebook ID"
 	(str "facebookid:" facebook_id ":id"))
 
 (defn reset-email-key [reset-token]
+	"Create an email lookup key given a users reset token."
 	(str "reset-token:" reset-token ":useremail"))
 
 (defn useremail-reset-key [email]
+	"Create a reset token lookup key given a users email"
 	(str "useremail:" email ":reset-token"))
 
 (defn create-user-profile [{:keys [user_id email facebook_id] :as user-profile}]
