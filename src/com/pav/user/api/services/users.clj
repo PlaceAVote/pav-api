@@ -7,7 +7,8 @@
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email send-password-reset-email]]
-            [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for]]
+            [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
+																									account-settings]]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
 						[clojure.core.memoize :as memo])
@@ -207,7 +208,9 @@
 	(dynamo-dao/update-account-settings user_id param-map)
 	(redis-dao/update-account-settings user_id param-map))
 
-(defn get-account-settings [user_id])
+(defn get-account-settings [user_id]
+	(-> (get-user-by-id user_id)
+			account-settings))
 
 (defn validate-token [token]
   (token-valid? token))

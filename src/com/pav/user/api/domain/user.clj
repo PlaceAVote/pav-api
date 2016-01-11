@@ -29,7 +29,9 @@
 	(profile-info [profile]
 		"Return user profile information")
 	(create-token-for [profile]
-		"Assign a new token to the profile"))
+		"Assign a new token to the profile")
+	(account-settings [profile]
+		"Retrieve account settings for user"))
 
 (defrecord UserProfile [user_id email password first_name last_name dob country_code
                         created_at public registered token topics confirmation-token]
@@ -39,7 +41,10 @@
 	(profile-info [profile]
 		(extract-profile-info profile))
 	(create-token-for [profile]
-		(assign-new-token (dissoc profile :password :token))))
+		(assign-new-token (dissoc profile :password :token)))
+	(account-settings [profile]
+		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email])
+			  (assoc :social_login false))))
 
 (defrecord FacebookUserProfile [user_id email facebook_token facebook_id first_name last_name dob country_code
                                 created_at public registered token topics confirmation-token]
@@ -49,7 +54,10 @@
 	(profile-info [profile]
 		(extract-profile-info profile))
 	(create-token-for [profile]
-		(assign-new-token (dissoc profile :token))))
+		(assign-new-token (dissoc profile :token)))
+	(account-settings [profile]
+		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email])
+			  (assoc :social_login true))))
 
 (defn new-user-profile [user-profile origin]
   (case origin
