@@ -7,16 +7,22 @@
   (get ctx :record))
 
 (defn retrieve-body [payload]
-  (or (get-in payload [:body]) {}))
+  (or (get-in payload [:request :body]) {}))
+
+(defn retrieve-body-param [payload param]
+	(param (retrieve-body payload)))
+
+(defn retrieve-request-param [payload param]
+	(get-in payload [:request :params param]))
 
 (defn retrieve-user-details [payload]
-  (:identity payload))
+	(get-in payload [:request :identity]))
 
 (defn retrieve-user-email [payload]
   (-> (retrieve-user-details payload)
       :email))
 
-(defn retrieve-user-id [payload]
+(defn retrieve-token-user-id [payload]
   (-> (retrieve-user-details payload)
       :user_id))
 

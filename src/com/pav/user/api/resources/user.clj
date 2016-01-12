@@ -2,8 +2,9 @@
  (:require [liberator.core :refer [resource defresource]]
            [liberator.representation :refer [ring-response]]
            [com.pav.user.api.services.users :as service]
-           [com.pav.user.api.utils.utils :refer [record-in-ctx retrieve-body retrieve-user-details
-                                                 retrieve-user-email retrieve-user-id]]
+           [com.pav.user.api.utils.utils :refer [record-in-ctx retrieve-body
+																								 retrieve-body-param retrieve-user-details
+																								 retrieve-token-user-id retrieve-request-param]]
            [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
@@ -15,70 +16,70 @@
    (read-string page)
    nil)))
 
-(defresource create [payload]
+(defresource create
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? (fn [_] (service/validate-user-payload (retrieve-body payload) :pav))
- :conflict? (fn [_] (service/user-exist? (retrieve-body payload)))
- :put! (fn [_] (service/create-user-profile (retrieve-body payload)))
+ :malformed? (fn [ctx] (service/validate-user-payload (retrieve-body ctx) :pav))
+ :conflict? (fn [ctx] (service/user-exist? (retrieve-body ctx)))
+ :put! (fn [ctx] (service/create-user-profile (retrieve-body ctx)))
  :handle-created :record
  :handle-conflict existing-user-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
-(defresource create-facebook [payload]
+(defresource create-facebook
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? (fn [_] (service/validate-user-payload (retrieve-body payload) :facebook))
- :conflict? (fn [_] (service/user-exist? (retrieve-body payload)))
- :put! (fn [_] (service/create-user-profile (retrieve-body payload) :facebook))
+ :malformed? (fn [ctx] (service/validate-user-payload (retrieve-body ctx) :facebook))
+ :conflict? (fn [ctx] (service/user-exist? (retrieve-body ctx)))
+ :put! (fn [ctx] (service/create-user-profile (retrieve-body ctx) :facebook))
  :handle-created :record
  :handle-conflict existing-user-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
-(defresource authenticate [payload origin]
+(defresource authenticate [origin]
  :allowed-methods [:post]
- :malformed? (fn [_] (service/validate-user-login (retrieve-body payload) origin))
- :authorized? (fn [_] (service/valid-user? (retrieve-body payload) origin))
+ :malformed? (fn [ctx] (service/validate-user-login (retrieve-body ctx) origin))
+ :authorized? (fn [ctx] (service/valid-user? (retrieve-body ctx) origin))
  :available-media-types ["application/json"]
- :post! (fn [_] (service/authenticate-user (retrieve-body payload) origin))
+ :post! (fn [ctx] (service/authenticate-user (retrieve-body ctx) origin))
  :handle-created :record
  :handle-unauthorized login-error-msg
  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
 (defresource user
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:delete]
  :available-media-types ["application/json"]
- :delete! (fn [ctx]
-						(service/delete-user (retrieve-user-details (:request ctx))))
+ :delete! (fn [ctx] (service/delete-user (retrieve-user-details ctx)))
  :handle-ok record-in-ctx)
 
 (defresource user-settings
-	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
-	:malformed? (fn [ctx] (service/validate-settings-update (get-in ctx [:request :body])))
+	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+	:malformed? (fn [ctx] (service/validate-settings-update (retrieve-body ctx)))
 	:allowed-methods [:post :get]
 	:available-media-types ["application/json"]
-	:post! (fn [ctx] (service/update-account-settings (retrieve-user-id (:request ctx)) (get-in ctx [:request :body])))
+	:post! (fn [ctx] (service/update-account-settings (retrieve-token-user-id ctx) (retrieve-body ctx)))
 	:handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors])))
-	:handle-ok (fn [ctx]
-							 (service/get-account-settings (retrieve-user-id (:request ctx)))))
+	:handle-ok (fn [ctx] (service/get-account-settings (retrieve-token-user-id ctx))))
 
 (defresource change-password
-	:authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details (:request ctx)))
-													    (service/password-matches? (retrieve-user-id (:request ctx)) (get-in ctx [:request :body :current_password]))))
-	:malformed? (fn [ctx] (service/validate-password-change (get-in ctx [:request :body])))
+	:authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))
+													    (service/password-matches?
+																(retrieve-token-user-id ctx)
+																(retrieve-body-param ctx :current_password))))
+	:malformed? (fn [ctx] (service/validate-password-change (retrieve-body ctx)))
 	:allowed-methods [:post :get]
 	:available-media-types ["application/json"]
-	:post! (fn [ctx] (service/change-password (retrieve-user-id (:request ctx)) (get-in ctx [:request :body :new_password]))))
+	:post! (fn [ctx] (service/change-password (retrieve-token-user-id ctx) (retrieve-body-param ctx :new_password))))
 
 (defresource user-profile
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :exists? (fn [ctx]
-           (if-not (nil? (get-in ctx [:request :params :user_id]))
-            {:record (service/get-user-profile (retrieve-user-id (:request ctx)) (get-in ctx [:request :params :user_id]))}
-            {:record (service/get-user-profile (retrieve-user-id (:request ctx)))}))
+           (if-not (nil? (retrieve-request-param ctx :user_id))
+						 {:record (service/get-user-profile (retrieve-token-user-id ctx) (retrieve-request-param ctx :user_id))}
+						 {:record (service/get-user-profile (retrieve-token-user-id ctx))}))
  :handle-ok record-in-ctx)
 
 (defresource confirm-user [token]
@@ -88,13 +89,13 @@
  :post! (service/update-registration token))
 
 (defresource notifications
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
- :handle-ok (fn [ctx] (service/get-notifications (retrieve-user-id (:request ctx)))))
+ :handle-ok (fn [ctx] (service/get-notifications (retrieve-token-user-id ctx))))
 
 (defresource mark-notification [id]
-	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
 	:post! (service/mark-notification id))
@@ -108,56 +109,56 @@
 (defresource confirm-password-reset
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
-	:post! (fn [ctx] (let [{token :reset_token password :new_password} (get-in ctx [:request :body])]
+	:post! (fn [ctx] (let [{token :reset_token password :new_password} (retrieve-body ctx)]
 										 (service/confirm-password-reset token password))))
 
 (defresource timeline
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx]
-             (if-not (nil? (get-in ctx [:request :params :user_id]))
-              (service/get-timeline (get-in ctx [:request :params :user_id]) (retrieve-page-param ctx))
-              (service/get-timeline (retrieve-user-id (:request ctx)) (retrieve-page-param ctx)))))
+             (if-not (nil? (retrieve-request-param ctx :user_id))
+              (service/get-timeline (retrieve-request-param ctx :user_id) (retrieve-page-param ctx))
+              (service/get-timeline (retrieve-token-user-id ctx) (retrieve-page-param ctx)))))
 
 (defresource feed
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
- :handle-ok (fn [ctx] (service/get-feed (retrieve-user-id (:request ctx)))))
+ :handle-ok (fn [ctx] (service/get-feed (retrieve-token-user-id ctx))))
 
 (defresource follow
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :put! (fn [ctx] (service/follow-user (retrieve-user-id (:request ctx)) (get-in ctx [:request :body :user_id]))))
+ :put! (fn [ctx] (service/follow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))))
 
 (defresource unfollow
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:delete]
  :available-media-types ["application/json"]
- :delete! (fn [ctx] (service/unfollow-user (retrieve-user-id (:request ctx)) (get-in ctx [:request :body :user_id]))))
+ :delete! (fn [ctx] (service/unfollow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))))
 
 (defresource following
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx]
-             (if-not (nil? (get-in ctx [:request :params :user_id]))
-              (service/user-following (get-in ctx [:request :params :user_id]))
-              (service/user-following (retrieve-user-id (:request ctx))))))
+             (if-not (nil? (retrieve-request-param ctx :user_id))
+              (service/user-following (retrieve-request-param ctx :user_id))
+              (service/user-following (retrieve-token-user-id ctx)))))
 
 (defresource followers
- :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx]
-             (if-not (nil? (get-in ctx [:request :params :user_id]))
-              (service/user-followers (get-in ctx [:request :params :user_id]))
-              (service/user-followers (retrieve-user-id (:request ctx))))))
+             (if-not (nil? (retrieve-request-param ctx :user_id))
+              (service/user-followers (retrieve-request-param ctx :user_id))
+              (service/user-followers (retrieve-token-user-id ctx)))))
 
 (defresource validate-token
- :authorized? (fn [ctx] (service/validate-token (get-in ctx [:request :params :token])))
+ :authorized? (fn [ctx] (service/validate-token (retrieve-request-param ctx :token)))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :handle-ok {:message "Token is valid"})

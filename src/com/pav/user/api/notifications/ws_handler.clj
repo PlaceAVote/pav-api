@@ -1,7 +1,7 @@
 (ns com.pav.user.api.notifications.ws-handler
 	(:require [org.httpkit.server :refer [send! with-channel on-close on-receive close]]
 						[clojure.tools.logging :as log]
-						[com.pav.user.api.utils.utils :refer [retrieve-user-id unpack-redis-msg to-json]]
+						[com.pav.user.api.utils.utils :refer [retrieve-token-user-id unpack-redis-msg to-json]]
 						[com.pav.user.api.authentication.authentication :as auth]
 						[com.pav.user.api.redis.redis :refer [redis-conn]]
 						[taoensso.carmine :as car]
