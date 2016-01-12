@@ -9,64 +9,64 @@
       (.getISO3Country)))
 
 (def iso3-codes (into #{} (map retrieve-iso3-country-code (Locale/getISOCountries))))
+(def pwd-schema (s/both (s/pred (complement empty?)) s/Str))
+(def email-schema (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+"))
+(def dob-schema #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$")
+(def county-code-schema (s/both s/Str
+													(s/pred (complement empty?))
+													(s/pred #(contains? iso3-codes %))))
 
 (def User
-	{:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
-	 :password     (s/both (s/pred (complement empty?)) s/Str)
+	{:email        email-schema
+	 :password     pwd-schema
 	 :first_name   s/Str
 	 :last_name    s/Str
-	 :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
-	 :country_code (s/both s/Str
-									 (s/pred (complement empty?))
-									 (s/pred #(contains? iso3-codes %)))
+	 :dob          dob-schema
+	 :country_code county-code-schema
 	 :topics       [s/Str]
 	 :gender       s/Str})
 
 (def FacebookUser
-	{:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+	{:email        email-schema
 	 :first_name   s/Str
 	 :last_name    s/Str
-	 :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
-	 :country_code (s/both s/Str
-									 (s/pred (complement empty?))
-									 (s/pred #(contains? iso3-codes %)))
-	 :img_url      s/Str
+	 :dob          dob-schema
+	 :country_code county-code-schema
 	 :topics       [s/Str]
-	 :token        s/Str
 	 :gender			 s/Str
+	 :img_url      s/Str
+	 :token        s/Str
 	 :id					 s/Str})
 
 (def UserRecord
-	{:email        (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+	{:email        email-schema
 	 :first_name   s/Str
 	 :last_name    s/Str
-	 :dob          #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
-	 :country_code (s/both s/Str
-									 (s/pred (complement empty?))
-									 (s/pred #(contains? iso3-codes %)))
+	 :dob          dob-schema
+	 :country_code county-code-schema
 	 :topics       [s/Str]
 	 :token        s/Str})
 
 (def UserLogin
-  {:email    (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
-   :password (s/both (s/pred (complement empty?)) s/Str)})
+  {:email    email-schema
+   :password pwd-schema})
 
 (def FacebookLogin
-	{:email    (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+	{:email    email-schema
 	 :id    s/Str
 	 :token s/Str})
 
 (def AccountSettingUpdate
-	{(s/optional-key :email)      (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+")
+	{(s/optional-key :email)      email-schema
 	 (s/optional-key :first_name) s/Str
 	 (s/optional-key :last_name)  s/Str
-	 (s/optional-key :dob)        #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$"
+	 (s/optional-key :dob)        dob-schema
 	 (s/optional-key :public)     s/Bool
 	 (s/optional-key :gender)     s/Str})
 
 (def ChangePassword
-	{:current_password s/Str
-	 :new_password s/Str})
+	{:current_password pwd-schema
+	 :new_password 		 pwd-schema})
 
 (defn validate [user origin]
   (case origin
@@ -86,6 +86,8 @@
 
 (defn find-suitable-error [[k _]]
   (cond (= :email k) {k "A valid email address is a required"}
+        (= :current_password k) {k "Current Password is a required field"}
+        (= :new_password k) {k "New Password is a required field"}
         (= :password k) {k "Password is a required field"}
         (= :country_code k) {k "Country Code is a required field.  Please Specify Country Code"}
         (= :first_name k) {k "First Name is a required field"}

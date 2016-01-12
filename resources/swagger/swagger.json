@@ -805,7 +805,7 @@
     },
     "/password/reset": {
       "post": {
-        "description": "Authenticate existing user",
+        "description": "Reset User Password",
         "parameters": [
           {
             "name": "email",
@@ -830,7 +830,7 @@
     },
     "/password/change": {
       "post": {
-        "description": "Authenticate existing user",
+        "description": "Change Users Password",
         "parameters": [
           {
             "$ref": "#/parameters/TokenParam"
@@ -872,7 +872,7 @@
     },
     "/password/reset/confirm": {
       "post": {
-        "description": "Authenticate existing user",
+        "description": "Confirm password reset",
         "parameters": [
           {
             "$ref": "#/parameters/ConfirmPasswordResetBodyParam"

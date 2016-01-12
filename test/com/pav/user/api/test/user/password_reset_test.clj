@@ -38,4 +38,17 @@
 		(let [{body :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string body true)
 					{status :status} (pav-req :post "/password/change" token {:current_password "invalid-password" :new_password "password1"})]
-			status => 401)))
+			status => 401))
+
+	(fact "Changing password, when payload is missing new password, Then return 400 response"
+		(let [{body :body} (pav-req :put "/user" test-user)
+					{token :token} (ch/parse-string body true)
+					{status :status} (pav-req :post "/password/change" token {:current_password (:password test-user)})]
+			status => 400))
+
+	(fact "Changing password, when new password is empty, Then return 400 response"
+		(let [{body :body} (pav-req :put "/user" test-user)
+					{token :token} (ch/parse-string body true)
+					{status :status} (pav-req :post "/password/change" token {:current_password (:password test-user)
+																																		:new_password ""})]
+			status => 400)))

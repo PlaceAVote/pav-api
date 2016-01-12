@@ -533,7 +533,7 @@ paths:
           description: Not Authorized
   /password/reset:
     post:
-      description: Authenticate existing user
+      description: Reset User Password
       parameters:
         - name: email
           in: query
@@ -549,7 +549,7 @@ paths:
           description: Not Authorized
   /password/change:
     post:
-      description: Authenticate existing user
+      description: Change Users Password
       parameters:
         - $ref: "#/parameters/TokenParam"
         - name: PasswordChangeRequest
@@ -575,7 +575,7 @@ paths:
           description: Bad Request
   /password/reset/confirm:
     post:
-      description: Authenticate existing user
+      description: Confirm password reset
       parameters:
         - $ref: "#/parameters/ConfirmPasswordResetBodyParam"
       tags:
