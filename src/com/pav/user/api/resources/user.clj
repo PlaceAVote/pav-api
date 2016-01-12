@@ -63,6 +63,14 @@
 	:handle-ok (fn [ctx]
 							 (service/get-account-settings (retrieve-user-id (:request ctx)))))
 
+(defresource change-password
+	:authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details (:request ctx)))
+													    (service/password-matches? (retrieve-user-id (:request ctx)) (get-in ctx [:request :body :current_password]))))
+	:malformed? (fn [ctx] (service/validate-password-change (get-in ctx [:request :body])))
+	:allowed-methods [:post :get]
+	:available-media-types ["application/json"]
+	:post! (fn [ctx] (service/change-password (retrieve-user-id (:request ctx)) (get-in ctx [:request :body :new_password]))))
+
 (defresource user-profile
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details (:request ctx))))
  :allowed-methods [:get]

@@ -1,7 +1,8 @@
 (ns com.pav.user.api.services.users
   (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
-            [com.pav.user.api.schema.user :refer [validate validate-login validate-settings construct-error-msg]]
+            [com.pav.user.api.schema.user :refer [validate validate-login validate-settings-payload validate-password-payload
+																									construct-error-msg]]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject]]
@@ -107,9 +108,15 @@
 
 (defn validate-settings-update [payload]
 	(if (seq payload)
-		(let [result (validate-settings payload)]
+		(let [result (validate-settings-payload payload)]
 		 (if (seq result)
 			 {:errors (construct-error-msg result)}))))
+
+(defn validate-password-change [payload]
+	(if (seq payload)
+		(let [result (validate-password-payload payload)]
+			(if (seq result)
+				{:errors (construct-error-msg result)}))))
 
 (defn facebook-user-exists? [email facebook_id]
 	"Function to aid migration for existing facebook users without a facebook ID."
@@ -125,12 +132,17 @@
 		(facebook-user-exists? email facebook_id)
 		(not (empty? (get-user-by-email email)))))
 
-(defn check-pwd [user existing-user]
-  (h/check (:password user) (:password existing-user)))
+(defn check-pwd [attempt encrypted]
+	(h/check attempt encrypted))
+
+(defn password-matches? [user_id attempt]
+	"Does the users password match the given password?"
+	(let [{encrypted :password} (get-user-by-id user_id)]
+		(check-pwd attempt encrypted)))
 
 (defn valid-user? [user origin]
   (case origin
-    :pav (check-pwd user (dynamo-dao/get-user-by-email (:email user)))
+    :pav (check-pwd (:password user) (:password (dynamo-dao/get-user-by-email (:email user))))
     :facebook (user-exist? user)))
 
 (defn authenticate-user [user origin]
@@ -246,3 +258,7 @@
 		(when user_id
 			(update-user-password user_id new-password)
 			(redis-dao/delete-password-reset-token email reset-token))))
+
+(defn change-password [user_id new-password]
+	(when user_id
+		(update-user-password user_id new-password)))

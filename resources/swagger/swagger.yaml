@@ -547,6 +547,32 @@ paths:
           description: Successful response
         '401':
           description: Not Authorized
+  /password/change:
+    post:
+      description: Authenticate existing user
+      parameters:
+        - $ref: "#/parameters/TokenParam"
+        - name: PasswordChangeRequest
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              current_password:
+                type: string
+                format: string
+              new_password:
+                type: string
+                format: string
+      tags:
+        - Users
+      responses:
+        '201':
+          description: Successful response
+        '401':
+          description: Check token and current password is correct
+        '400':
+          description: Bad Request
   /password/reset/confirm:
     post:
       description: Authenticate existing user

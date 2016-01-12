@@ -64,6 +64,10 @@
 	 (s/optional-key :public)     s/Bool
 	 (s/optional-key :gender)     s/Str})
 
+(def ChangePassword
+	{:current_password s/Str
+	 :new_password s/Str})
+
 (defn validate [user origin]
   (case origin
     :pav (s/check User user)
@@ -74,8 +78,11 @@
     :pav (s/check UserLogin user)
     :facebook (s/check FacebookLogin user)))
 
-(defn validate-settings [settings]
-	(s/check AccountSettingUpdate settings))
+(defn validate-settings-payload [payload]
+	(s/check AccountSettingUpdate payload))
+
+(defn validate-password-payload [passwords]
+	(s/check ChangePassword passwords))
 
 (defn find-suitable-error [[k _]]
   (cond (= :email k) {k "A valid email address is a required"}

@@ -13,7 +13,7 @@
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
                                                      user-profile validate-token reset-password confirm-password-reset
-																										 user-settings]]
+																										 user-settings change-password]]
 						[com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
@@ -56,7 +56,8 @@
   (POST "/user/facebook/authenticate" req (authenticate req :facebook))
   (POST "/user/confirm/:confirm-token" [confirm-token] (confirm-user confirm-token))
   (POST "/password/reset" [email] (reset-password email))
-	(POST "/password/reset/confirm" req confirm-password-reset)
+	(POST "/password/reset/confirm" _ confirm-password-reset)
+	(POST "/password/change" _ change-password)
   (route/resources "/")
   (route/not-found "Not Found"))
 
