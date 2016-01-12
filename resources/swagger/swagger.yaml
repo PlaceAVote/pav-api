@@ -33,6 +33,9 @@ parameters:
         public:
           type: boolean
           format: boolean
+        city:
+          type: string
+          format: string
   ConfirmTokenParam:
     name: confirm-token
     in: path
@@ -211,6 +214,9 @@ definitions:
       country_code:
         type: string
         format: USA
+      city:
+        type: string
+        format: string
       following:
         type: boolean
         format: boolean
@@ -280,6 +286,9 @@ definitions:
         type: boolean
         format: boolean
       img_url:
+        type: string
+        format: string
+      city:
         type: string
         format: string
   FeedEventRecords:

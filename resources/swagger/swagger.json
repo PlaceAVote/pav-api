@@ -42,6 +42,10 @@
           "public": {
             "type": "boolean",
             "format": "boolean"
+          },
+          "city": {
+            "type": "string",
+            "format": "string"
           }
         }
       }
@@ -282,6 +286,10 @@
           "type": "string",
           "format": "USA"
         },
+        "city": {
+          "type": "string",
+          "format": "string"
+        },
         "following": {
           "type": "boolean",
           "format": "boolean"
@@ -380,6 +388,10 @@
           "format": "boolean"
         },
         "img_url": {
+          "type": "string",
+          "format": "string"
+        },
+        "city": {
           "type": "string",
           "format": "string"
         }

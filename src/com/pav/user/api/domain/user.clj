@@ -21,7 +21,7 @@
   (update-in user-profile [:password] h/encrypt))
 
 (defn- extract-profile-info [profile]
-	(select-keys profile [:user_id :first_name :last_name :country_code :public :img_url]))
+	(select-keys profile [:user_id :first_name :last_name :country_code :public :img_url :city]))
 
 (defprotocol Profiles
   (presentable [profile]
@@ -45,7 +45,7 @@
 	(create-token-for [profile]
 		(assign-new-token (dissoc profile :password :token)))
 	(account-settings [profile]
-		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url])
+		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url :city])
 			  (assoc :social_login false)))
 	(indexable-profile [profile]
 		(dissoc profile :password :token)))

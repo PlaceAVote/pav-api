@@ -62,7 +62,8 @@
 	 (s/optional-key :last_name)  s/Str
 	 (s/optional-key :dob)        dob-schema
 	 (s/optional-key :public)     s/Bool
-	 (s/optional-key :gender)     s/Str})
+	 (s/optional-key :gender)     s/Str
+	 (s/optional-key :city)     s/Str})
 
 (def ChangePassword
 	{:current_password pwd-schema
@@ -90,6 +91,7 @@
         (= :new_password k) {k "New Password is a required field"}
         (= :password k) {k "Password is a required field"}
         (= :country_code k) {k "Country Code is a required field.  Please Specify Country Code"}
+        (= :city k) {k "Please specify a valid city"}
         (= :first_name k) {k "First Name is a required field"}
         (= :last_name k) {k "Last Name is a required field"}
         (= :dob k) {k "Date of birth is a required field"}
