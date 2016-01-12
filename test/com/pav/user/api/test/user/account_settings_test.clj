@@ -41,6 +41,16 @@
 			status => 200
 			(ch/parse-string body true) => (contains changes)))
 
+	(fact "Update a facebook users account settings"
+		(let [{body :body} (pav-req :put "/user" test-user)
+					{token :token} (ch/parse-string body true)
+					changes {:public false :first_name "Ted" :last_name "Baker" :gender "female" :dob "06/10/1986"
+									 :email "Johnny5@placeavote.com" :city "New York City"}
+					_ (pav-req :post "/user/me/settings" token changes)
+					{status :status body :body} (pav-req :get "/user/me/settings" token {})]
+			status => 200
+			(ch/parse-string body true) => (contains changes)))
+
 	(fact "Try updating a users account settings, when given an invalid field.  Throw 400 error."
 		(let [{body :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string body true)

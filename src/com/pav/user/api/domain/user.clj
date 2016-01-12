@@ -60,7 +60,7 @@
 	(create-token-for [profile]
 		(assign-new-token (dissoc profile :token)))
 	(account-settings [profile]
-		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url])
+		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url :city])
 			  (assoc :social_login true)))
 	(indexable-profile [profile]
 		(dissoc profile :token :facebook_token :facebook_id)))
