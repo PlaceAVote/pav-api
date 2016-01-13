@@ -1,6 +1,5 @@
 (ns com.pav.user.api.schema.user
   (:require [schema.core :as s]
-            [clojure.tools.logging :as log]
             [clojure.tools.logging :as log])
   (import (java.util Locale)))
 
@@ -69,12 +68,12 @@
 	{:current_password pwd-schema
 	 :new_password 		 pwd-schema})
 
-(defn validate [user origin]
+(defn validate-new-user-payload [user origin]
   (case origin
     :pav (s/check User user)
     :facebook (s/check FacebookUser user)))
 
-(defn validate-login [user origin]
+(defn validate-login-payload [user origin]
   (case origin
     :pav (s/check UserLogin user)
     :facebook (s/check FacebookLogin user)))
@@ -82,7 +81,7 @@
 (defn validate-settings-payload [payload]
 	(s/check AccountSettingUpdate payload))
 
-(defn validate-password-payload [passwords]
+(defn validate-change-password-payload [passwords]
 	(s/check ChangePassword passwords))
 
 (defn find-suitable-error [[k _]]

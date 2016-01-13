@@ -1,7 +1,8 @@
 (ns com.pav.user.api.services.users
   (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
-            [com.pav.user.api.schema.user :refer [validate validate-login validate-settings-payload validate-password-payload
+            [com.pav.user.api.schema.user :refer [validate-new-user-payload validate-login-payload
+																									validate-settings-payload validate-change-password-payload
 																									construct-error-msg]]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
@@ -97,12 +98,12 @@
     new-token))
 
 (defn validate-user-payload [user origin]
-  (let [result (validate user origin)]
+  (let [result (validate-new-user-payload user origin)]
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 
 (defn validate-user-login [user origin]
-  (let [result (validate-login user origin)]
+  (let [result (validate-login-payload user origin)]
     (if-not (nil? result)
       {:errors (construct-error-msg result)})))
 
@@ -114,7 +115,7 @@
 
 (defn validate-password-change [payload]
 	(if (seq payload)
-		(let [result (validate-password-payload payload)]
+		(let [result (validate-change-password-payload payload)]
 			(if (seq result)
 				{:errors (construct-error-msg result)}))))
 
