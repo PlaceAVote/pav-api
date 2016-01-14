@@ -8,6 +8,34 @@ consumes:
 produces:
   - application/json
 parameters:
+  AccountSettingsUpdateParam:
+    name: AccountSettingsUpdate
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        email:
+          type: string
+          format: string
+        first_name:
+          type: string
+          format: string
+        last_name:
+          type: string
+          format: string
+        gender:
+          type: string
+          format: string
+        dob:
+          type: string
+          format: string
+        public:
+          type: boolean
+          format: boolean
+        city:
+          type: string
+          format: string
   ConfirmTokenParam:
     name: confirm-token
     in: path
@@ -47,25 +75,53 @@ parameters:
     in: body
     required: true
     schema:
-      $ref: "#/definitions/LoginBody"
+      type: object
+      properties:
+        email:
+          type: string
+          format: string
+        password:
+          type: string
   FacebookLoginBodyParam:
     name: Login
     in: body
     required: true
     schema:
-      $ref: "#/definitions/FacebookLoginBody"
+      type: object
+      properties:
+        id:
+          type: string
+          format: string
+        email:
+          type: string
+          format: string
+        token:
+          type: string
+          format: string
   ConfirmPasswordResetBodyParam:
     name: Confirm New Password
     in: body
     required: true
     schema:
-      $ref: "#/definitions/ConfirmPasswordBody"
+      title: ConfirmPassword
+      type: object
+      properties:
+        reset_token:
+          type: string
+          format: string
+        new_password:
+          type: string
+          format: string
   UserFollowBodyParam:
     name: User to follow
     in: body
     required: true
     schema:
-      $ref: "#/definitions/UserFollowBody"
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: string 
   TokenBodyParam:
     name: token
     in: query
@@ -77,24 +133,73 @@ parameters:
     in: body
     required: true
     schema:
-      $ref: "#/definitions/NewFacebookUserProfileBody"
+      title: NewUserProfile
+      type: object
+      properties:
+        email:
+          type: string
+          format: string
+        id:
+          type: string
+          format: string
+        token:
+          type: string
+          format: string
+        first_name: 
+          type: string
+          format: string
+        last_name:
+          type: string
+          format: string
+        dob:
+          type: string
+          format: string
+        country_code:
+          type: string
+          format: USA
+        img_url:
+          type: string
+          format: string
+        topics:
+          type: array
+          items:
+            type: string
+            format: '[Defence, Arts]'
+        gender:
+          type: string
+          format: string
   NewUserProfileBodyParam:
     name: NewUser
     in: body
     required: true
     schema:
-      $ref: "#/definitions/NewUserProfileBody"
+      title: NewUserProfile
+      type: object
+      properties:
+        email:
+          type: string
+          format: test@place.com
+        password:
+          type: string
+        first_name: 
+          type: string
+        last_name:
+          type: string
+        dob:
+          type: string
+          format: 01/10/1999
+        country_code:
+          type: string
+          format: USA
+        topics:
+          type: array
+          items:
+            type: string
+            format: '[Defence, Arts]'
+        gender:
+          type: string
+          format: string
 definitions:
-  ConfirmPasswordBody:
-    title: ConfirmPassword
-    type: object
-    properties:
-      reset_token:
-        type: string
-        format: string
-      new_password:
-        type: string
-        format: string
   UserProfileResponse:
     title: UserProfile
     type: object
@@ -106,12 +211,12 @@ definitions:
         type: string
       last_name:
         type: string
-      dob:
-        type: string
-        format: 01/10/1999
       country_code:
         type: string
         format: USA
+      city:
+        type: string
+        format: string
       following:
         type: boolean
         format: boolean
@@ -121,89 +226,14 @@ definitions:
       total_following:
         type: number
         format: number
-  NewFacebookUserProfileBody:
-    title: NewUserProfile
-    type: object
-    properties:
-      email:
-        type: string
-        format: test@place.com
-      token:
-        type: string
-      first_name: 
-        type: string
-      last_name:
-        type: string
-      dob:
-        type: string
-        format: 01/10/1999
-      country_code:
-        type: string
-        format: USA
-      img_url:
-        type: string
-        format: string
-      topics:
-        type: array
-        items:
-          type: string
-          format: '[Defence, Arts]'
-  NewUserProfileBody:
-    title: NewUserProfile
-    type: object
-    properties:
-      email:
-        type: string
-        format: test@place.com
-      password:
-        type: string
-      first_name: 
-        type: string
-      last_name:
-        type: string
-      dob:
-        type: string
-        format: 01/10/1999
-      country_code:
-        type: string
-        format: USA
-      topics:
-        type: array
-        items:
-          type: string
-          format: '[Defence, Arts]'
   NewUserProfileResponse:
     type: object
     properties:
       user_id:
         type: string
         format: string
-      email:
-        type: string
-        format: test@place.com
-      first_name:
-        type: string
-      last_name:
-        type: string
-      dob:
-        type: string
-        format: 01/10/1999
-      country_code:
-        type: string
-        format: USA
-      topics:
-        type: array
-        items:
-          type: string
-          format: '[Defence, Arts]'
       token:
         type: string
-  UserFollowBody:
-    type: object
-    properties:
-      user_id:
-        type: string
-        format: string  
   UserFollowingRecords:
     type: array
     items:
@@ -223,27 +253,44 @@ definitions:
         follower_count:
           type: number
           format: number
-  FacebookLoginBody:
-    type: object
-    properties:
-      email:
-        type: string
-        format: test@place.com
-      token:
-        type: string
-  LoginBody:
-    type: object
-    properties:
-      email:
-        type: string
-        format: test@place.com
-      password:
-        type: string
   NewTokenResponse:
     type: object
     properties:
       token:
         type: string
+  AccountSettingsResponse:
+    type: object
+    properties:
+      user_id:
+        type: string
+        format: string
+      dob:
+        type: string
+        format: string
+      first_name:
+        type: string
+        format: string
+      last_name:
+        type: string
+        format: string
+      gender:
+        type: string
+        format: string
+      email:
+        type: string
+        format: string
+      public:
+        type: boolean
+        format: boolean
+      social_login:
+        type: boolean
+        format: boolean
+      img_url:
+        type: string
+        format: string
+      city:
+        type: string
+        format: string
   FeedEventRecords:
     type: array
     items:
@@ -322,25 +369,6 @@ paths:
             $ref: "#/definitions/FeedEventRecords"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/feed
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/{user_id}/timeline:
     get:
       description: Given a user ID then retrieve that users personal timeline
@@ -357,27 +385,34 @@ paths:
             $ref: "#/definitions/TimelineEventRecords"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/timeline
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.path.user_id: "method.request.path.user_id"
-          integration.request.querystring.page: "method.request.querystring.page"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
+  /user/me/settings:
+    get:
+      description: Given a users token.  Retrieve there account settings
+      parameters:
+        - $ref: "#/parameters/TokenParam"
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: "#/definitions/AccountSettingsResponse"
+        '401':
+          description: Not Authorized (Check Authentication Token)
+    post:
+      description: Update users account settings
+      parameters:
+        - $ref: "#/parameters/TokenParam"
+        - $ref: "#/parameters/AccountSettingsUpdateParam"
+      tags:
+        - Users
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: "#/definitions/AccountSettingsResponse"
+        '401':
+          description: Not Authorized (Check Authentication Token)  
   /user/me/timeline:
     get:
       description: Given a user ID then retrieve that users personal timeline
@@ -393,26 +428,6 @@ paths:
             $ref: "#/definitions/TimelineEventRecords"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/timeline
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.querystring.page: "method.request.querystring.page"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/notification/{notification_id}/mark:
     post:
       description: Mark notification if user has read it
@@ -426,26 +441,6 @@ paths:
           description: Successful response
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: post
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/notification/{notification_id}/mark
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.path.notification_id: "method.request.path.notification_id"
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/notifications:
     get:
       description: Get the current users notifications
@@ -460,25 +455,6 @@ paths:
             $ref: "#/definitions/NotificationRecords"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/notifications
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/facebook:
     put:
       description: Register new user
@@ -493,23 +469,6 @@ paths:
             $ref: "#/definitions/NewUserProfileResponse"
         '400':
           description: Bad Request (Check body of request)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: put
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/facebook
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/me/profile:
     get:
       description: Given a user_id retrieve user profile in relation to current user.
@@ -524,25 +483,6 @@ paths:
             $ref: "#/definitions/UserProfileResponse"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/profile
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/{user_id}/profile:
     get:
       description: Given a user_id retrieve user profile in relation to current user.
@@ -558,26 +498,6 @@ paths:
             $ref: "#/definitions/UserProfileResponse"
         '401':
           description: Not Authorized (Check Authentication Token)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/profile
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.path.user_id: "method.request.path.user_id"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user:
     put:
       description: Register new user
@@ -592,23 +512,6 @@ paths:
             $ref: "#/definitions/NewUserProfileResponse"
         '400':
           description: Bad Request (Check body of request)
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: put
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/authenticate:
     post:
       description: Authenticate existing user
@@ -623,23 +526,6 @@ paths:
             $ref: "#/definitions/NewTokenResponse"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: post
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/authenticate
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/facebook/authenticate:
     post:
       description: Authenticate existing user
@@ -654,26 +540,9 @@ paths:
             $ref: "#/definitions/NewTokenResponse"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: post
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/facebook/authenticate
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /password/reset:
     post:
-      description: Authenticate existing user
+      description: Reset User Password
       parameters:
         - name: email
           in: query
@@ -687,9 +556,35 @@ paths:
           description: Successful response
         '401':
           description: Not Authorized
+  /password/change:
+    post:
+      description: Change Users Password
+      parameters:
+        - $ref: "#/parameters/TokenParam"
+        - name: PasswordChangeRequest
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              current_password:
+                type: string
+                format: string
+              new_password:
+                type: string
+                format: string
+      tags:
+        - Users
+      responses:
+        '201':
+          description: Successful response
+        '401':
+          description: Check token and current password is correct
+        '400':
+          description: Bad Request
   /password/reset/confirm:
     post:
-      description: Authenticate existing user
+      description: Confirm password reset
       parameters:
         - $ref: "#/parameters/ConfirmPasswordResetBodyParam"
       tags:
@@ -711,25 +606,6 @@ paths:
           description: Successful response
         '401':
           description: Confirmation token is invalid
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: post
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/confirm/{confirm-token}
-        requestParameters:
-          integration.request.path.confirm-token: "method.request.path.confirm-token"
-        requestTemplates:
-          application/json:
-        responses:
-          201:
-            statusCode: "201"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/me/following:
     get:
       description: Get users the current logged in user is following
@@ -744,25 +620,6 @@ paths:
             $ref: "#/definitions/UserFollowingRecords"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/following
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/{user_id}/following:
     get:
       description: Given a user id, retrieve users they are following
@@ -778,26 +635,6 @@ paths:
             $ref: "#/definitions/UserFollowingRecords"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/following
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.path.user_id: "method.request.path.user_id"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/me/followers:
     get:
       description: Get users the current logged in user is followed by
@@ -812,25 +649,6 @@ paths:
             $ref: "#/definitions/UserFollowingRecords"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/followers
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/{user_id}/followers:
     get:
       description: Given a user id, retrieve users they are being followed by
@@ -846,26 +664,6 @@ paths:
             $ref: "#/definitions/UserFollowingRecords"
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/followers
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-          integration.request.path.user_id: "method.request.path.user_id"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/follow:
     put:
       description: Follow a user
@@ -879,25 +677,6 @@ paths:
           description: Successful response
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: put
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/follow
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
   /user/unfollow:
     delete:
       description: Unfollow a user
@@ -911,26 +690,6 @@ paths:
           description: Successful response
         '401':
           description: Not Authorized
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: delete
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/unfollow
-        requestParameters:
-          integration.request.header.Authorization: "method.request.header.Authorization"
-        requestTemplates:
-          application/json:
-        responses:
-          204:
-            statusCode: "204"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:
-      
   /user/token/validate:
     get:
       description: Validate Authentication Token
@@ -943,22 +702,3 @@ paths:
           description: Successful response
         '401':
           description: Token invalid
-      x-amazon-apigateway-auth:
-        type: none
-      x-amazon-apigateway-integration:
-        type: http
-        httpMethod: get
-        uri: http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/token/validate
-        requestParameters:
-          integration.request.querystring.token: "method.request.querystring.token"
-        requestTemplates:
-          application/json:
-        responses:
-          200:
-            statusCode: "200"
-            responseTemplates:
-              application/json:
-          default:
-            statusCode: "401"
-            responseTemplates:
-              text/plain:

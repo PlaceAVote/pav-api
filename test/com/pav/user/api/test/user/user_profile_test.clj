@@ -4,11 +4,14 @@
 																											 flush-redis
 																											 flush-user-index
 																											 bootstrap-bills
+																											 test-user
+																											 test-fb-user
 																											 pav-req]]
 						[cheshire.core :as ch]))
 
-(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
-								:country_code "USA" :topics ["Defense"]})
+
+(def searchable-profile {:email "peter@pl.com" :password "stuff2" :first_name "peter" :last_name "pan" :dob "05/10/1984"
+												 :country_code "USA" :topics ["Defense"] :gender "male"})
 
 (against-background [(before :facts (do
 																			(flush-dynamo-tables)
@@ -18,37 +21,35 @@
 	(fact "Retrieve a users profile in relation to current user"
 		(let [{caller :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string caller true)
-					{search-user :body} (pav-req :put "/user" {:email "peter@pl.com"
-																										 :password "stuff2"
-																										 :first_name "peter" :last_name "pan"
-																										 :dob "05/10/1984"
-																										 :country_code "USA"
-																										 :topics ["Defense"]})
+					{search-user :body} (pav-req :put "/user" searchable-profile)
 					{user_id :user_id} (ch/parse-string search-user true)
 					_ (pav-req :put (str "/user/follow") token {:user_id user_id})
-					{status :status body :body} (pav-req :get (str "/user/" user_id "/profile") token {})]
+					{status :status body :body} (update-in (pav-req :get (str "/user/" user_id "/profile") token {}) [:body]
+																				#(ch/parse-string % true))]
 			status => 200
-			(ch/parse-string body true) => (merge (dissoc (ch/parse-string search-user true) :email :topics :token)
-																			 {:following true
-																				:total_followers 1
-																				:total_following 0})))
+			(keys body) => [:user_id :first_name :last_name :country_code :public :total_followers :total_following :following]
+			body => (contains {:total_followers 1 :total_following 0 :following true} :in-any-order)))
 
 	(fact "Retrieve the current users profile"
 		(let [{caller :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string caller true)
-					{status :status body :body} (pav-req :get "/user/me/profile" token {})]
+					{status :status body :body} (update-in (pav-req :get "/user/me/profile" token {}) [:body] #(ch/parse-string % true))]
 			status => 200
-			(ch/parse-string body true) => (merge (dissoc (ch/parse-string caller true) :email :topics :token)
-																			 {:total_followers 0
-																				:total_following 0})))
+			(keys body) => (contains [:user_id :first_name :last_name :country_code :public :total_followers :total_following] :in-any-order)
+			body => (contains {:total_followers 0 :total_following 0} :in-any-order)))
+
+	(fact "Retrieve the current users profile when the users origin is facebook"
+		(let [{caller :body} (pav-req :put "/user/facebook" test-fb-user)
+					{token :token} (ch/parse-string caller true)
+					{status :status body :body} (update-in (pav-req :get "/user/me/profile" token {}) [:body] #(ch/parse-string % true))]
+			status => 200
+			(keys body) => (contains [:user_id :first_name :last_name :country_code :public :total_followers :img_url :total_following] :in-any-order)
+			body => (contains {:total_followers 0 :total_following 0} :in-any-order)))
 
 	(fact "Follow/following another user"
 		(let [{follower :body} (pav-req :put "/user" test-user)
 					{my_id :user_id token :token} (ch/parse-string follower true)
-					{being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
-																												:first_name "peter" :last_name "pan"
-																												:dob "05/10/1984" :country_code "USA"
-																												:topics ["Defense"]})
+					{being-followed :body} (pav-req :put "/user" searchable-profile)
 					{pauls_user_id :user_id} (ch/parse-string being-followed true)
 					{create_status :status} (pav-req :put (str "/user/follow") token {:user_id pauls_user_id})
 					{my-following :body} (pav-req :get (str "/user/me/following") token {})
@@ -66,10 +67,7 @@
 	(fact "Unfollow user"
 		(let [{follower :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string follower true)
-					{being-followed :body} (pav-req :put "/user" {:email "peter@pl.com" :password "stuff2"
-																												:first_name "peter" :last_name "pan"
-																												:dob "05/10/1984" :country_code "USA"
-																												:topics ["Defense"]})
+					{being-followed :body} (pav-req :put "/user" searchable-profile)
 					{pauls_user_id :user_id} (ch/parse-string being-followed true)
 					_ (pav-req :put (str "/user/follow") token {:user_id pauls_user_id})
 					{unfollow-status :status} (pav-req :delete (str "/user/unfollow") token {:user_id pauls_user_id})

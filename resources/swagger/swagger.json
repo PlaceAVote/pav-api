@@ -12,6 +12,44 @@
     "application/json"
   ],
   "parameters": {
+    "AccountSettingsUpdateParam": {
+      "name": "AccountSettingsUpdate",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "string"
+          },
+          "first_name": {
+            "type": "string",
+            "format": "string"
+          },
+          "last_name": {
+            "type": "string",
+            "format": "string"
+          },
+          "gender": {
+            "type": "string",
+            "format": "string"
+          },
+          "dob": {
+            "type": "string",
+            "format": "string"
+          },
+          "public": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "city": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      }
+    },
     "ConfirmTokenParam": {
       "name": "confirm-token",
       "in": "path",
@@ -57,7 +95,16 @@
       "in": "body",
       "required": true,
       "schema": {
-        "$ref": "#/definitions/LoginBody"
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
       }
     },
     "FacebookLoginBodyParam": {
@@ -65,7 +112,21 @@
       "in": "body",
       "required": true,
       "schema": {
-        "$ref": "#/definitions/FacebookLoginBody"
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "string"
+          },
+          "token": {
+            "type": "string",
+            "format": "string"
+          }
+        }
       }
     },
     "ConfirmPasswordResetBodyParam": {
@@ -73,7 +134,18 @@
       "in": "body",
       "required": true,
       "schema": {
-        "$ref": "#/definitions/ConfirmPasswordBody"
+        "title": "ConfirmPassword",
+        "type": "object",
+        "properties": {
+          "reset_token": {
+            "type": "string",
+            "format": "string"
+          },
+          "new_password": {
+            "type": "string",
+            "format": "string"
+          }
+        }
       }
     },
     "UserFollowBodyParam": {
@@ -81,7 +153,13 @@
       "in": "body",
       "required": true,
       "schema": {
-        "$ref": "#/definitions/UserFollowBody"
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "string"
+          }
+        }
       }
     },
     "TokenBodyParam": {
@@ -96,7 +174,53 @@
       "in": "body",
       "required": true,
       "schema": {
-        "$ref": "#/definitions/NewFacebookUserProfileBody"
+        "title": "NewUserProfile",
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "string"
+          },
+          "token": {
+            "type": "string",
+            "format": "string"
+          },
+          "first_name": {
+            "type": "string",
+            "format": "string"
+          },
+          "last_name": {
+            "type": "string",
+            "format": "string"
+          },
+          "dob": {
+            "type": "string",
+            "format": "string"
+          },
+          "country_code": {
+            "type": "string",
+            "format": "USA"
+          },
+          "img_url": {
+            "type": "string",
+            "format": "string"
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "[Defence, Arts]"
+            }
+          },
+          "gender": {
+            "type": "string",
+            "format": "string"
+          }
+        }
       }
     },
     "NewUserProfileBodyParam": {
@@ -104,25 +228,46 @@
       "in": "body",
       "required": true,
       "schema": {
-        "$ref": "#/definitions/NewUserProfileBody"
+        "title": "NewUserProfile",
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "test@place.com"
+          },
+          "password": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "dob": {
+            "type": "string",
+            "format": "01/10/1999"
+          },
+          "country_code": {
+            "type": "string",
+            "format": "USA"
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "[Defence, Arts]"
+            }
+          },
+          "gender": {
+            "type": "string",
+            "format": "string"
+          }
+        }
       }
     }
   },
   "definitions": {
-    "ConfirmPasswordBody": {
-      "title": "ConfirmPassword",
-      "type": "object",
-      "properties": {
-        "reset_token": {
-          "type": "string",
-          "format": "string"
-        },
-        "new_password": {
-          "type": "string",
-          "format": "string"
-        }
-      }
-    },
     "UserProfileResponse": {
       "title": "UserProfile",
       "type": "object",
@@ -137,13 +282,13 @@
         "last_name": {
           "type": "string"
         },
-        "dob": {
-          "type": "string",
-          "format": "01/10/1999"
-        },
         "country_code": {
           "type": "string",
           "format": "USA"
+        },
+        "city": {
+          "type": "string",
+          "format": "string"
         },
         "following": {
           "type": "boolean",
@@ -159,78 +304,6 @@
         }
       }
     },
-    "NewFacebookUserProfileBody": {
-      "title": "NewUserProfile",
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "string",
-          "format": "test@place.com"
-        },
-        "token": {
-          "type": "string"
-        },
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
-        },
-        "dob": {
-          "type": "string",
-          "format": "01/10/1999"
-        },
-        "country_code": {
-          "type": "string",
-          "format": "USA"
-        },
-        "img_url": {
-          "type": "string",
-          "format": "string"
-        },
-        "topics": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "[Defence, Arts]"
-          }
-        }
-      }
-    },
-    "NewUserProfileBody": {
-      "title": "NewUserProfile",
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "string",
-          "format": "test@place.com"
-        },
-        "password": {
-          "type": "string"
-        },
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
-        },
-        "dob": {
-          "type": "string",
-          "format": "01/10/1999"
-        },
-        "country_code": {
-          "type": "string",
-          "format": "USA"
-        },
-        "topics": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "[Defence, Arts]"
-          }
-        }
-      }
-    },
     "NewUserProfileResponse": {
       "type": "object",
       "properties": {
@@ -238,42 +311,8 @@
           "type": "string",
           "format": "string"
         },
-        "email": {
-          "type": "string",
-          "format": "test@place.com"
-        },
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
-        },
-        "dob": {
-          "type": "string",
-          "format": "01/10/1999"
-        },
-        "country_code": {
-          "type": "string",
-          "format": "USA"
-        },
-        "topics": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "[Defence, Arts]"
-          }
-        },
         "token": {
           "type": "string"
-        }
-      }
-    },
-    "UserFollowBody": {
-      "type": "object",
-      "properties": {
-        "user_id": {
-          "type": "string",
-          "format": "string"
         }
       }
     },
@@ -305,35 +344,56 @@
         }
       }
     },
-    "FacebookLoginBody": {
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "string",
-          "format": "test@place.com"
-        },
-        "token": {
-          "type": "string"
-        }
-      }
-    },
-    "LoginBody": {
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "string",
-          "format": "test@place.com"
-        },
-        "password": {
-          "type": "string"
-        }
-      }
-    },
     "NewTokenResponse": {
       "type": "object",
       "properties": {
         "token": {
           "type": "string"
+        }
+      }
+    },
+    "AccountSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "dob": {
+          "type": "string",
+          "format": "string"
+        },
+        "first_name": {
+          "type": "string",
+          "format": "string"
+        },
+        "last_name": {
+          "type": "string",
+          "format": "string"
+        },
+        "gender": {
+          "type": "string",
+          "format": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "string"
+        },
+        "public": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "social_login": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "img_url": {
+          "type": "string",
+          "format": "string"
+        },
+        "city": {
+          "type": "string",
+          "format": "string"
         }
       }
     },
@@ -451,34 +511,6 @@
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/feed",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
@@ -509,35 +541,54 @@
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/timeline",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization",
-            "integration.request.path.user_id": "method.request.path.user_id",
-            "integration.request.querystring.page": "method.request.querystring.page"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
+        }
+      }
+    },
+    "/user/me/settings": {
+      "get": {
+        "description": "Given a users token.  Retrieve there account settings",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/AccountSettingsResponse"
             }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      },
+      "post": {
+        "description": "Update users account settings",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/AccountSettingsUpdateParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/AccountSettingsResponse"
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
           }
         }
       }
@@ -566,35 +617,6 @@
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/timeline",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization",
-            "integration.request.querystring.page": "method.request.querystring.page"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
@@ -618,35 +640,6 @@
           },
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
-          }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "post",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/notification/{notification_id}/mark",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization",
-            "integration.request.path.notification_id": "method.request.path.notification_id"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "201": {
-              "statusCode": "201",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
           }
         }
       }
@@ -672,34 +665,6 @@
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/notifications",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
@@ -724,31 +689,6 @@
           "400": {
             "description": "Bad Request (Check body of request)"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "put",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/facebook",
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "201": {
-              "statusCode": "201",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
@@ -772,34 +712,6 @@
           },
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
-          }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/profile",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
           }
         }
       }
@@ -828,35 +740,6 @@
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/profile",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization",
-            "integration.request.path.user_id": "method.request.path.user_id"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
@@ -880,31 +763,6 @@
           },
           "400": {
             "description": "Bad Request (Check body of request)"
-          }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "put",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user",
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "201": {
-              "statusCode": "201",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
           }
         }
       }
@@ -930,31 +788,6 @@
           "401": {
             "description": "Not Authorized"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "post",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/authenticate",
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "201": {
-              "statusCode": "201",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
@@ -979,37 +812,12 @@
           "401": {
             "description": "Not Authorized"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "post",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/facebook/authenticate",
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "201": {
-              "statusCode": "201",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
     "/password/reset": {
       "post": {
-        "description": "Authenticate existing user",
+        "description": "Reset User Password",
         "parameters": [
           {
             "name": "email",
@@ -1032,9 +840,51 @@
         }
       }
     },
+    "/password/change": {
+      "post": {
+        "description": "Change Users Password",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "name": "PasswordChangeRequest",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "current_password": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "new_password": {
+                  "type": "string",
+                  "format": "string"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Check token and current password is correct"
+          }
+        }
+      }
+    },
     "/password/reset/confirm": {
       "post": {
-        "description": "Authenticate existing user",
+        "description": "Confirm password reset",
         "parameters": [
           {
             "$ref": "#/parameters/ConfirmPasswordResetBodyParam"
@@ -1071,34 +921,6 @@
           "401": {
             "description": "Confirmation token is invalid"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "post",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/confirm/{confirm-token}",
-          "requestParameters": {
-            "integration.request.path.confirm-token": "method.request.path.confirm-token"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "201": {
-              "statusCode": "201",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
@@ -1122,34 +944,6 @@
           },
           "401": {
             "description": "Not Authorized"
-          }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/following",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
           }
         }
       }
@@ -1178,35 +972,6 @@
           "401": {
             "description": "Not Authorized"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/following",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization",
-            "integration.request.path.user_id": "method.request.path.user_id"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
@@ -1230,34 +995,6 @@
           },
           "401": {
             "description": "Not Authorized"
-          }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/me/followers",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
           }
         }
       }
@@ -1286,35 +1023,6 @@
           "401": {
             "description": "Not Authorized"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/{user_id}/followers",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization",
-            "integration.request.path.user_id": "method.request.path.user_id"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
@@ -1338,34 +1046,6 @@
           },
           "401": {
             "description": "Not Authorized"
-          }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "put",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/follow",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
           }
         }
       }
@@ -1391,34 +1071,6 @@
           "401": {
             "description": "Not Authorized"
           }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "delete",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/unfollow",
-          "requestParameters": {
-            "integration.request.header.Authorization": "method.request.header.Authorization"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "204": {
-              "statusCode": "204",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
-          }
         }
       }
     },
@@ -1439,34 +1091,6 @@
           },
           "401": {
             "description": "Token invalid"
-          }
-        },
-        "x-amazon-apigateway-auth": {
-          "type": "none"
-        },
-        "x-amazon-apigateway-integration": {
-          "type": "http",
-          "httpMethod": "get",
-          "uri": "http://pav-user-api-924234322.us-east-1.elb.amazonaws.com:8080/user/token/validate",
-          "requestParameters": {
-            "integration.request.querystring.token": "method.request.querystring.token"
-          },
-          "requestTemplates": {
-            "application/json": null
-          },
-          "responses": {
-            "200": {
-              "statusCode": "200",
-              "responseTemplates": {
-                "application/json": null
-              }
-            },
-            "default": {
-              "statusCode": "401",
-              "responseTemplates": {
-                "text/plain": null
-              }
-            }
           }
         }
       }

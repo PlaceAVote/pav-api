@@ -8,7 +8,7 @@
 (def connection (connect (:es-url env)))
 
 (defn index-user [user]
-  (esd/create connection "pav" "users" user :id (:user_id user)))
+  (esd/put connection "pav" "users" (:user_id user) user))
 
 (defn merge-type-and-fields [hit]
 	(merge {:type (:_type hit)} (:_source hit)))
@@ -18,10 +18,10 @@
 		(->> (esrsp/hits-from
 					 (esd/search connection "congress" "bill"
 						 :query (q/terms :keywords terms)
+						 :filter {:not {:term {:summary "No Summary Present..."}}}
 						 :_source [:subject :bill_id :official_title :short_title :popular_title :summary]
 						 :sort  {:updated_at "desc"}))
-			(mapv merge-type-and-fields)))
-	)
+			(mapv merge-type-and-fields))))
 
 (defn to-govtrack-subjects [topic]
 	(case topic
