@@ -93,8 +93,8 @@
       :facebook (do (redis-dao/update-facebook-token user_id token new-token)
                     (dynamo-dao/update-facebook-user-token user_id token new-token)
 										(if (nil? facebook_id)
-											(dynamo-dao/assign-facebook-id user_id facebook_id)
-											(redis-dao/assign-facebook-id user_id facebook_id))))
+											(do (dynamo-dao/assign-facebook-id user_id id)
+													(redis-dao/assign-facebook-id user_id id)))))
     new-token))
 
 (defn validate-user-payload [user origin]

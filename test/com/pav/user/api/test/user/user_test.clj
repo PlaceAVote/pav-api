@@ -102,9 +102,10 @@
 
 	(fact "(Migration) When user with facebook id doesn't exist, use email address to reauthenticate the user."
 		(let [_ (pav-req :put "/user/facebook" test-fb-user)
-					{status :status} (pav-req :post "/user/facebook/authenticate" (merge {:id "100101"} (select-keys test-fb-user [:token :email])))
-					{body :body} (pav-req :post "/user/facebook/authenticate" (merge {:id "100101"} (select-keys test-fb-user [:token :email])))]
-			status => 201
+					{first_login_attempt :status} (pav-req :post "/user/facebook/authenticate" (merge {:id "100101"} (select-keys test-fb-user [:token :email])))
+					{second_login_attempt :status body :body} (pav-req :post "/user/facebook/authenticate" (merge {:id "100101"} (select-keys test-fb-user [:token :email])))]
+			first_login_attempt => 201
+			second_login_attempt => 201
 			(keys (ch/parse-string body true)) => (contains [:token])))
 
   (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
