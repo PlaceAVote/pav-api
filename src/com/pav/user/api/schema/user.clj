@@ -13,28 +13,29 @@
 (def dob-schema #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$")
 (def county-code-schema (s/both s/Str (s/pred (complement empty?)) (s/pred #(contains? iso3-codes %))))
 (def gender-schema (s/both s/Str (s/pred (complement empty?)) (s/enum "male" "female" "they")))
+(def str-schema (s/both (s/pred (complement empty?)) s/Str))
 
 (def User
 	{:email        email-schema
 	 :password     pwd-schema
-	 :first_name   s/Str
-	 :last_name    s/Str
+	 :first_name   str-schema
+	 :last_name    str-schema
 	 :dob          dob-schema
 	 :country_code county-code-schema
-	 :topics       [s/Str]
-	 :gender       s/Str})
+	 :topics       [str-schema]
+	 :gender       gender-schema})
 
 (def FacebookUser
 	{:email        email-schema
-	 :first_name   s/Str
-	 :last_name    s/Str
+	 :first_name   str-schema
+	 :last_name    str-schema
 	 :dob          dob-schema
 	 :country_code county-code-schema
-	 :topics       [s/Str]
-	 :gender			 s/Str
-	 :img_url      s/Str
-	 :token        s/Str
-	 :id					 s/Str})
+	 :topics       [str-schema]
+	 :gender			 gender-schema
+	 :img_url      str-schema
+	 :token        str-schema
+	 :id					 str-schema})
 
 (def UserRecord
 	{:email        email-schema
@@ -51,17 +52,17 @@
 
 (def FacebookLogin
 	{:email    email-schema
-	 :id    s/Str
-	 :token s/Str})
+	 :id    str-schema
+	 :token str-schema})
 
 (def AccountSettingUpdate
 	{(s/optional-key :email)      email-schema
-	 (s/optional-key :first_name) s/Str
-	 (s/optional-key :last_name)  s/Str
+	 (s/optional-key :first_name) str-schema
+	 (s/optional-key :last_name)  str-schema
 	 (s/optional-key :dob)        dob-schema
 	 (s/optional-key :public)     s/Bool
 	 (s/optional-key :gender)     gender-schema
-	 (s/optional-key :city)     	s/Str})
+	 (s/optional-key :city)     	str-schema})
 
 (def ChangePassword
 	{:current_password pwd-schema
