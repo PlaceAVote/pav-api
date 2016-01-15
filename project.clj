@@ -1,4 +1,4 @@
-(defproject pav-user-api "0.1.6"
+(defproject pav-user-api "0.1.7-SNAPSHOT"
   :description "User API for registering, authenticating and managing user profiles"
   :url ""
   :dependencies [[org.clojure/clojure "1.7.0"]
