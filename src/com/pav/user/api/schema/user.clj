@@ -11,9 +11,8 @@
 (def pwd-schema (s/both (s/pred (complement empty?)) s/Str))
 (def email-schema (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+"))
 (def dob-schema #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$")
-(def county-code-schema (s/both s/Str
-													(s/pred (complement empty?))
-													(s/pred #(contains? iso3-codes %))))
+(def county-code-schema (s/both s/Str (s/pred (complement empty?)) (s/pred #(contains? iso3-codes %))))
+(def gender-schema (s/both s/Str (s/pred (complement empty?)) (s/enum "male" "female" "they")))
 
 (def User
 	{:email        email-schema
@@ -61,8 +60,8 @@
 	 (s/optional-key :last_name)  s/Str
 	 (s/optional-key :dob)        dob-schema
 	 (s/optional-key :public)     s/Bool
-	 (s/optional-key :gender)     s/Str
-	 (s/optional-key :city)     s/Str})
+	 (s/optional-key :gender)     gender-schema
+	 (s/optional-key :city)     	s/Str})
 
 (def ChangePassword
 	{:current_password pwd-schema
@@ -97,7 +96,7 @@
         (= :topics k) {k "Please specify a list of topics."}
         (= :token k) {k "A token is required for social media registerations and logins"}
         (= :img_url k) {k "A IMG URL is required for social media registerations and logins"}
-				(= :gender k) {k "Please specify a gender"}
+				(= :gender k) {k "Please specify a valid gender.  Valid values are male, female and they"}
 				(= :id k) {k "Please specify a facebook id"}
 				:else {k "field is unknown"}))
 

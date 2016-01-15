@@ -52,7 +52,7 @@
 																											{:dob "Date of birth is a required field"}
 																											{:country_code "Country Code is a required field.  Please Specify Country Code"}
 																											{:topics "Please specify a list of topics."}
-																											{:gender "Please specify a gender"}]}) :in-any-order)))
+																											{:gender "Please specify a valid gender.  Valid values are male, female and they"}]}) :in-any-order)))
 
 	(fact "Create a new facebook user, when the payload is empty, return 400 with appropriate error messages"
 		(let [{status :status body :body} (pav-req :put "/user/facebook" {})]
@@ -65,7 +65,7 @@
 																											{:country_code "Country Code is a required field.  Please Specify Country Code"}
 																											{:topics "Please specify a list of topics."}
 																											{:token "A token is required for social media registerations and logins"}
-																											{:gender "Please specify a gender"}
+																											{:gender "Please specify a valid gender.  Valid values are male, female and they"}
 																											{:id "Please specify a facebook id"}]}) :in-any-order)))
 
   (fact "Create a new user, when the email is invalid, return 400 with appropriate error message"

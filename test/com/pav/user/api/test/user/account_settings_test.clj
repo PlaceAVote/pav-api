@@ -41,6 +41,16 @@
 			status => 200
 			(ch/parse-string body true) => (contains changes)))
 
+	(fact "Update a users account settings, when gender is invalid, return 400 error"
+		(let [{body :body} (pav-req :put "/user" test-user)
+					{token :token} (ch/parse-string body true)
+					changes {:public false :first_name "Ted" :last_name "Baker" :gender "f" :dob "06/10/1986"
+									 :email "Johnny5@placeavote.com" :city "New York City"}
+					{status :status body :body} (pav-req :post "/user/me/settings" token changes)]
+			(println body)
+			status => 400
+			(ch/parse-string body true) => {:errors [{:gender "Please specify a valid gender.  Valid values are male, female and they"}]}))
+
 	(fact "Update a facebook users account settings"
 		(let [{body :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string body true)
