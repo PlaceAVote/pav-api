@@ -1,10 +1,6 @@
 (ns com.pav.user.api.services.users
-  (:require [environ.core :refer [env]]
-            [buddy.hashers :as h]
-            [com.pav.user.api.schema.user :refer [validate-new-user-payload validate-login-payload
-																									validate-settings-payload validate-change-password-payload
-																									validate-confirm-reset-password-payload
-																									construct-error-msg]]
+  (:require [buddy.hashers :as h]
+            [com.pav.user.api.schema.user :as us]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject]]
@@ -101,7 +97,7 @@
 (defn wrap-validation-errors [result]
 	"Wrap validation errors or return nil"
 	(if (seq result)
-		{:errors (construct-error-msg result)}))
+		{:errors (us/construct-error-msg result)}))
 
 (defn validate-payload
 	"Validate payload with given validator fn.  Specify Optional Origin of request if needed."
@@ -110,20 +106,20 @@
 	([payload fn]
 	 (wrap-validation-errors (fn payload))))
 
-(defn validate-user-payload [user origin]
-	(validate-payload user validate-new-user-payload origin))
+(defn validate-new-user-payload [user origin]
+	(validate-payload user us/validate-new-user-payload origin))
 
-(defn validate-user-login [user origin]
-	(validate-payload user validate-login-payload origin))
+(defn validate-user-login-payload [user origin]
+	(validate-payload user us/validate-login-payload origin))
 
-(defn validate-settings-update [payload]
-	(validate-payload payload validate-settings-payload))
+(defn validate-settings-update-payload [payload]
+	(validate-payload payload us/validate-settings-payload))
 
-(defn validate-password-change [payload]
-	(validate-payload payload validate-change-password-payload))
+(defn validate-password-change-payload [payload]
+	(validate-payload payload us/validate-change-password-payload))
 
-(defn validate-password-reset-confirmation [payload]
-	(validate-payload payload validate-confirm-reset-password-payload))
+(defn validate-password-reset-confirmation-payload [payload]
+	(validate-payload payload us/validate-confirm-reset-password-payload))
 
 (defn facebook-user-exists? [email facebook_id]
 	"Function to aid migration for existing facebook users without a facebook ID."

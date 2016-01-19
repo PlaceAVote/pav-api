@@ -19,7 +19,7 @@
 (defresource create
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? (fn [ctx] (service/validate-user-payload (retrieve-body ctx) :pav))
+ :malformed? (fn [ctx] (service/validate-new-user-payload (retrieve-body ctx) :pav))
  :conflict? (fn [ctx] (service/user-exist? (retrieve-body ctx)))
  :put! (fn [ctx] (service/create-user-profile (retrieve-body ctx)))
  :handle-created :record
@@ -29,7 +29,7 @@
 (defresource create-facebook
  :allowed-methods [:put]
  :available-media-types ["application/json"]
- :malformed? (fn [ctx] (service/validate-user-payload (retrieve-body ctx) :facebook))
+ :malformed? (fn [ctx] (service/validate-new-user-payload (retrieve-body ctx) :facebook))
  :conflict? (fn [ctx] (service/user-exist? (retrieve-body ctx)))
  :put! (fn [ctx] (service/create-user-profile (retrieve-body ctx) :facebook))
  :handle-created :record
@@ -38,7 +38,7 @@
 
 (defresource authenticate [origin]
  :allowed-methods [:post]
- :malformed? (fn [ctx] (service/validate-user-login (retrieve-body ctx) origin))
+ :malformed? (fn [ctx] (service/validate-user-login-payload (retrieve-body ctx) origin))
  :authorized? (fn [ctx] (service/valid-user? (retrieve-body ctx) origin))
  :available-media-types ["application/json"]
  :post! (fn [ctx] (service/authenticate-user (retrieve-body ctx) origin))
@@ -55,7 +55,7 @@
 
 (defresource user-settings
 	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
-	:malformed? (fn [ctx] (service/validate-settings-update (retrieve-body ctx)))
+	:malformed? (fn [ctx] (service/validate-settings-update-payload (retrieve-body ctx)))
 	:allowed-methods [:post :get]
 	:available-media-types ["application/json"]
 	:post! (fn [ctx] (service/update-account-settings (retrieve-token-user-id ctx) (retrieve-body ctx)))
@@ -67,7 +67,7 @@
 													    (service/password-matches?
 																(retrieve-token-user-id ctx)
 																(retrieve-body-param ctx :current_password))))
-	:malformed? (fn [ctx] (service/validate-password-change (retrieve-body ctx)))
+	:malformed? (fn [ctx] (service/validate-password-change-payload (retrieve-body ctx)))
 	:allowed-methods [:post :get]
 	:available-media-types ["application/json"]
 	:post! (fn [ctx] (service/change-password (retrieve-token-user-id ctx) (retrieve-body-param ctx :new_password))))
@@ -109,7 +109,7 @@
 (defresource confirm-password-reset
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
-	:malformed? (fn [ctx] (service/validate-password-reset-confirmation (retrieve-body ctx)))
+	:malformed? (fn [ctx] (service/validate-password-reset-confirmation-payload (retrieve-body ctx)))
 	:handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors])))
 	:post! (fn [ctx] (let [{token :reset_token password :new_password} (retrieve-body ctx)]
 										 (service/confirm-password-reset token password))))
