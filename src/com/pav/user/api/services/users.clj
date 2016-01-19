@@ -98,35 +98,36 @@
 													(redis-dao/assign-facebook-id user_id id)))))
     new-token))
 
+(defn wrap-validation-errors [result]
+	"Wrap validation errors or return nil"
+	(if (seq result)
+		{:errors (construct-error-msg result)}))
+
+(defn validate-payload
+	"Validate payload with given validator fn.  Specify Optional Origin of request if needed."
+	([payload fn origin]
+	 (wrap-validation-errors (fn payload origin)))
+	([payload fn]
+	 (wrap-validation-errors (fn payload))))
+
 (defn validate-user-payload [user origin]
-  (let [result (validate-new-user-payload user origin)]
-    (if-not (nil? result)
-      {:errors (construct-error-msg result)})))
+	(validate-payload user validate-new-user-payload origin))
 
 (defn validate-user-login [user origin]
-  (let [result (validate-login-payload user origin)]
-    (if-not (nil? result)
-      {:errors (construct-error-msg result)})))
+	(validate-payload user validate-login-payload origin))
 
 (defn validate-settings-update [payload]
-	(let [result (validate-settings-payload payload)]
-		(if (seq result)
-			{:errors (construct-error-msg result)})))
+	(validate-payload payload validate-settings-payload))
 
 (defn validate-password-change [payload]
-	(let [result (validate-change-password-payload payload)]
-		(if (seq result)
-			{:errors (construct-error-msg result)})))
+	(validate-payload payload validate-change-password-payload))
 
 (defn validate-password-reset-confirmation [payload]
-	(let [result (validate-confirm-reset-password-payload payload)]
-		(if (seq result)
-			{:errors (construct-error-msg result)})))
+	(validate-payload payload validate-confirm-reset-password-payload))
 
 (defn facebook-user-exists? [email facebook_id]
 	"Function to aid migration for existing facebook users without a facebook ID."
 	(let [facebook-user (get-user-by-facebook-id facebook_id)]
-
 		(if (seq facebook-user)
 			true
 			(not (empty? (get-user-by-email email))))))
