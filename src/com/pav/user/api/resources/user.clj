@@ -107,6 +107,7 @@
 	:post! (service/issue-password-reset-request email))
 
 (defresource confirm-password-reset
+	:authorized? (fn [ctx] (service/valid-reset-token? (:reset_token (retrieve-body ctx))))
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
 	:malformed? (fn [ctx] (service/validate-password-reset-confirmation-payload (retrieve-body ctx)))

@@ -249,6 +249,9 @@
 (defn validate-token [token]
   (token-valid? token))
 
+(defn valid-reset-token? [reset_token]
+	(not (empty? (redis-dao/retrieve-useremail-by-reset-token reset_token))))
+
 (defn update-user-password [user_id new-password]
 	(let [hashed-pwd (h/encrypt new-password)]
 		(dynamo-dao/update-user-password user_id hashed-pwd)

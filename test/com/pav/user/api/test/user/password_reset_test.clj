@@ -24,11 +24,17 @@
 					{status :status} (pav-req :post "/user/authenticate" {:email (:email test-user) :password "password1"})]
 			status => 201))
 
+	(fact "Reset existing user password, When given an invalid reset_token, Then return 401"
+		(let [_ (pav-req :put "/user" test-user)
+					_ (pav-req :post (str "/password/reset?email=" (:email test-user)))
+					{status :status} (pav-req :post "/password/reset/confirm" {:new_password "password1" :reset_token "invalidtoken"})]
+			status => 401))
+
 	(fact "Try resetting password with invalid email, should return 401"
 		(let [{status :status} (pav-req :post (str "/password/reset?email=rubbish@em.com"))]
 			status => 401))
 
-	(fact "Try resetting password, When payload is empty, Then return 400 response"
+	(fact "Try resetting password, When payload is empty, Then return 400 response with correct error payload"
 		(let [{status :status body :body} (pav-req :post "/password/reset/confirm" {})]
 			status => 400
 			(ch/parse-string body true) => (contains {:errors [{:new_password "New Password is a required field"}
