@@ -3,6 +3,7 @@
             [buddy.hashers :as h]
             [com.pav.user.api.schema.user :refer [validate-new-user-payload validate-login-payload
 																									validate-settings-payload validate-change-password-payload
+																									validate-confirm-reset-password-payload
 																									construct-error-msg]]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
@@ -108,16 +109,19 @@
       {:errors (construct-error-msg result)})))
 
 (defn validate-settings-update [payload]
-	(if (seq payload)
-		(let [result (validate-settings-payload payload)]
-		 (if (seq result)
-			 {:errors (construct-error-msg result)}))))
+	(let [result (validate-settings-payload payload)]
+		(if (seq result)
+			{:errors (construct-error-msg result)})))
 
 (defn validate-password-change [payload]
-	(if (seq payload)
-		(let [result (validate-change-password-payload payload)]
-			(if (seq result)
-				{:errors (construct-error-msg result)}))))
+	(let [result (validate-change-password-payload payload)]
+		(if (seq result)
+			{:errors (construct-error-msg result)})))
+
+(defn validate-password-reset-confirmation [payload]
+	(let [result (validate-confirm-reset-password-payload payload)]
+		(if (seq result)
+			{:errors (construct-error-msg result)})))
 
 (defn facebook-user-exists? [email facebook_id]
 	"Function to aid migration for existing facebook users without a facebook ID."
@@ -132,6 +136,12 @@
 	(if facebook_id
 		(facebook-user-exists? email facebook_id)
 		(not (empty? (get-user-by-email email)))))
+
+(defn allowed-to-reset-password? [email]
+	(let [user (get-user-by-email email)]
+		(if user
+			(not (contains? user :facebook_id))
+			false)))
 
 (defn check-pwd [attempt encrypted]
 	(h/check attempt encrypted))

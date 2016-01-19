@@ -68,6 +68,10 @@
 	{:current_password pwd-schema
 	 :new_password 		 pwd-schema})
 
+(def ResetPasswordConfirm
+	{:new_password pwd-schema
+	 :reset_token str-schema})
+
 (defn validate-new-user-payload [user origin]
   (case origin
     :pav (s/check User user)
@@ -84,10 +88,14 @@
 (defn validate-change-password-payload [passwords]
 	(s/check ChangePassword passwords))
 
+(defn validate-confirm-reset-password-payload [payload]
+	(s/check ResetPasswordConfirm payload))
+
 (defn find-suitable-error [[k _]]
   (cond (= :email k) {k "A valid email address is a required"}
         (= :current_password k) {k "Current Password is a required field"}
         (= :new_password k) {k "New Password is a required field"}
+        (= :reset_token k) {k "A valid reset token is required"}
         (= :password k) {k "Password is a required field"}
         (= :country_code k) {k "Country Code is a required field.  Please Specify Country Code"}
         (= :city k) {k "Please specify a valid city"}

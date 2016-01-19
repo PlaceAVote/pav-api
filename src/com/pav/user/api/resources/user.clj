@@ -101,7 +101,7 @@
 	:post! (service/mark-notification id))
 
 (defresource reset-password [email]
-	:authorized? (service/user-exist? {:email email})
+	:authorized? (service/allowed-to-reset-password? email)
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
 	:post! (service/issue-password-reset-request email))
@@ -109,6 +109,8 @@
 (defresource confirm-password-reset
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
+	:malformed? (fn [ctx] (service/validate-password-reset-confirmation (retrieve-body ctx)))
+	:handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors])))
 	:post! (fn [ctx] (let [{token :reset_token password :new_password} (retrieve-body ctx)]
 										 (service/confirm-password-reset token password))))
 

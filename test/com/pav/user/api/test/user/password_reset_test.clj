@@ -5,6 +5,7 @@
 																											 flush-user-index
 																											 bootstrap-bills
 																											 test-user
+																											 test-fb-user
 																											 pav-req]]
 						[com.pav.user.api.redis.redis :as redis-dao]
 						[cheshire.core :as ch]))
@@ -25,6 +26,17 @@
 
 	(fact "Try resetting password with invalid email, should return 401"
 		(let [{status :status} (pav-req :post (str "/password/reset?email=rubbish@em.com"))]
+			status => 401))
+
+	(fact "Try resetting password, When payload is empty, Then return 400 response"
+		(let [{status :status body :body} (pav-req :post "/password/reset/confirm" {})]
+			status => 400
+			(ch/parse-string body true) => (contains {:errors [{:new_password "New Password is a required field"}
+																												 {:reset_token "A valid reset token is required"}]} :in-any-order)))
+
+	(fact "Try resetting password of existing facebook user, should return 401 because Facebook users dont have one."
+		(let [_ (pav-req :put "/user/facebook" test-fb-user)
+					{status :status} (pav-req :post (str "/password/reset?email=" (:email test-fb-user)))]
 			status => 401))
 
 	(fact "Given the users current password and a new password, Then change the users password and confirm authentication"
