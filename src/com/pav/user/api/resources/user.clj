@@ -2,6 +2,7 @@
  (:require [liberator.core :refer [resource defresource]]
            [liberator.representation :refer [ring-response]]
            [com.pav.user.api.services.users :as service]
+					 [com.pav.user.api.services.questions :as q-service]
            [com.pav.user.api.utils.utils :refer [record-in-ctx retrieve-body
 																								 retrieve-body-param retrieve-user-details
 																								 retrieve-token-user-id retrieve-request-param]]
@@ -129,6 +130,13 @@
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx] (service/get-feed (retrieve-token-user-id ctx))))
+
+(defresource questions
+	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+	:allowed-methods [:get :post]
+	:available-media-types ["application/json"]
+	:post! (fn [ctx] (q-service/submit-answers (retrieve-token-user-id ctx) (retrieve-body ctx)))
+	:handle-ok (fn [ctx] (q-service/retrieve-questions (retrieve-token-user-id ctx))))
 
 (defresource follow
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
