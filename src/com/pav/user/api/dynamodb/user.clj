@@ -182,7 +182,7 @@
 	(far/put-item client-opts question-table-name question))
 
 (defn retrieve-questions-by-topics [topics]
-	(far/query client-opts question-table-name {:topic [:eq topics]}))
+	(flatten (map #(far/query client-opts question-table-name {:topic [:eq %]}) topics)))
 
 (defn submit-answers [answers]
 	(far/batch-write-item client-opts
