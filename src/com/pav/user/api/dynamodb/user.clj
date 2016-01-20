@@ -18,6 +18,8 @@
 (def following-table-name (:dynamo-following-table-name env))
 (def comment-details-table-name (:dynamo-comment-details-table-name env))
 (def vote-count-table-name (:dynamo-vote-count-table env))
+(def question-table-name (:dynamo-questions-table env))
+(def user-question-answers-table-name (:dynamo-user-question-answers-table env))
 
 (defn get-user-by-id [id]
   (try
@@ -175,3 +177,13 @@
 (defn assign-facebook-id [user_id facebook_id]
 	(far/update-item client-opts user-table-name {:user_id user_id}
 		{:facebook_id [:put facebook_id]}))
+
+(defn create-question [question]
+	(far/put-item client-opts question-table-name question))
+
+(defn retrieve-questions-by-topics [topics]
+	(far/query client-opts question-table-name {:topic [:eq topics]}))
+
+(defn submit-answers [answers]
+	(far/batch-write-item client-opts
+		{user-question-answers-table-name {:put answers}}))

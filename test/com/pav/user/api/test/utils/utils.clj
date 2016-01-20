@@ -1,5 +1,6 @@
 (ns com.pav.user.api.test.utils.utils
   (require [com.pav.user.api.services.users :refer [create-user-profile]]
+					 [com.pav.user.api.services.questions :refer [create-question]]
            [ring.mock.request :refer [request body content-type header]]
            [com.pav.user.api.handler :refer [app]]
            [cheshire.core :as ch]
@@ -30,6 +31,8 @@
 (def feed-table-name (:dynamo-userfeed-table-name env))
 (def comment-details-table-name (:dynamo-comment-details-table-name env))
 (def vote-count-table-name (:dynamo-vote-count-table env))
+(def question-table-name (:dynamo-questions-table env))
+(def user-question-answers-table-name (:dynamo-user-question-answers-table env))
 
 (def redis-conn {:spec {:host "127.0.0.1" :port 6379}})
 
@@ -60,6 +63,8 @@
 		(far/delete-table client-opts feed-table-name)
 		(far/delete-table client-opts vote-count-table-name)
 		(far/delete-table client-opts comment-details-table-name)
+		(far/delete-table client-opts question-table-name)
+		(far/delete-table client-opts user-question-answers-table-name)
     (catch Exception e (println "Error occured when deleting table " e " table name: " user-table-name " client-opts " client-opts))))
 
 (defn create-dynamo-tables []
@@ -109,6 +114,14 @@
 										:throughput {:read 5 :write 10}}]
 			 :throughput {:read 5 :write 10}
 			 :block? true})
+		(far/create-table client-opts question-table-name [:topic :s]
+			{:range-keydef [:question_id :s]
+			 :throughput {:read 5 :write 10}
+			 :block? true})
+		(far/create-table client-opts user-question-answers-table-name [:user_id :s]
+			{:range-keydef [:question_id :s]
+			 :throughput {:read 5 :write 10}
+			 :block? true})
     (catch Exception e (println "Error occured with table setup " e " table name: " user-table-name " client-opts " client-opts))))
 
 (defn flush-dynamo-tables []
@@ -132,6 +145,10 @@
 
 (defn create-comment [comment]
 	(far/put-item client-opts comment-details-table-name comment))
+
+(defn create-questions [questions]
+	(doseq [q questions]
+		(create-question q)))
 
 (defn flush-user-index []
   (esi/delete es-connection "pav")

@@ -67,6 +67,8 @@
                             :dynamo-following-table-name         "userfollowing"
                             :dynamo-comment-details-table-name	 "comment-details"
                             :dynamo-vote-count-table     	 			 "vote-counts"
+														:dynamo-questions-table							 "questions"
+														:dynamo-user-question-answers-table	 "user-question-answers"
 														:redis-notification-pubsub					 "redis::notifications::pubsub"
                             :es-url                              "http://localhost:9200"
                             :timeline-queue                      "redismq::queue_name::user-timelineevent-queue"
