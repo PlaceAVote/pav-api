@@ -46,7 +46,7 @@
 	(dynamo-dao/delete-user user_id)
 	(redis-dao/delete-user-profile user_profile))
 
-(defn- get-user-by-id [user_id]
+(defn get-user-by-id [user_id]
 	"Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
 	(let [user-from-redis (redis-dao/get-user-profile user_id)]
 		(if user-from-redis

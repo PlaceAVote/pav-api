@@ -13,7 +13,7 @@
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
                                                      user-profile validate-token reset-password confirm-password-reset
-																										 user-settings change-password]]
+																										 user-settings change-password questions]]
 						[com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
@@ -37,6 +37,8 @@
   (GET "/user/me/profile" [] user-profile)
   (GET "/user/:user_id/profile" [_] user-profile)
   (GET "/user/feed" [] feed)
+	(GET "/user/questions" [] questions)
+	(POST "/user/questions" [] questions)
   (GET "/user/notifications" [] notifications)
 	(GET "/user/notifications/ws" [_] ws-notification-handler)
   (POST "/user/notification/:notification_id/mark" [notification_id] (mark-notification notification_id))
