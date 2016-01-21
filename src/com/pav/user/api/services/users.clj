@@ -280,5 +280,7 @@
 	(let [user (get-user-by-id user_id)
 				new-image-key (str "/users/" user_id "/profile/img/p50xp50x/" user_id (file :content-type))]
 		(when user
-			(s3/upload-image (:cdn-bucket-name env) new-image-key file)
-			(update-account-settings user_id {:img_url (str (:cdn-url env) new-image-key)}))))
+			(try
+				(s3/upload-image (:cdn-bucket-name env) new-image-key file)
+				(update-account-settings user_id {:img_url (str (:cdn-url env) new-image-key)})
+			(catch Exception e (log/error "Error uploading Profile image. " e))))))

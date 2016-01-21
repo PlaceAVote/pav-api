@@ -11,12 +11,11 @@
 	(let [size (file :size)
 				content-type (file :content-type)
 				actual-file (file :tempfile)]
-		(try
-			(put-object creds
-			 :bucket-name bucket
-			 :key key
-			 :metadata {:content-length size
-									:content-type   content-type}
-			 :file actual-file)
-			(log/info (str "Image Uploaded for " key))
-		(catch Exception e (log/error (str "Error uploading image to " bucket " in the region " (:endpoint creds)) e)))))
+		(log/info (str "Attempting image upload to " bucket " for " key))
+		(put-object creds
+			:bucket-name bucket
+			:key key
+			:metadata {:content-length size
+								 :content-type   content-type}
+			:file actual-file)
+		(log/info (str "Image Uploaded for " key " successfully"))))
