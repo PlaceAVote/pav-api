@@ -288,5 +288,5 @@
 		(when user
 			(try
 				(s3/upload-image (:cdn-bucket-name env) new-image-key file)
-				(update-account-settings user_id {:img_url (str (:cdn-url env) new-image-key)})
+				(update-account-settings user_id {:img_url (str (:cdn-url env) (str "/" new-image-key))})
 			(catch Exception e (log/error "Error uploading Profile image. " e))))))
