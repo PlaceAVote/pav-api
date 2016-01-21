@@ -63,6 +63,12 @@
 	:handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors])))
 	:handle-ok (fn [ctx] (service/get-account-settings (retrieve-token-user-id ctx))))
 
+(defresource upload-profile-image [file]
+	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+	:allowed-methods [:post]
+	:available-media-types ["multipart/form-data"]
+	:post! (fn [ctx] (service/upload-profile-image (retrieve-token-user-id ctx) file)))
+
 (defresource change-password
 	:authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))
 													    (service/password-matches?

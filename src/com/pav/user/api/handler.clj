@@ -18,7 +18,7 @@
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
                                                      user-profile validate-token reset-password confirm-password-reset
-																										 user-settings change-password questions]]
+																										 user-settings change-password questions upload-profile-image]]
 						[com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
@@ -38,6 +38,7 @@
 	(POST "/user/me/settings" [] user-settings)
 	(GET "/user/me/settings" [] user-settings)
   (GET "/user/me/profile" [] user-profile)
+	(POST "/user/me/profile/image" [file] (upload-profile-image file))
   (GET "/user/:user_id/profile" [_] user-profile)
   (GET "/user/feed" [] feed)
 	(GET "/user/questions" [] questions)
@@ -70,9 +71,9 @@
   (-> (routes app-routes)
       (wrap-authentication (token-handler env))
       (wrap-json-body {:keywords? true})
-      (handler/site)
       (wrap-cors :access-control-allow-origin [#".*"]
                  :access-control-allow-methods [:get :put :post :delete :options])
+			(handler/site)
       (wrap-json-response)))
 
 (defn start-server [options]

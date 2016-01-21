@@ -29,7 +29,8 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [clojurewerkz/mailer "1.2.0"]
                  [clj-http "2.0.0"]
-                 [org.clojure/core.memoize "0.5.8"]]
+                 [org.clojure/core.memoize "0.5.8"]
+								 [amazonica "0.3.48"]]
   :plugins [[lein-environ "1.0.0"]
 						[lein-release "1.0.5"]]
 	:lein-release {:scm :git
@@ -78,5 +79,8 @@
                             :email-mode                          "test"
                             :email-port                          "587"
                             :mandril-api-key 										 "key"
-                            :mandril-pwd-reset-template					 "password-reset-template-dev"}
+                            :mandril-pwd-reset-template					 "password-reset-template-dev"
+														:cdn-bucket-name										 "placeavote-cdn"
+														:cdn-url                             "https://cdn.placeavote.com"
+														:s3-region													 "us-west-1"}
              :plugins      [[lein-midje "3.1.3"]]}})

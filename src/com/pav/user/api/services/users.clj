@@ -8,9 +8,11 @@
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email send-password-reset-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
 																									account-settings indexable-profile]]
+						[com.pav.user.api.s3.user :as s3]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
-						[clojure.core.memoize :as memo])
+						[clojure.core.memoize :as memo]
+						[environ.core :refer [env]])
   (:import (java.util Date UUID)))
 
 (def gather-cached-bills
@@ -273,3 +275,10 @@
 (defn change-password [user_id new-password]
 	(when user_id
 		(update-user-password user_id new-password)))
+
+(defn upload-profile-image [user_id file]
+	(let [user (get-user-by-id user_id)
+				new-image-key (str "/users/" user_id "/profile/img/p50xp50x/" user_id (file :content-type))]
+		(when user
+			(s3/upload-image (:cdn-bucket-name env) new-image-key file)
+			(update-account-settings user_id {:img_url (str (:cdn-url env) new-image-key)}))))
