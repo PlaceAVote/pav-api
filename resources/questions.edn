@@ -1,0 +1,58 @@
+[
+ ;;SLIDER QUESTIONS
+ {:question_id   "1"
+	:question_type "slider"
+	:topic         "Gun Rights"
+	:question      "You chose Gun Rights, can you be more specific?"
+	:answers       {:left   "I want less gun control"
+									:middle "Not Sure"
+									:right  "I want more gun control"}}
+ {:question_id   "2"
+	:question_type "slider"
+	:topic         "Religion"
+	:question      "It looks like religion is a top issue for you, can you elaborate?"
+	:answers       {:left   "I want less religion in Gov't"
+									:middle "Not Sure"
+									:right  "I want more religion in Gov't"}}
+ {:question_id   "3"
+	:question_type "slider"
+	:topic         "Drugs"
+	:question      "You mentioned drugs regulations as a major topic, how do you feel about them?"
+	:answers       {:left   "I want fewer drug laws"
+									:middle "Not Sure"
+									:right  "I want more drug laws"}}
+ {:question_id   "4"
+	:question_type "slider"
+	:topic         "Defense"
+	:question      "What would you like to change about defense?"
+	:answers       {:left   "I want less defense"
+									:middle "Not Sure"
+									:right  "I want more military"}}
+ {:question_id   "5"
+	:question_type "slider"
+	:topic         "Politics"
+	:question      "Politics can be a tricky business, what is more important to you?"
+	:answers       {:left   "More election rules"
+									:middle "Not Sure"
+									:right  "Fewer election rules"}}
+ {:question_id   "6"
+	:question_type "slider"
+	:topic         "Technology"
+	:question      "You said you are interested in technology legislation; generally, how do you feel about it?"
+	:answers       {:left   "Tech needs more regulations"
+									:middle "Not Sure"
+									:right  "Tech needs fewer regulations"}}
+ {:question_id   "7"
+	:question_type "slider"
+	:topic         "Economics"
+	:question      "You clicked on Economics, what's your stance?"
+	:answers       {:left   "Socialism"
+									:middle "Not Sure"
+									:right  "Capitalism"}}
+ {:question_id   "8"
+	:question_type "slider"
+	:topic         "Social Interest"
+	:question      "How do you tend to side when it comes to social issues?"
+	:answers       {:left   "Liberal"
+									:middle "Not Sure"
+									:right  "Conservative"}}]

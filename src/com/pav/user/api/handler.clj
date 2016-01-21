@@ -9,6 +9,11 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
+						[liberator.dev :refer [wrap-trace]]
+						[buddy.auth.middleware :refer [wrap-authentication]]
+						[environ.core :refer [env]]
+						[clojure.tools.logging :as log]
+						[clojure.edn :as edn]
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
@@ -17,15 +22,13 @@
 						[com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
-            [liberator.dev :refer [wrap-trace]]
-            [buddy.auth.middleware :refer [wrap-authentication]]
-            [environ.core :refer [env]]
-            [clojure.tools.logging :as log]))
+						[com.pav.user.api.services.questions :refer [bootstrap-wizard-questions]]))
 
 
 (defn init []
   (log/info "API is starting")
-	(start-notification-listener))
+	(start-notification-listener)
+	(bootstrap-wizard-questions (edn/read-string (slurp "resources/questions.edn"))))
 
 (defn destroy []
   (log/info "API is shutting down"))

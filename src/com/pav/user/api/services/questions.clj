@@ -1,9 +1,11 @@
 (ns com.pav.user.api.services.questions
 	(:require [com.pav.user.api.dynamodb.user :as dynamo-dao]
-						[com.pav.user.api.services.users :refer [get-user-by-id]]))
+						[com.pav.user.api.services.users :refer [get-user-by-id]]
+						[clojure.tools.logging :as log]))
 
-(defn create-question [question]
-	(dynamo-dao/create-question question))
+(defn bootstrap-wizard-questions [questions]
+	(log/info (str "Bootstrapping " (count questions) " Wizard Questions"))
+	(dynamo-dao/bootstrap-wizard-questions questions))
 
 (defn retrieve-questions [user_id]
 	(let [{topics :topics} (get-user-by-id user_id)]

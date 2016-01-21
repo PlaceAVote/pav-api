@@ -1,6 +1,6 @@
 (ns com.pav.user.api.test.utils.utils
   (require [com.pav.user.api.services.users :refer [create-user-profile]]
-					 [com.pav.user.api.services.questions :refer [create-question]]
+					 [com.pav.user.api.services.questions :refer [bootstrap-wizard-questions]]
            [ring.mock.request :refer [request body content-type header]]
            [com.pav.user.api.handler :refer [app]]
            [cheshire.core :as ch]
@@ -10,7 +10,8 @@
            [msgpack.clojure-extensions]
            [clojurewerkz.elastisch.rest :refer [connect]]
            [clojurewerkz.elastisch.rest.index :as esi]
-					 [clojurewerkz.elastisch.rest.document :as esd]))
+					 [clojurewerkz.elastisch.rest.document :as esd]
+					 [clojure.edn :as edn]))
 
 (def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
 								:country_code "USA" :topics ["Defense"] :gender "male"})
@@ -46,6 +47,11 @@
 (defn bootstrap-bills []
 	(doseq [bill test-bills]
 		(esd/create es-connection "congress" "bill" bill :id (:bill_id bill))))
+
+(def wizard-questions (edn/read-string (slurp "resources/questions.edn")))
+
+(defn bootstrap-questions []
+	(bootstrap-wizard-questions wizard-questions))
 
 (defn flush-redis []
   (wcar redis-conn
@@ -145,10 +151,6 @@
 
 (defn create-comment [comment]
 	(far/put-item client-opts comment-details-table-name comment))
-
-(defn create-questions [questions]
-	(doseq [q questions]
-		(create-question q)))
 
 (defn flush-user-index []
   (esi/delete es-connection "pav")

@@ -178,8 +178,9 @@
 	(far/update-item client-opts user-table-name {:user_id user_id}
 		{:facebook_id [:put facebook_id]}))
 
-(defn create-question [question]
-	(far/put-item client-opts question-table-name question))
+(defn bootstrap-wizard-questions [questions]
+	(far/batch-write-item client-opts
+		{question-table-name {:put questions}}))
 
 (defn retrieve-questions-by-topics [topics]
 	(flatten (map #(far/query client-opts question-table-name {:topic [:eq %]}) topics)))
