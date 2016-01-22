@@ -285,7 +285,7 @@
 
 (defn valid-image? [file]
 	"Issue file upload a valid image type, e.g. jpeg or png file"
-	(if (nil? (mime-type->file-type (file :content-type)))
+	(if (or (nil? (mime-type->file-type (file :content-type))) (<= 0 (file :size)))
 		true
 		false))
 
