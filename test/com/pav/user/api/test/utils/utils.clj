@@ -1,6 +1,6 @@
 (ns com.pav.user.api.test.utils.utils
   (require [com.pav.user.api.services.users :refer [create-user-profile]]
-					 [com.pav.user.api.services.questions :refer [bootstrap-wizard-questions]]
+           [com.pav.user.api.services.questions :refer [bootstrap-wizard-questions]]
            [ring.mock.request :refer [request body content-type header]]
            [com.pav.user.api.handler :refer [app]]
            [cheshire.core :as ch]
@@ -10,8 +10,8 @@
            [msgpack.clojure-extensions]
            [clojurewerkz.elastisch.rest :refer [connect]]
            [clojurewerkz.elastisch.rest.index :as esi]
-					 [clojurewerkz.elastisch.rest.document :as esd]
-					 [clojure.edn :as edn]))
+           [clojurewerkz.elastisch.rest.document :as esd]
+           [clojure.edn :as edn]))
 
 (def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
 								:country_code "USA" :topics ["Defense"] :gender "male"})
@@ -66,12 +66,12 @@
     (far/delete-table client-opts timeline-table-name)
     (far/delete-table client-opts follower-table-name)
     (far/delete-table client-opts following-table-name)
-		(far/delete-table client-opts feed-table-name)
-		(far/delete-table client-opts vote-count-table-name)
-		(far/delete-table client-opts comment-details-table-name)
-		(far/delete-table client-opts question-table-name)
-		(far/delete-table client-opts user-question-answers-table-name)
-    (catch Exception e (println "Error occured when deleting table " e " table name: " user-table-name " client-opts " client-opts))))
+    (far/delete-table client-opts feed-table-name)
+    (far/delete-table client-opts vote-count-table-name)
+    (far/delete-table client-opts comment-details-table-name)
+    (far/delete-table client-opts question-table-name)
+    (far/delete-table client-opts user-question-answers-table-name)
+    (catch Exception e (println "Error occured when deleting table name: " user-table-name " client-opts: " client-opts " with: " e))))
 
 (defn create-dynamo-tables []
   (try
@@ -153,11 +153,13 @@
 	(far/put-item client-opts comment-details-table-name comment))
 
 (defn flush-user-index []
-  (esi/delete es-connection "pav")
-  (esi/delete es-connection "congress")
-  (esi/create es-connection "pav")
-  (esi/create es-connection "congress"))
-
+  (try
+    (esi/delete es-connection "pav")
+    (esi/delete es-connection "congress")
+    (esi/create es-connection "pav")
+    (esi/create es-connection "congress")
+    (catch Exception e
+      (println "Error while connecting to ElasticSearch: " e))))
 
 (defn pav-req
 	([method url] (app (content-type (request method url) "application/json")))

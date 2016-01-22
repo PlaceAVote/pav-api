@@ -1,6 +1,6 @@
 (defproject pav-user-api "0.1.8-SNAPSHOT"
   :description "User API for registering, authenticating and managing user profiles"
-  :url ""
+  :url "https://github.com/PlaceAVote/pav-user-api"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [compojure "1.1.6"]
                  [hiccup "1.0.5"]
@@ -34,8 +34,8 @@
   :plugins [[lein-environ "1.0.0"]
 						[lein-release "1.0.5"]]
 	:lein-release {:scm :git
-								 :deploy-via :lein-install
-								 :build-uberjar true}
+                   :deploy-via :lein-install
+                   :build-uberjar true}
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
   :main system
@@ -67,10 +67,10 @@
                             :dynamo-follower-table-name          "userfollowers"
                             :dynamo-following-table-name         "userfollowing"
                             :dynamo-comment-details-table-name	 "comment-details"
-                            :dynamo-vote-count-table     	 			 "vote-counts"
-														:dynamo-questions-table							 "questions"
-														:dynamo-user-question-answers-table	 "user-question-answers"
-														:redis-notification-pubsub					 "redis::notifications::pubsub"
+                            :dynamo-vote-count-table             "vote-counts"
+                            :dynamo-questions-table              "questions"
+                            :dynamo-user-question-answers-table	 "user-question-answers"
+                            :redis-notification-pubsub           "redis::notifications::pubsub"
                             :es-url                              "http://localhost:9200"
                             :timeline-queue                      "redismq::queue_name::user-timelineevent-queue"
                             :email-host                          "smtp.mandrillapp.com"
@@ -78,9 +78,9 @@
                             :email-pass                          "password"
                             :email-mode                          "test"
                             :email-port                          "587"
-                            :mandril-api-key 										 "key"
-                            :mandril-pwd-reset-template					 "password-reset-template-dev"
-														:cdn-bucket-name										 "placeavote-cdn"
-														:cdn-url                             "https://cdn.placeavote.com"
-														:s3-region													 "us-west-1"}
+                            :mandril-api-key                     "key"
+                            :mandril-pwd-reset-template          "password-reset-template-dev"
+                            :cdn-bucket-name                     "placeavote-cdn"
+                            :cdn-url                             "https://cdn.placeavote.com"
+                            :s3-region                           "us-west-1"}
              :plugins      [[lein-midje "3.1.3"]]}})

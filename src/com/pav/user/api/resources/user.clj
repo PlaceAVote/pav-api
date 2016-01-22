@@ -2,10 +2,10 @@
  (:require [liberator.core :refer [resource defresource]]
            [liberator.representation :refer [ring-response]]
            [com.pav.user.api.services.users :as service]
-					 [com.pav.user.api.services.questions :as q-service]
+           [com.pav.user.api.services.questions :as q-service]
            [com.pav.user.api.utils.utils :refer [record-in-ctx retrieve-body
-																								 retrieve-body-param retrieve-user-details
-																								 retrieve-token-user-id retrieve-request-param]]
+                                                 retrieve-body-param retrieve-user-details
+                                                 retrieve-token-user-id retrieve-request-param]]
            [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
@@ -161,18 +161,20 @@
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx]
-             (if-not (nil? (retrieve-request-param ctx :user_id))
-              (service/user-following (retrieve-request-param ctx :user_id))
-              (service/user-following (retrieve-token-user-id ctx)))))
+              (service/user-following
+               (if-let [id (retrieve-request-param ctx :user_id)]
+                 id
+                (retrieve-token-user-id ctx)))))
 
 (defresource followers
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :handle-ok (fn [ctx]
-             (if-not (nil? (retrieve-request-param ctx :user_id))
-              (service/user-followers (retrieve-request-param ctx :user_id))
-              (service/user-followers (retrieve-token-user-id ctx)))))
+              (service/user-followers
+               (if-let [id (retrieve-request-param ctx :user_id)]
+                 id
+                 (retrieve-token-user-id ctx)))))
 
 (defresource validate-token
  :authorized? (fn [ctx] (service/validate-token (retrieve-request-param ctx :token)))
