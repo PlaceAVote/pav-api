@@ -291,7 +291,7 @@
 
 (defn upload-profile-image [user_id file]
 	(let [user (get-user-by-id user_id)
-				new-image-key (str "users/" user_id "/profile/img/p50xp50x/" user_id (mime-type->file-type (file :content-type)))]
+				new-image-key (str "users/" user_id "/profile/img/p200xp200x/" user_id (mime-type->file-type (file :content-type)))]
 		(when user
 			(try
 				(s3/upload-image (:cdn-bucket-name env) new-image-key file)
