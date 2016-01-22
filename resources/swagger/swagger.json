@@ -6,10 +6,12 @@
     "description": "PlaceAVote user api for registering and authenticating existing users"
   },
   "consumes": [
-    "application/json"
+    "application/json",
+    "multipart/form-data"
   ],
   "produces": [
-    "application/json"
+    "application/json",
+    "multipart/form-data"
   ],
   "parameters": {
     "AccountSettingsUpdateParam": {

@@ -5,8 +5,10 @@ info:
   description: 'PlaceAVote user api for registering and authenticating existing users'
 consumes:
   - application/json
+  - multipart/form-data
 produces:
   - application/json
+  - multipart/form-data
 parameters:
   AccountSettingsUpdateParam:
     name: AccountSettingsUpdate
