@@ -276,15 +276,22 @@
 	(when user_id
 		(update-user-password user_id new-password)))
 
-(defn get-image-type [type]
+(defn mime-type->file-type [type]
+	"Convert mime content-type to valid file type."
 	(case type
 		"image/jpeg" ".jpeg"
 		"image/png" ".png"
-		".jpeg"))
+		nil))
+
+(defn valid-image? [file]
+	"Issue file upload a valid image type, e.g. jpeg or png file"
+	(if (nil? (mime-type->file-type (file :content-type)))
+		true
+		false))
 
 (defn upload-profile-image [user_id file]
 	(let [user (get-user-by-id user_id)
-				new-image-key (str "users/" user_id "/profile/img/p50xp50x/" user_id (get-image-type (file :content-type)))]
+				new-image-key (str "users/" user_id "/profile/img/p50xp50x/" user_id (mime-type->file-type (file :content-type)))]
 		(when user
 			(try
 				(s3/upload-image (:cdn-bucket-name env) new-image-key file)

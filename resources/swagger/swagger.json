@@ -57,6 +57,14 @@
       "type": "string",
       "format": "string"
     },
+    "ProfileImageParam": {
+      "name": "file",
+      "description": "Profile image, size must be 50x50x of type .jpeg or png",
+      "in": "formData",
+      "required": true,
+      "type": "file",
+      "format": "file"
+    },
     "TokenParam": {
       "name": "Authorization",
       "in": "header",
@@ -688,6 +696,36 @@
           },
           "400": {
             "description": "Bad Request (Check body of request)"
+          }
+        }
+      }
+    },
+    "/user/me/profile/image": {
+      "post": {
+        "description": "Upload Profile image to user profile",
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/ProfileImageParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
           }
         }
       }

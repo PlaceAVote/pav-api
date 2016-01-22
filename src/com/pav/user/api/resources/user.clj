@@ -65,6 +65,7 @@
 
 (defresource upload-profile-image [file]
 	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+	:malformed? (fn [_] (service/valid-image? file))
 	:allowed-methods [:post]
 	:available-media-types ["multipart/form-data"]
 	:post! (fn [ctx] (service/upload-profile-image (retrieve-token-user-id ctx) file)))
