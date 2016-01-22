@@ -11,7 +11,7 @@
 	(let [size (file :size)
 				content-type (file :content-type)
 				actual-file (file :tempfile)]
-		(log/info (str "Attempting image upload to " bucket " for " key))
+		(log/info (str "Attempting image upload to " bucket " for " key " of size " size))
 		(put-object creds
 			:bucket-name bucket
 			:key key
