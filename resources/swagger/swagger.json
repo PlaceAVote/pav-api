@@ -62,8 +62,7 @@
       "description": "Profile image, size must be 50x50x of type .jpeg or png",
       "in": "formData",
       "required": true,
-      "type": "file",
-      "format": "file"
+      "type": "file"
     },
     "TokenParam": {
       "name": "Authorization",
@@ -703,9 +702,6 @@
     "/user/me/profile/image": {
       "post": {
         "description": "Upload Profile image to user profile",
-        "produces": [
-          "application/json"
-        ],
         "consumes": [
           "multipart/form-data"
         ],

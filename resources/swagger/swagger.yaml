@@ -48,7 +48,6 @@ parameters:
     in: formData
     required: true
     type: file
-    format: file
   TokenParam:
     name: Authorization
     in: header
@@ -479,8 +478,6 @@ paths:
   /user/me/profile/image:
     post:
       description: Upload Profile image to user profile
-      produces:
-        - application/json
       consumes:
         - multipart/form-data
       parameters:
