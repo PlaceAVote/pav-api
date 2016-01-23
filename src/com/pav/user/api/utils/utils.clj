@@ -1,7 +1,7 @@
 (ns com.pav.user.api.utils.utils
-	(:require [msgpack.core :as msg]
-						[msgpack.clojure-extensions]
-						[cheshire.core :as ch]))
+  (:require [msgpack.core :as msg]
+            [msgpack.clojure-extensions]
+            [cheshire.core :as ch]))
 
 (defn record-in-ctx [ctx]
   (get ctx :record))

@@ -20,6 +20,8 @@
 (def vote-count-table-name (:dynamo-vote-count-table env))
 (def question-table-name (:dynamo-questions-table env))
 (def user-question-answers-table-name (:dynamo-user-question-answers-table env))
+(def user-issues-table-name (:dynamo-user-issues-table env))
+(def user-issue-response-table-name (:dynamo-user-issue-responses-table env))
 
 (defn get-user-by-id [id]
   (try

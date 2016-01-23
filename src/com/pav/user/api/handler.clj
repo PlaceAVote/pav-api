@@ -9,26 +9,32 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [compojure.core :refer :all]
-						[liberator.dev :refer [wrap-trace]]
-						[buddy.auth.middleware :refer [wrap-authentication]]
-						[environ.core :refer [env]]
-						[clojure.tools.logging :as log]
-						[clojure.edn :as edn]
+            [liberator.dev :refer [wrap-trace]]
+            [buddy.auth.middleware :refer [wrap-authentication]]
+            [environ.core :refer [env]]
+            [clojure.tools.logging :as log]
+            [clojure.edn :as edn]
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
                                                      user-profile validate-token reset-password confirm-password-reset
-																										 user-settings change-password questions upload-profile-image]]
-						[com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
+                                                     user-settings change-password questions upload-profile-image]]
+            [com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
+            [com.pav.user.api.dynamodb.db :refer [create-all-tables!]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
-						[com.pav.user.api.services.questions :refer [bootstrap-wizard-questions]]))
+            [com.pav.user.api.services.questions :refer [bootstrap-wizard-questions]]))
 
 
 (defn init []
   (log/info "API is starting")
-	(start-notification-listener)
-	(bootstrap-wizard-questions (edn/read-string (slurp "resources/questions.edn"))))
+  (create-all-tables!)
+  (start-notification-listener)
+  (-> "resources/questions.edn"
+      slurp
+      ;; FIXME: use EDN reader to capture possible edn format issues
+      edn/read-string
+      bootstrap-wizard-questions))
 
 (defn destroy []
   (log/info "API is shutting down"))
