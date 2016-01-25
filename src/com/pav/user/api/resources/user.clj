@@ -6,6 +6,7 @@
            [com.pav.user.api.utils.utils :refer [record-in-ctx retrieve-body
 																								 retrieve-body-param retrieve-user-details
 																								 retrieve-token-user-id retrieve-request-param]]
+					 [clojure.tools.logging :as log]
            [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
@@ -65,7 +66,8 @@
 
 (defresource upload-profile-image [file]
 	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
-	:malformed? (fn [_] (service/valid-image? file))
+	:malformed? (fn [_] (when-not (service/valid-image? file)
+												(log/error ("Attempt to upload image failed of type " (type file) " for " file))))
 	:allowed-methods [:post]
 	:available-media-types ["multipart/form-data"]
 	:post! (fn [ctx] (service/upload-profile-image (retrieve-token-user-id ctx) file)))

@@ -285,9 +285,9 @@
 
 (defn valid-image? [file]
 	"Issue file upload a valid image type, e.g. jpeg or png file"
-	(if (or (nil? (mime-type->file-type (file :content-type))) (<= (file :size) 0))
-		true
-		false))
+	(if (or (nil? file) (nil? (mime-type->file-type (file :content-type))) (<= (file :size) 0))
+		false
+		true))
 
 (defn upload-profile-image [user_id file]
 	(let [user (get-user-by-id user_id)
