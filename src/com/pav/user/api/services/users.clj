@@ -291,9 +291,11 @@
 
 (defn upload-profile-image [user_id file]
 	(let [user (get-user-by-id user_id)
-				new-image-key (str "users/" user_id "/profile/img/p200xp200x/" user_id (mime-type->file-type (file :content-type)))]
+				new-image-key (str "users/" user_id "/profile/img/p200xp200x/" user_id (mime-type->file-type (file :content-type)))
+				new-img_url {:img_url (str (:cdn-url env) (str "/" new-image-key))}]
 		(when user
 			(try
 				(s3/upload-image (:cdn-bucket-name env) new-image-key file)
-				(update-account-settings user_id {:img_url (str (:cdn-url env) (str "/" new-image-key))})
+				(update-account-settings user_id new-img_url)
+				new-img_url
 			(catch Exception e (log/error "Error uploading Profile image. " e))))))

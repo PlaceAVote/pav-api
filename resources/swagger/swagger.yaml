@@ -214,6 +214,13 @@ parameters:
           type: string
           format: string
 definitions:
+  NewProfileImageResponse:
+    title: UserProfileImage
+    type: object
+    properties:
+      img_url:
+        type: string
+        format: string
   UserProfileResponse:
     title: UserProfile
     type: object
@@ -494,6 +501,8 @@ paths:
       responses:
         '201':
           description: Successful response
+          schema:
+            $ref: "#/definitions/NewProfileImageResponse"
         '401':
           description: Not Authorized (Check Authentication Token)
   /user/me/profile:
