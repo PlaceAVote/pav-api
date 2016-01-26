@@ -39,10 +39,10 @@
 	"Parse the encoded string for its content-type, size and contents."
 	(when encoded-str
 		(let [t (.split encoded-str ",")
-				 content-type (-> (re-seq #"(?<=:)(.*\n?)(?=;)" (first t))
-													flatten first)
-				 size (.length (second t))
-				 inputstream (ByteArrayInputStream. (Base64/decodeBase64 (second t)))]
+					content-type (-> (re-seq #"(?<=:)(.*\n?)(?=;)" (first t)) flatten first)
+					bytes (Base64/decodeBase64 (second t))
+				 	size (count bytes)
+				 	inputstream (ByteArrayInputStream. bytes)]
 			{:content-type content-type
 			:tempfile     inputstream
 			:size         size})))
