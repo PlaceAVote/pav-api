@@ -70,7 +70,8 @@
 													(if (service/valid-image? f) [false {:image f}] true)))
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
-	:post! (fn [ctx] (service/upload-profile-image (retrieve-token-user-id ctx) (:image ctx))))
+	:post! (fn [ctx] {:record (service/upload-profile-image (retrieve-token-user-id ctx) (:image ctx))})
+ 	:handle-created :record)
 
 (defresource change-password
 	:authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))
