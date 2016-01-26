@@ -38,7 +38,7 @@
 	(POST "/user/me/settings" [] user-settings)
 	(GET "/user/me/settings" [] user-settings)
   (GET "/user/me/profile" [] user-profile)
-	(POST "/user/me/profile/image" [file] (upload-profile-image file))
+	(POST "/user/me/profile/image" [] upload-profile-image)
   (GET "/user/:user_id/profile" [_] user-profile)
   (GET "/user/feed" [] feed)
 	(GET "/user/questions" [] questions)

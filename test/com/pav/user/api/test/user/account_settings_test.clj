@@ -89,6 +89,16 @@
 			status => 200
 			(ch/parse-string body true) =>
 			(merge {:user_id user_id :public true :social_login false}
-				(select-keys test-user [:first_name :last_name :dob :gender :email :img_url])))))
+				(select-keys test-user [:first_name :last_name :dob :gender :email :img_url]))))
+
+	(future-fact "Upload image."
+		(let [{body :body} (pav-req :put "/user" test-user)
+					{token :token user_id :user_id} (ch/parse-string body true)
+					_ (pav-req :post "/user/me/profile/image" token {:file (slurp "test-resources/base64.jpeg")})
+					{status :status body :body} (pav-req :get "/user/me/settings" token {})]
+			status => 200
+			(ch/parse-string body true) =>
+			(merge {:user_id user_id :public true :social_login false}
+						 (select-keys test-user [:first_name :last_name :dob :gender :email :img_url])))))
 
 

@@ -6,7 +6,7 @@
            [com.pav.user.api.utils.utils :refer [record-in-ctx retrieve-body
 																								 retrieve-body-param retrieve-user-details
 																								 retrieve-token-user-id retrieve-request-param]]
-					 [clojure.tools.logging :as log]
+					 [com.pav.user.api.utils.utils :refer [decodeBase64ImageString]]
            [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
@@ -64,13 +64,13 @@
 	:handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors])))
 	:handle-ok (fn [ctx] (service/get-account-settings (retrieve-token-user-id ctx))))
 
-(defresource upload-profile-image [file]
+(defresource upload-profile-image
 	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
-	:malformed? (fn [_] (when-not (service/valid-image? file)
-												(log/error ("Attempt to upload image failed of type " (type file) " for " file))))
+	:malformed? (fn [ctx] (let [f (decodeBase64ImageString (retrieve-body-param ctx :file))]
+													(if (service/valid-image? f) [false {:image f}] true)))
 	:allowed-methods [:post]
-	:available-media-types ["multipart/form-data"]
-	:post! (fn [ctx] (service/upload-profile-image (retrieve-token-user-id ctx) file)))
+	:available-media-types ["application/json"]
+	:post! (fn [ctx] (service/upload-profile-image (retrieve-token-user-id ctx) (:image ctx))))
 
 (defresource change-password
 	:authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))

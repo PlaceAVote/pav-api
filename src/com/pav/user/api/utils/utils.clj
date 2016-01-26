@@ -1,7 +1,9 @@
 (ns com.pav.user.api.utils.utils
 	(:require [msgpack.core :as msg]
 						[msgpack.clojure-extensions]
-						[cheshire.core :as ch]))
+						[cheshire.core :as ch])
+	(:import (java.io ByteArrayInputStream)
+					 (org.apache.commons.codec.binary Base64)))
 
 (defn record-in-ctx [ctx]
   (get ctx :record))
@@ -32,3 +34,15 @@
 
 (defn to-json [msg]
 	(ch/generate-string msg))
+
+(defn decodeBase64ImageString [encoded-str]
+	"Parse the encoded string for its content-type, size and contents."
+	(when encoded-str
+		(let [t (.split encoded-str ",")
+				 content-type (-> (re-seq #"(?<=:)(.*\n?)(?=;)" (first t))
+													flatten first)
+				 size (.length (second t))
+				 inputstream (ByteArrayInputStream. (Base64/decodeBase64 (second t)))]
+			{:content-type content-type
+			:tempfile     inputstream
+			:size         size})))

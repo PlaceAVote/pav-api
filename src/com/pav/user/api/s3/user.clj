@@ -17,5 +17,5 @@
 			:key key
 			:metadata {:content-length size
 								 :content-type   content-type}
-			:file actual-file)
+			:input-stream actual-file)
 		(log/info (str "Image Uploaded for " key " successfully"))))

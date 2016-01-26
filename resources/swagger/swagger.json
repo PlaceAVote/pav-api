@@ -61,10 +61,18 @@
     },
     "ProfileImageParam": {
       "name": "file",
-      "description": "Profile image, size must be 50x50x of type .jpeg or png",
-      "in": "formData",
+      "description": "Profile image, size must be 50x50x of type .jpeg or png. Payload should be a Base64 Encoded Data URI.",
+      "in": "body",
       "required": true,
-      "type": "file"
+      "schema": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      }
     },
     "TokenParam": {
       "name": "Authorization",
@@ -704,9 +712,6 @@
     "/user/me/profile/image": {
       "post": {
         "description": "Upload Profile image to user profile",
-        "consumes": [
-          "multipart/form-data"
-        ],
         "parameters": [
           {
             "$ref": "#/parameters/TokenParam"
