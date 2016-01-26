@@ -291,7 +291,7 @@
 
 (defn upload-profile-image [user_id file]
 	(let [user (get-user-by-id user_id)
-				new-image-key (str "users/" user_id "/profile/img/p200xp200x/" user_id (mime-type->file-type (file :content-type)))
+				new-image-key (str "users/" user_id "/profile/img/p200xp200x/" (.toString (UUID/randomUUID)) (mime-type->file-type (file :content-type)))
 				new-img_url {:img_url (str (:cdn-url env) (str "/" new-image-key))}]
 		(when user
 			(try
