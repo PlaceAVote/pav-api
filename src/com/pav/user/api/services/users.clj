@@ -20,24 +20,25 @@
 	(memo/ttl gather-latest-bills-by-subject :ttl/threshold 3600000))
 
 (defn- pre-populate-newsfeed [{:keys [user_id topics]}]
-	(let [bills (gather-cached-bills topics)]
-		(if-not (empty? bills)
-			(dynamo-dao/persist-to-newsfeed
-				(mapv #(assoc % :event_id (.toString (UUID/randomUUID))
-												:user_id user_id) bills)))))
-
+  (let [bills (gather-cached-bills topics)]
+    (when (seq bills)
+      (dynamo-dao/persist-to-newsfeed
+       (mapv #(assoc % :event_id (.toString (UUID/randomUUID))
+                       :user_id user_id)
+             bills)))))
 
 (defn- persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
-	(when profile
-		(try
-			(dynamo-dao/create-user profile)
-			(redis-dao/create-user-profile profile)
+  (when profile
+    (try
+      (dynamo-dao/create-user profile)
+      (redis-dao/create-user-profile profile)
       (pre-populate-newsfeed profile)
-			(thread ;; Expensive call to mandril.  Execute in seperate thread.
-				(index-user (indexable-profile profile))
-				(send-confirmation-email profile))
-		(catch Exception e (log/error (str "Error occured persisting user profile for " user_id "Exception: " e)))))
+      (thread ;; Expensive call to mandril.  Execute in seperate thread.
+       (index-user (indexable-profile profile))
+       (send-confirmation-email profile))
+      (catch Exception e
+        (log/errorf e "Error occured persisting user profile for '%s'" user_id)))))
   profile)
 
 (defn create-user-profile [user & [origin]]
@@ -283,10 +284,11 @@
 		".jpeg"))
 
 (defn upload-profile-image [user_id file]
-	(let [user (get-user-by-id user_id)
-				new-image-key (str "users/" user_id "/profile/img/p50xp50x/" user_id (get-image-type (file :content-type)))]
-		(when user
-			(try
-				(s3/upload-image (:cdn-bucket-name env) new-image-key file)
-				(update-account-settings user_id {:img_url (str (:cdn-url env) (str "/" new-image-key))})
-			(catch Exception e (log/error "Error uploading Profile image. " e))))))
+  (let [user (get-user-by-id user_id)
+        new-image-key (str "users/" user_id "/profile/img/p50xp50x/" user_id (get-image-type (file :content-type)))]
+    (when user
+      (try
+        (s3/upload-image (:cdn-bucket-name env) new-image-key file)
+        (update-account-settings user_id {:img_url (format "%s/%s" (:cdn-url env) new-image-key)})
+        (catch Exception e
+          (log/error e "Error uploading profile image"))))))
