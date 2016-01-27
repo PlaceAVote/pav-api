@@ -71,8 +71,6 @@
                             :dynamo-questions-table              "questions"
                             :dynamo-user-question-answers-table	 "user-question-answers"
                             :dynamo-user-issues-table            "user-issues"
-                            :dynamo-user-issues-index-table      "user-issues-index"
-                            :dynamo-bill-issues-index-table      "bill-issues-index"
                             :dynamo-user-issue-responses-table   "user-issue-responses"
                             :redis-notification-pubsub           "redis::notifications::pubsub"
                             :es-url                              "http://localhost:9200"

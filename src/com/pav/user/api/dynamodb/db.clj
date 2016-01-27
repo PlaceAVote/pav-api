@@ -62,14 +62,6 @@
   user-issues-table-name (:dynamo-user-issues-table env))
 
 (def ^{:const true
-       :doc "User issues indexes."}
-  user-issues-index-table-name (:dynamo-user-issues-index-table env))
-
-(def ^{:const true
-       :doc "Bill issues indexes."}
-  bill-issues-index-table-name (:dynamo-bill-issues-index-table env))
-
-(def ^{:const true
        :doc "Bill issue responses."}
   user-issue-responses-table-name (:dynamo-user-issue-responses-table env))
 
@@ -143,6 +135,23 @@ It will NOT handle exceptions."
                           {:range-keydef [:question_id :s]
                            :throughput {:read 5 :write 10}
                            :block? true})
+       (safe-create-table opts user-issues-table-name [:issue_id :s]
+                          {:range-keydef [:user_id :s]
+                           :gsindexes [{:name "user-issues-idx"
+                                        :hash-keydef [:user_id :s]
+                                        :range-keydef [:issue_id :s]
+                                        :throughput {:read 5 :write 10}}
+                                       {:name "bill-issues-idx"
+                                        :hash-keydef [:bill_id :s]
+                                        :range-keydef [:issue_id :s]
+                                        :throughput {:read 5 :write 10}}]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts user-issue-responses-table-name [:issue_id :s]
+                          {:range-keydef [:user_id :s]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (log/debug "Creating tables done")
        (catch Exception e 
          (log/error e (str "Failed with creating one of the tables with: " opts)))))
   ([] (create-all-tables! client-opts)))

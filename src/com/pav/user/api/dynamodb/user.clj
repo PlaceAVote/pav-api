@@ -3,7 +3,7 @@
             [environ.core :refer [env]]
             [clojure.tools.logging :as log]
             [com.pav.user.api.domain.user :refer [convert-to-correct-profile-type]])
-  (:import [java.util Date]))
+  (:import [java.util Date UUID]))
 
 (def client-opts {:access-key (:access-key env)
                   :secret-key (:secret-key env)
@@ -49,12 +49,25 @@
    (far/put-item client-opts user-table-name user-profile)
    (create-confirmation-record (:user_id user-profile) (:confirmation-token user-profile))
    user-profile
-   (catch Exception e (log/info (str "Error occured persisting new user-profile " e " to table " user-table-name)))))
+   (catch Exception e
+     (log/errorf e "Error occured persisting new user-profile to table '%s'" user-table-name))))
+
+(defn create-bill-issue 
+  "Create bill issues with details like user_id, bill_id and so on."
+  [details]
+  (far/put-item client-opts user-issues-table-name 
+                (merge {:issue_id (.toString (UUID/randomUUID))
+                        :timestamp (.getTime (Date.))
+                        :positive_responses 0
+                        :neutral_responses 0
+                        :negative_responsed 0}
+                       details)))
 
 (defn delete-user [user_id]
-	(try
-		(far/delete-item client-opts user-table-name {:user_id user_id})
-	(catch Exception e (log/info "Error occured deleting user " user_id) e)))
+  (try
+    (far/delete-item client-opts user-table-name {:user_id user_id})
+    (catch Exception e
+      (log/errorf e "Error occured deleting user '%s'" user_id))))
 
 (defn update-user-token [user_id new-token]
   (try

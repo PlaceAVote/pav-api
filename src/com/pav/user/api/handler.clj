@@ -18,7 +18,8 @@
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
                                                      user-profile validate-token reset-password confirm-password-reset
-                                                     user-settings change-password questions upload-profile-image]]
+                                                     user-settings change-password questions upload-profile-image
+                                                     user-issue user-issue-response user-feed]]
             [com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.dynamodb.db :refer [create-all-tables!]]
@@ -70,6 +71,10 @@
   (POST "/password/reset" [email] (reset-password email))
   (POST "/password/reset/confirm" _ confirm-password-reset)
   (POST "/password/change" _ change-password)
+  (PUT "/user/issue" [] user-issue)
+  (POST "/user/issue/:issue_id/response" [] user-issue-response)
+  (GET "/user/issue/:issue_id/response" [] user-issue-response)
+  (GET "/user/feed" [] user-feed)
   (route/resources "/")
   (route/not-found "Not Found"))
 
@@ -79,7 +84,7 @@
       (wrap-json-body {:keywords? true})
       (wrap-cors :access-control-allow-origin [#".*"]
                  :access-control-allow-methods [:get :put :post :delete :options])
-			(handler/site)
+      (handler/site)
       (wrap-json-response)))
 
 (defn start-server [options]

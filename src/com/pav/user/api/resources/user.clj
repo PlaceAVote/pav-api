@@ -138,11 +138,11 @@
  :handle-ok (fn [ctx] (service/get-feed (retrieve-token-user-id ctx))))
 
 (defresource questions
-	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
-	:allowed-methods [:get :post]
-	:available-media-types ["application/json"]
-	:post! (fn [ctx] (q-service/submit-answers (retrieve-token-user-id ctx) (retrieve-body ctx)))
-	:handle-ok (fn [ctx] (q-service/retrieve-questions (retrieve-token-user-id ctx))))
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+ :allowed-methods [:get :post]
+ :available-media-types ["application/json"]
+ :post! (fn [ctx] (q-service/submit-answers (retrieve-token-user-id ctx) (retrieve-body ctx)))
+ :handle-ok (fn [ctx] (q-service/retrieve-questions (retrieve-token-user-id ctx))))
 
 (defresource follow
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
@@ -181,3 +181,28 @@
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :handle-ok {:message "Token is valid"})
+
+(defresource user-issue
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+ :allowed-methods [:put]
+ :available-media-types ["application/json"]
+ ;; see http://stackoverflow.com/questions/17765718/post-request-with-clojure-liberator
+ ;; about using map to capture response and 
+ ;; http://stackoverflow.com/questions/23723785/clojure-liberator-returning-json-from-a-put-request
+ ;; on for PUT we have to implement 'handle-created'
+ :put! (fn [ctx] {::user-issue-response
+                  (service/create-bill-issue (retrieve-token-user-id ctx) (retrieve-body ctx))})
+ :handle-created ::user-issue-response)
+
+(defresource user-issue-response
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+ :allowed-methods [:get :post]
+ :available-media-types ["application/json"]
+ :post! (fn [ctx] )
+ :handle-ok (fn [ctx] ()))
+
+(defresource user-feed
+ :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+ :allowed-methods [:get]
+ :available-media-types ["application/json"]
+ :handle-ok (fn [ctx] ))

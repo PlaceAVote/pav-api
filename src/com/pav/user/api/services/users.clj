@@ -1,18 +1,19 @@
 (ns com.pav.user.api.services.users
   (:require [buddy.hashers :as h]
             [com.pav.user.api.schema.user :as us]
+            [com.pav.user.api.utils.utils :as utils]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email send-password-reset-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
-																									account-settings indexable-profile]]
-						[com.pav.user.api.s3.user :as s3]
+                                                  account-settings indexable-profile]]
+            [com.pav.user.api.s3.user :as s3]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
-						[clojure.core.memoize :as memo]
-						[environ.core :refer [env]])
+            [clojure.core.memoize :as memo]
+            [environ.core :refer [env]])
   (:import (java.util Date UUID)))
 
 (def gather-cached-bills
@@ -38,8 +39,8 @@
        (index-user (indexable-profile profile))
        (send-confirmation-email profile))
       (catch Exception e
-        (log/errorf e "Error occured persisting user profile for '%s'" user_id)))))
-  profile)
+        (log/errorf e "Error occured persisting user profile for '%s'" user_id)))
+    profile))
 
 (defn create-user-profile [user & [origin]]
   "Create new user profile, specify :facebook as the origin by default all uses are pav"
@@ -292,3 +293,14 @@
         (update-account-settings user_id {:img_url (format "%s/%s" (:cdn-url env) new-image-key)})
         (catch Exception e
           (log/error e "Error uploading profile image"))))))
+
+(defn create-bill-issue
+  "Create new bill issue, according to the details."
+  [user_id details]
+  {:pre [(utils/has-keys? details [:bill_id :comment :article_link :article_title :article_img])]}
+  (when-let [user (get-user-by-id user_id)]
+    (let [details (merge {:user_id user_id} details)]
+      (dynamo-dao/create-bill-issue details)
+      (merge
+       details
+       (select-keys user [:first_name :last_name :img_url])))))

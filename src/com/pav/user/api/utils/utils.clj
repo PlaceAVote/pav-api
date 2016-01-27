@@ -32,3 +32,8 @@
 
 (defn to-json [msg]
 	(ch/generate-string msg))
+
+(defn has-keys?
+  "Check if map has all specified keys."
+  [mp keys]
+  (apply = (map count [keys (select-keys mp keys)])))
