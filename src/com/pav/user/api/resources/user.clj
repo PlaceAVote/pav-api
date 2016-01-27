@@ -84,9 +84,9 @@
  :allowed-methods [:get]
  :available-media-types ["application/json"]
  :exists? (fn [ctx]
-           (if-not (nil? (retrieve-request-param ctx :user_id))
-						 {:record (service/get-user-profile (retrieve-token-user-id ctx) (retrieve-request-param ctx :user_id))}
-						 {:record (service/get-user-profile (retrieve-token-user-id ctx))}))
+            (if-let [id (retrieve-request-param ctx :user_id)]
+              {:record (service/get-user-profile (retrieve-token-user-id ctx) id)}
+              {:record (service/get-user-profile (retrieve-token-user-id ctx))}))
  :handle-ok record-in-ctx)
 
 (defresource confirm-user [token]
