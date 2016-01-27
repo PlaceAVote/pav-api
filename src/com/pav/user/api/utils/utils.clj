@@ -19,12 +19,14 @@
 	(get-in payload [:request :identity]))
 
 (defn retrieve-user-email [payload]
-  (-> (retrieve-user-details payload)
-      :email))
+  (some-> payload
+          retrieve-user-details
+          :email))
 
 (defn retrieve-token-user-id [payload]
-  (-> (retrieve-user-details payload)
-      :user_id))
+  (some-> payload
+          retrieve-user-details
+          :user_id))
 
 (defn unpack-redis-msg [msg]
 	(-> (msg/unpack msg)
