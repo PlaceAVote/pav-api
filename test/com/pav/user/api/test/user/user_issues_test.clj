@@ -61,5 +61,4 @@
            {token :token user_id :user_id } (ch/parse-string body true)
            {status :status body :body} (pav-req :post "/user/issue/hr2-114/response" token
                                                 {})]
-       status => 400))
-)
+       status => 400)))
