@@ -27,7 +27,9 @@
        ;; on right side, but only left side, so this key is left out
        (keys response) => (contains [:user_id :first_name :last_name
                                      :bill_id :comment :article_link :issue_id
-                                     :article_title :article_img] :in-any-order)))
+                                     :article_title :article_img] :in-any-order)
+       ;; make sure all keys has values
+       (some nil? (vals response)) => nil))
 
    (fact "Add new emotional response"
      (let [{body :body} (pav-req :put "/user" test-user)

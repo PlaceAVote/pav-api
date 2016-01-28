@@ -3,7 +3,7 @@
             [environ.core :refer [env]]
             [clojure.tools.logging :as log]
             [com.pav.user.api.domain.user :refer [convert-to-correct-profile-type]]
-						[com.pav.user.api.dynamodb.db :as dy :refer [client-opts]])
+            [com.pav.user.api.dynamodb.db :as dy :refer [client-opts]])
   (:import [java.util Date UUID]))
 
 (defn get-user-by-id [id]
@@ -39,13 +39,15 @@
   "Create bill issues with details like user_id, bill_id and so on. Returns
 new ID assigned as issue_id."
   [details]
-  (far/put-item client-opts dy/user-issues-table-name
-                (merge {:issue_id (.toString (UUID/randomUUID))
-                        :timestamp (.getTime (Date.))
-                        :positive_responses 0
-                        :neutral_responses 0
-                        :negative_responsed 0}
-                       details)))
+  (let [id (.toString (UUID/randomUUID))]
+    (far/put-item client-opts dy/user-issues-table-name
+                  (merge {:issue_id id
+                          :timestamp (.getTime (Date.))
+                          :positive_responses 0
+                          :neutral_responses 0
+                          :negative_responsed 0}
+                         details))
+    id))
 
 (defn delete-user [user_id]
   (try
