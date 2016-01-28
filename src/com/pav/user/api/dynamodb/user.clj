@@ -35,8 +35,9 @@
     (catch Exception e
       (log/errorf e "Error occured persisting new user-profile to table '%s'" dy/user-table-name))))
 
-(defn create-bill-issue 
-  "Create bill issues with details like user_id, bill_id and so on."
+(defn create-bill-issue
+  "Create bill issues with details like user_id, bill_id and so on. Returns
+new ID assigned as issue_id."
   [details]
   (far/put-item client-opts dy/user-issues-table-name
                 (merge {:issue_id (.toString (UUID/randomUUID))
