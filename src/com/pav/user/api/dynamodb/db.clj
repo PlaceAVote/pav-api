@@ -1,0 +1,198 @@
+(ns com.pav.user.api.dynamodb.db
+  (:require [taoensso.faraday :as far]
+            [environ.core :refer [env]]
+            [clojure.tools.logging :as log]))
+
+;;; client options
+
+(def ^{:const true
+       :doc "General access details for DynamoDB. Read from project.clj."}
+  client-opts {:access-key (:access-key env)
+               :secret-key (:secret-key env)
+               :endpoint (:dynamo-endpoint env)})
+
+;;; tables
+
+(def ^{:const true
+       :doc "Users table."}
+  user-table-name (:dynamo-user-table-name env))
+
+(def ^{:const true
+       :doc "User confirm table"}
+  user-confirm-table-name (:dynamo-user-confirmation-table-name env))
+
+(def ^{:const true
+       :doc "Notifications table."}
+  notification-table-name (:dynamo-notification-table-name env))
+
+(def ^{:const true
+       :doc "User feeds."}
+  userfeed-table-name (:dynamo-userfeed-table-name env))
+
+(def ^{:const true
+       :doc "User timeline table."}
+  timeline-table-name (:dynamo-usertimeline-table-name env))
+
+(def ^{:const true
+       :doc "Followers."}
+  follower-table-name (:dynamo-follower-table-name env))
+
+(def ^{:const true
+       :doc "Types user is following."}
+  following-table-name (:dynamo-following-table-name env))
+
+(def ^{:const true
+       :doc "Comment details."}
+  comment-details-table-name (:dynamo-comment-details-table-name env))
+
+(def ^{:const true
+       :doc "Vote counters."}
+  vote-count-table-name (:dynamo-vote-count-table env))
+
+(def ^{:const true
+       :doc "Questions."}
+  question-table-name (:dynamo-questions-table env))
+
+(def ^{:const true
+       :doc "Table for user answers to above questions."}
+  user-question-answers-table-name (:dynamo-user-question-answers-table env))
+
+(def ^{:const true
+       :doc "Table for user bill issues."}
+  user-issues-table-name (:dynamo-user-issues-table env))
+
+(def ^{:const true
+       :doc "Bill issue responses."}
+  user-issue-responses-table-name (:dynamo-user-issue-responses-table env))
+
+;;; code
+
+(defn- safe-create-table
+  "Same as 'far/ensure-table', except it will log when new tables are created.
+This way we can easily track in logs when new tables are added. 
+
+It will NOT handle exceptions."
+  [client-opts table-name hash-keydef & [opts]]
+  (when-not (far/describe-table client-opts table-name)
+    (log/infof "Creating table '%s'..." table-name)
+    (far/create-table client-opts table-name hash-keydef opts)))
+
+(defn create-all-tables!
+  "Create all dynamodb tables. Skips if tables are already present."
+  ([opts]
+     (log/debug "Creating all dynamo tables...")
+     (try
+       (safe-create-table opts user-table-name [:user_id :s]
+                          {:gsindexes [{:name "user-email-idx"
+                                        :hash-keydef [:email :s]
+                                        :throughput {:read 5 :write 10}}
+                                       {:name "fbid-idx"
+                                        :hash-keydef [:facebook_id :s]
+                                        :throughput {:read 5 :write 10}}]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts user-confirm-table-name [:confirmation-token :s]
+                          {:throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts notification-table-name [:user_id :s]
+                          {:gsindexes [{:name "notification_id-idx"
+                                        :hash-keydef [:notification_id :s]
+                                        :throughput {:read 5 :write 10}}]
+                           :range-keydef [:timestamp :n]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts timeline-table-name [:user_id :s]
+                          {:range-keydef [:timestamp :n]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts userfeed-table-name [:user_id :s]
+                          {:range-keydef [:timestamp :n]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts following-table-name [:user_id :s]
+                          {:range-keydef [:following :s]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts follower-table-name [:user_id :s]
+                          {:range-keydef [:follower :s]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts vote-count-table-name [:bill_id :s]
+                          {:throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts comment-details-table-name [:comment_id :s]
+                          {:gsindexes [{:name "bill-comment-idx"
+                                        :hash-keydef [:bill_id :s]
+                                        :range-keydef [:comment_id :s]
+                                        :throughput {:read 5 :write 10}}]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts question-table-name [:topic :s]
+                          {:range-keydef [:question_id :s]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts user-question-answers-table-name [:user_id :s]
+                          {:range-keydef [:question_id :s]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts user-issues-table-name [:issue_id :s]
+                          {:range-keydef [:user_id :s]
+                           :gsindexes [{:name "user-issues-idx"
+                                        :hash-keydef [:user_id :s]
+                                        :range-keydef [:issue_id :s]
+                                        :throughput {:read 5 :write 10}}
+                                       {:name "bill-issues-idx"
+                                        :hash-keydef [:bill_id :s]
+                                        :range-keydef [:issue_id :s]
+                                        :throughput {:read 5 :write 10}}]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (safe-create-table opts user-issue-responses-table-name [:issue_id :s]
+                          {:range-keydef [:user_id :s]
+                           :throughput {:read 5 :write 10}
+                           :block? true})
+       (log/debug "Creating tables done")
+       (catch Exception e 
+         (log/error e (str "Failed with creating one of the tables with: " opts)))))
+  ([] (create-all-tables! client-opts)))
+
+(defn- safe-delete-table
+  "Capture in case 'table' got nil (probably due bad configuration).
+It will handle exceptions, so it can be safely called inside 'delete-all-tables!'."
+  [opts table]
+  (when table
+    (try
+      (far/delete-table opts table)
+      (catch com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException _
+        ;; do nothing, as we aren't going to log failing deletion when table
+        ;; is not present
+        )
+      (catch Exception e
+        (log/error e (str "Unable to delete table: " table))
+        false))))
+
+(defn delete-all-tables!
+  "Clear all dynamodb tables."
+  ([opts]
+     (log/debug "Deleting all dynamo tables...")
+     (safe-delete-table opts user-table-name)
+     (safe-delete-table opts user-confirm-table-name)
+     (safe-delete-table opts notification-table-name)
+     (safe-delete-table opts timeline-table-name)
+     (safe-delete-table opts follower-table-name)
+     (safe-delete-table opts following-table-name)
+     (safe-delete-table opts userfeed-table-name)
+     (safe-delete-table opts vote-count-table-name)
+     (safe-delete-table opts comment-details-table-name)
+     (safe-delete-table opts question-table-name)
+     (safe-delete-table opts user-question-answers-table-name)
+     (safe-delete-table opts user-issues-table-name)
+     (safe-delete-table opts user-issue-responses-table-name))
+  ([] (delete-all-tables! client-opts)))
+
+(defn recreate-all-tables!
+  "Clears and create all tables."
+  ([opts]
+     (delete-all-tables! opts)
+     (create-all-tables! opts))
+  ([] (recreate-all-tables! client-opts)))

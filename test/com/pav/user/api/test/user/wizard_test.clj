@@ -1,23 +1,23 @@
 (ns com.pav.user.api.test.user.wizard-test
-	(:use midje.sweet)
-	(:require [cheshire.core :refer [parse-string]]
-						[com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables flush-redis
-																											 flush-user-index bootstrap-bills
-																											 bootstrap-questions wizard-questions
-																											 pav-req]]))
+  (:use midje.sweet)
+  (:require [cheshire.core :refer [parse-string]]
+            [com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables flush-redis
+                                                       flush-user-index bootstrap-bills
+                                                       bootstrap-questions wizard-questions
+                                                       pav-req]]))
 
 (def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
-								:country_code "USA" :topics ["Gun Rights"] :gender "male"})
+                :country_code "USA" :topics ["Gun Rights"] :gender "male"})
 
 (def test-answers [{:question_id "1001" :answer ["I want more gun control"]}
-									 {:question_id "1002" :answer ["I want less tanks"]}])
+                   {:question_id "1002" :answer ["I want less tanks"]}])
 
 (against-background [(before :facts (do
-																			(flush-dynamo-tables)
-																			(flush-redis)
-																			(flush-user-index)
-																			(bootstrap-bills)
-																			(bootstrap-questions)))]
+                                      (flush-dynamo-tables)
+                                      (flush-redis)
+                                      (flush-user-index)
+                                      (bootstrap-bills)
+                                      (bootstrap-questions)))]
 	(fact "Given a user token, Then retrieve questions associated with that users topic selection"
 		(let [{body :body} (pav-req :put "/user" test-user)
 					{token :token} (parse-string body true)

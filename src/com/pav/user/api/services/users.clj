@@ -1,18 +1,19 @@
 (ns com.pav.user.api.services.users
   (:require [buddy.hashers :as h]
             [com.pav.user.api.schema.user :as us]
+            [com.pav.user.api.utils.utils :as utils]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email send-password-reset-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
-																									account-settings indexable-profile]]
-						[com.pav.user.api.s3.user :as s3]
+                                                  account-settings indexable-profile]]
+            [com.pav.user.api.s3.user :as s3]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
-						[clojure.core.memoize :as memo]
-						[environ.core :refer [env]])
+            [clojure.core.memoize :as memo]
+            [environ.core :refer [env]])
   (:import (java.util Date UUID)))
 
 (def gather-cached-bills
@@ -20,25 +21,26 @@
 	(memo/ttl gather-latest-bills-by-subject :ttl/threshold 3600000))
 
 (defn- pre-populate-newsfeed [{:keys [user_id topics]}]
-	(let [bills (gather-cached-bills topics)]
-		(if-not (empty? bills)
-			(dynamo-dao/persist-to-newsfeed
-				(mapv #(assoc % :event_id (.toString (UUID/randomUUID))
-												:user_id user_id) bills)))))
-
+  (let [bills (gather-cached-bills topics)]
+    (when (seq bills)
+      (dynamo-dao/persist-to-newsfeed
+       (mapv #(assoc % :event_id (.toString (UUID/randomUUID))
+                       :user_id user_id)
+             bills)))))
 
 (defn- persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
-	(when profile
-		(try
-			(dynamo-dao/create-user profile)
-			(redis-dao/create-user-profile profile)
+  (when profile
+    (try
+      (dynamo-dao/create-user profile)
+      (redis-dao/create-user-profile profile)
       (pre-populate-newsfeed profile)
-			(thread ;; Expensive call to mandril.  Execute in seperate thread.
-				(index-user (indexable-profile profile))
-				(send-confirmation-email profile))
-		(catch Exception e (log/error (str "Error occured persisting user profile for " user_id "Exception: " e)))))
-  profile)
+      (thread ;; Expensive call to mandril.  Execute in seperate thread.
+       (index-user (indexable-profile profile))
+       (send-confirmation-email profile))
+      (catch Exception e
+        (log/errorf e "Error occured persisting user profile for '%s'" user_id)))
+    profile))
 
 (defn create-user-profile [user & [origin]]
   "Create new user profile, specify :facebook as the origin by default all uses are pav"
@@ -299,3 +301,38 @@
 				(update-account-settings user_id new-img_url)
 				new-img_url
 			(catch Exception e (log/error "Error uploading Profile image. " e))))))
+
+(defn create-bill-issue
+  "Create new bill issue, according to the details."
+  [user_id details]
+  {:pre [(utils/has-keys? details [:bill_id :comment :article_link :article_title :article_img])]}
+  (when-let [user (get-user-by-id user_id)]
+    (let [details (merge {:user_id user_id} details)]
+      (dynamo-dao/create-bill-issue details)
+      (merge
+       details
+       (select-keys user [:first_name :last_name :img_url])))))
+
+(defn validate-user-issue-emotional-response
+  "Check if emotional_response parameter is in valid range. Returns inverted logic
+so it can be fed to ':malformed?' handler."
+  [body]
+  (not
+   (when-let [resp (:emotional_response body)]
+     (and (utils/has-only-keys? body [:emotional_response])
+          (some #{resp} [1 0 -1])))))
+
+(defn update-user-issue-emotional-response
+  "Set emotional response for given issue_id."
+  [issue_id user_id body]
+  (when-let [resp (:emotional_response body)]
+    (dynamo-dao/update-user-issue-emotional-response issue_id user_id resp)
+    ;; return body as is, since we already check it's content with
+    ;; 'validate-user-issue-emotional-response'
+    body))
+
+(defn get-user-issue-emotional-response
+  "Retrieve emotional response for given issue_id."
+  [issue_id user_id]
+  (select-keys (dynamo-dao/get-user-issue-emotional-response issue_id user_id)
+               [:emotional_response]))
