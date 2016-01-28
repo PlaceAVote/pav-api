@@ -293,10 +293,11 @@
   [user_id details]
   {:pre [(utils/has-keys? details [:bill_id :comment :article_link :article_title :article_img])]}
   (when-let [user (get-user-by-id user_id)]
-    (let [details (merge {:user_id user_id} details)]
-      (dynamo-dao/create-bill-issue details)
+    (let [details  (merge {:user_id user_id} details)
+          issue_id (dynamo-dao/create-bill-issue details)]
       (merge
        details
+       {:issue_id issue_id}
        (select-keys user [:first_name :last_name :img_url])))))
 
 (defn validate-user-issue-emotional-response

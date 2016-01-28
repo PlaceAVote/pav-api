@@ -52,16 +52,19 @@
     (catch Exception e
       (log/errorf e "Error occured persisting new user-profile to table '%s'" user-table-name))))
 
-(defn create-bill-issue 
-  "Create bill issues with details like user_id, bill_id and so on."
+(defn create-bill-issue
+  "Create bill issues with details like user_id, bill_id and so on. Returns
+new ID assigned as issue_id."
   [details]
-  (far/put-item client-opts user-issues-table-name 
-                (merge {:issue_id (.toString (UUID/randomUUID))
-                        :timestamp (.getTime (Date.))
-                        :positive_responses 0
-                        :neutral_responses 0
-                        :negative_responsed 0}
-                       details)))
+  (let [id (.toString (UUID/randomUUID))]
+    (far/put-item client-opts user-issues-table-name
+                  (merge {:issue_id id
+                          :timestamp (.getTime (Date.))
+                          :positive_responses 0
+                          :neutral_responses 0
+                          :negative_responsed 0}
+                         details))
+    id))
 
 (defn delete-user [user_id]
   (try
