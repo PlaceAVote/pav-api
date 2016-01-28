@@ -5,64 +5,50 @@
 
 ;;; client options
 
-(def ^{:const true
-       :doc "General access details for DynamoDB. Read from project.clj."}
+(def ^{:doc "General access details for DynamoDB. Read from project.clj."}
   client-opts {:access-key (:access-key env)
                :secret-key (:secret-key env)
                :endpoint (:dynamo-endpoint env)})
 
 ;;; tables
 
-(def ^{:const true
-       :doc "Users table."}
+(def ^{:doc "Users table."}
   user-table-name (:dynamo-user-table-name env))
 
-(def ^{:const true
-       :doc "User confirm table"}
+(def ^{:doc "User confirm table"}
   user-confirm-table-name (:dynamo-user-confirmation-table-name env))
 
-(def ^{:const true
-       :doc "Notifications table."}
+(def ^{:doc "Notifications table."}
   notification-table-name (:dynamo-notification-table-name env))
 
-(def ^{:const true
-       :doc "User feeds."}
+(def ^{:doc "User feeds."}
   userfeed-table-name (:dynamo-userfeed-table-name env))
 
-(def ^{:const true
-       :doc "User timeline table."}
+(def ^{:doc "User timeline table."}
   timeline-table-name (:dynamo-usertimeline-table-name env))
 
-(def ^{:const true
-       :doc "Followers."}
+(def ^{:doc "Followers."}
   follower-table-name (:dynamo-follower-table-name env))
 
-(def ^{:const true
-       :doc "Types user is following."}
+(def ^{:doc "Types user is following."}
   following-table-name (:dynamo-following-table-name env))
 
-(def ^{:const true
-       :doc "Comment details."}
+(def ^{:doc "Comment details."}
   comment-details-table-name (:dynamo-comment-details-table-name env))
 
-(def ^{:const true
-       :doc "Vote counters."}
+(def ^{:doc "Vote counters."}
   vote-count-table-name (:dynamo-vote-count-table env))
 
-(def ^{:const true
-       :doc "Questions."}
+(def ^{:doc "Questions."}
   question-table-name (:dynamo-questions-table env))
 
-(def ^{:const true
-       :doc "Table for user answers to above questions."}
+(def ^{:doc "Table for user answers to above questions."}
   user-question-answers-table-name (:dynamo-user-question-answers-table env))
 
-(def ^{:const true
-       :doc "Table for user bill issues."}
+(def ^{:doc "Table for user bill issues."}
   user-issues-table-name (:dynamo-user-issues-table env))
 
-(def ^{:const true
-       :doc "Bill issue responses."}
+(def ^{:doc "Bill issue responses."}
   user-issue-responses-table-name (:dynamo-user-issue-responses-table env))
 
 ;;; code
