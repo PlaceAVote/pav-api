@@ -24,11 +24,9 @@
             _ (clojure.pprint/pprint body)
             {next-page :next-page} (ch/parse-string body true)]
         status => 200
-        next-page => 0)))
-
-
-   (fact "Fetch user feed with combined bill issues"
-     (let [{body :body} (pav-req :put "/user" test-user)
-           {token :token user_id :user_id } (ch/parse-string body true)
-           {status :status body :body} (pav-req :get "/user/feed" token {})]
-       status => 200))
+        next-page => 0))
+	(fact "Fetch user feed with combined bill issues"
+				(let [{body :body} (pav-req :put "/user" test-user)
+							{token :token} (ch/parse-string body true)
+							{status :status} (pav-req :get "/user/feed" token {})]
+					status => 200)))
