@@ -45,7 +45,7 @@
   (POST "/user/me/settings" [] user-settings)
   (GET "/user/me/settings" [] user-settings)
   (GET "/user/me/profile" [] user-profile)
-	(POST "/user/me/profile/image" [] upload-profile-image)
+  (POST "/user/me/profile/image" [] upload-profile-image)
   (GET "/user/:user_id/profile" [_] user-profile)
   (GET "/user/feed" [] feed)
   (GET "/user/questions" [] questions)
@@ -78,13 +78,14 @@
   (route/not-found "Not Found"))
 
 (def app
-  (-> (routes app-routes)
+  (-> app-routes
+      routes
       (wrap-authentication (token-handler env))
       (wrap-json-body {:keywords? true})
       (wrap-cors :access-control-allow-origin [#".*"]
                  :access-control-allow-methods [:get :put :post :delete :options])
-      (handler/site)
-      (wrap-json-response)))
+      handler/site
+      wrap-json-response))
 
 (defn start-server [options]
   (init)

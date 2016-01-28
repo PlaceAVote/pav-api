@@ -35,20 +35,6 @@
     (catch Exception e
       (log/errorf e "Error occured persisting new user-profile to table '%s'" dy/user-table-name))))
 
-(defn create-bill-issue
-  "Create bill issues with details like user_id, bill_id and so on. Returns
-new ID assigned as issue_id."
-  [details]
-  (let [id (.toString (UUID/randomUUID))]
-    (far/put-item client-opts dy/user-issues-table-name
-                  (merge {:issue_id id
-                          :timestamp (.getTime (Date.))
-                          :positive_responses 0
-                          :neutral_responses 0
-                          :negative_responsed 0}
-                         details))
-    id))
-
 (defn delete-user [user_id]
   (try
     (far/delete-item client-opts dy/user-table-name {:user_id user_id})
@@ -151,7 +137,6 @@ new ID assigned as issue_id."
 (defn user-followers [user_id]
   (->> (far/query client-opts dy/follower-table-name {:user_id [:eq user_id]})
        (map #(retrieve-follower-profile %))
-
        (remove nil?)))
 
 (defn following? [follower following]
@@ -189,6 +174,30 @@ new ID assigned as issue_id."
 (defn submit-answers [answers]
   (far/batch-write-item client-opts
                         {dy/user-question-answers-table-name {:put answers}}))
+
+(defn create-bill-issue
+  "Create bill issues with details like user_id, bill_id and so on. Returns
+new ID assigned as issue_id and timestamp stored in table."
+  [details]
+  (let [id (.toString (UUID/randomUUID))
+        timestamp (.getTime (Date.))]
+    (far/put-item client-opts dy/user-issues-table-name
+                  (merge {:issue_id id
+                          :timestamp timestamp
+                          :positive_responses 0
+                          :neutral_responses 0
+                          :negative_responsed 0}
+                         details))
+    [id timestamp]))
+
+(defn populate-followers-feed-table
+  "Update followeres feed table when user publish particular issue."
+  [user_id data]
+  (doseq [f (user-followers user_id)]
+    ;; use follower id, since we are writing into 'their' table
+    (let [follower-id (:user_id f)]
+      (far/put-item client-opts dy/userfeed-table-name
+                    (assoc data :user_id follower-id)))))
 
 (defn update-user-issue-emotional-response [issue_id user_id response]
   (far/update-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id

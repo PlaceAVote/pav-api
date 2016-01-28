@@ -273,36 +273,46 @@
     (update-user-password user_id new-password)))
 
 (defn mime-type->file-type [type]
-	"Convert mime content-type to valid file type."
-	(case type
-		"image/jpeg" ".jpeg"
-		"image/png" ".png"
-		nil))
+  "Convert mime content-type to valid file type."
+  (case type
+    "image/jpeg" ".jpeg"
+    "image/png" ".png"
+    nil))
 
 (defn valid-image? [file]
-	"Issue file upload a valid image type, e.g. jpeg or png file"
-	(if (or (empty? file) (nil? (mime-type->file-type (file :content-type))) (<= (file :size) 0))
-		false
-		true))
+  "Issue file upload a valid image type, e.g. jpeg or png file"
+  (if (or (empty? file) (nil? (mime-type->file-type (file :content-type))) (<= (file :size) 0))
+    false
+    true))
 
 (defn upload-profile-image [user_id file]
-	(let [user (get-user-by-id user_id)
-				new-image-key (str "users/" user_id "/profile/img/p200xp200x/" (.toString (UUID/randomUUID)) (mime-type->file-type (file :content-type)))
-				new-img_url {:img_url (str (:cdn-url env) (str "/" new-image-key))}]
-		(when user
-			(try
-				(s3/upload-image (:cdn-bucket-name env) new-image-key file)
-				(update-account-settings user_id new-img_url)
-				new-img_url
-			(catch Exception e (log/error "Error uploading Profile image. " e))))))
+  (let [user (get-user-by-id user_id)
+        new-image-key (str "users/" user_id "/profile/img/p200xp200x/" (.toString (UUID/randomUUID)) (mime-type->file-type (file :content-type)))
+        new-img_url {:img_url (str (:cdn-url env) (str "/" new-image-key))}]
+    (when user
+      (try
+        (s3/upload-image (:cdn-bucket-name env) new-image-key file)
+        (update-account-settings user_id new-img_url)
+        new-img_url
+        (catch Exception e (log/error "Error uploading Profile image. " e))))))
 
 (defn create-bill-issue
   "Create new bill issue, according to the details."
   [user_id details]
   {:pre [(utils/has-keys? details [:bill_id :comment :article_link :article_title :article_img])]}
+
   (when-let [user (get-user-by-id user_id)]
-    (let [details  (merge {:user_id user_id} details)
-          issue_id (dynamo-dao/create-bill-issue details)]
+    (let [details (merge {:user_id user_id} details)
+          [issue_id timestamp] (dynamo-dao/create-bill-issue details)
+          to-populate (merge
+                       {:timestamp timestamp
+                        :type "userissue"
+                        :author_id user_id
+                        :issue_id issue_id}
+                       (select-keys user [:first_name :last_name :img_url])
+                       (select-keys details [:bill_id :article_link]))]
+      ;; populate followers table as the last action
+      (dynamo-dao/populate-followers-feed-table user_id to-populate)
       (merge
        details
        {:issue_id issue_id}
