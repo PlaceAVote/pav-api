@@ -304,3 +304,27 @@
       (merge
        details
        (select-keys user [:first_name :last_name :img_url])))))
+
+(defn validate-user-issue-emotional-response
+  "Check if emotional_response parameter is in valid range. Returns inverted logic
+so it can be fed to ':malformed?' handler."
+  [body]
+  (not
+   (when-let [resp (:emotional_response body)]
+     (and (utils/has-only-keys? body [:emotional_response])
+          (some #{resp} [1 0 -1])))))
+
+(defn update-user-issue-emotional-response
+  "Set emotional response for given issue_id."
+  [issue_id user_id body]
+  (when-let [resp (:emotional_response body)]
+    (dynamo-dao/update-user-issue-emotional-response issue_id user_id resp)
+    ;; return body as is, since we already check it's content with
+    ;; 'validate-user-issue-emotional-response'
+    body))
+
+(defn get-user-issue-emotional-response
+  "Retrieve emotional response for given issue_id."
+  [issue_id user_id]
+  (select-keys (dynamo-dao/get-user-issue-emotional-response issue_id user_id)
+               [:emotional_response]))

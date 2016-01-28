@@ -7,7 +7,6 @@
                                                        pav-req]]
             [cheshire.core :as ch]))
 
-;; FIXME: no need to flush all tables here - only user-issues are affected
 (against-background [(before :facts (do
                                       (flush-dynamo-tables)
                                       (flush-redis)
@@ -29,4 +28,38 @@
        (keys response) => (contains [:user_id :first_name :last_name
                                      :bill_id :comment :article_link
                                      :article_title :article_img] :in-any-order)))
+
+   (fact "Add new emotional response"
+     (let [{body :body} (pav-req :put "/user" test-user)
+           {token :token user_id :user_id } (ch/parse-string body true)
+           {status :status body :body} (pav-req :post "/user/issue/hr2-114/response" token
+                                                {:emotional_response 1})
+           response (ch/parse-string body true)]
+       status => 201
+       (:emotional_response response) => 1))
+
+   (fact "Get emotional response"
+     (let [{body :body} (pav-req :put "/user" test-user)
+           {token :token user_id :user_id } (ch/parse-string body true)
+           ;; save some data
+           _ (pav-req :post "/user/issue/hr2-114/response" token {:emotional_response 1})
+           ;; read it
+           {status :status body :body} (pav-req :get "/user/issue/hr2-114/response" token {})
+           response (ch/parse-string body true)]
+       status => 200
+       (:emotional_response response) => 1))
+
+   (fact "Invalid emotional_response in POST"
+     (let [{body :body} (pav-req :put "/user" test-user)
+           {token :token user_id :user_id } (ch/parse-string body true)
+           {status :status body :body} (pav-req :post "/user/issue/hr2-114/response" token
+                                                {:emotional_response "junk"})]
+       status => 400))
+
+   (fact "No emotional_response in POST"
+     (let [{body :body} (pav-req :put "/user" test-user)
+           {token :token user_id :user_id } (ch/parse-string body true)
+           {status :status body :body} (pav-req :post "/user/issue/hr2-114/response" token
+                                                {})]
+       status => 400))
 )

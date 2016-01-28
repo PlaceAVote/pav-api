@@ -19,7 +19,7 @@
                                                      follow following followers unfollow
                                                      user-profile validate-token reset-password confirm-password-reset
                                                      user-settings change-password questions upload-profile-image
-                                                     user-issue user-issue-response user-feed]]
+                                                     user-issue user-issue-emotional-response user-feed]]
             [com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.dynamodb.db :refer [create-all-tables!]]
@@ -72,8 +72,8 @@
   (POST "/password/reset/confirm" _ confirm-password-reset)
   (POST "/password/change" _ change-password)
   (PUT "/user/issue" [] user-issue)
-  (POST "/user/issue/:issue_id/response" [] user-issue-response)
-  (GET "/user/issue/:issue_id/response" [] user-issue-response)
+  (POST "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
+  (GET "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (GET "/user/feed" [] user-feed)
   (route/resources "/")
   (route/not-found "Not Found"))

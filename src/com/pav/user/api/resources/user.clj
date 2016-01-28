@@ -194,12 +194,25 @@
                   (service/create-bill-issue (retrieve-token-user-id ctx) (retrieve-body ctx))})
  :handle-created ::user-issue-response)
 
-(defresource user-issue-response
+(defresource user-issue-emotional-response [issue_id]
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
  :allowed-methods [:get :post]
  :available-media-types ["application/json"]
- :post! (fn [ctx] )
- :handle-ok (fn [ctx] ()))
+ :malformed? (fn [ctx]
+               ;; make sure this is checked or will be triggered on GET too
+               (when (= :post (-> ctx :request :request-method))
+                 (-> ctx
+                     retrieve-body
+                     service/validate-user-issue-emotional-response)))
+ :post! (fn [ctx]
+          {::user-issue-emotional-response
+           (service/update-user-issue-emotional-response issue_id
+                                                         (retrieve-token-user-id ctx)
+                                                         (retrieve-body ctx))})
+ :handle-created ::user-issue-emotional-response
+ :handle-ok (fn [ctx]
+              (service/get-user-issue-emotional-response issue_id
+                                                         (retrieve-token-user-id ctx))))
 
 (defresource user-feed
  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
