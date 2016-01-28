@@ -63,7 +63,6 @@
   :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors])))
   :handle-ok (fn [ctx] (service/get-account-settings (retrieve-token-user-id ctx))))
 
-<<<<<<< HEAD
 (defresource upload-profile-image
 	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
 	:malformed? (fn [ctx] (let [f (decodeBase64ImageString (retrieve-body-param ctx :file))]
@@ -72,13 +71,6 @@
 	:available-media-types ["application/json"]
 	:post! (fn [ctx] {:record (service/upload-profile-image (retrieve-token-user-id ctx) (:image ctx))})
  	:handle-created :record)
-=======
-(defresource upload-profile-image [file]
-  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
-  :allowed-methods [:post]
-  :available-media-types ["multipart/form-data"]
-  :post! (fn [ctx] (service/upload-profile-image (retrieve-token-user-id ctx) file)))
->>>>>>> bill-issues
 
 (defresource change-password
   :authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))
