@@ -18,7 +18,7 @@
 
 (def gather-cached-bills
   "Retrieve cached bills that match previous topic arguments.  For performance purposes."
-  (memo/ttl gather-latest-bills-by-subject :ttl/threshold 3600000))
+  (memo/ttl gather-latest-bills-by-subject :ttl/threshold 86400))
 
 (defn- pre-populate-newsfeed [{:keys [user_id topics]}]
   (let [bills (gather-cached-bills topics)]
