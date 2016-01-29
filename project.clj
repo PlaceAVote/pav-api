@@ -32,10 +32,19 @@
                  [org.clojure/core.memoize "0.5.8"]
 								 [amazonica "0.3.48"]]
   :plugins [[lein-environ "1.0.0"]
-						[lein-release "1.0.5"]]
+						[lein-release "1.0.5"]
+            [lein-essthree "0.2.1"]]
+  :essthree {:deploy {:type :library
+                      :bucket "pav-maven-artifact-repository"
+                      :snapshots     true
+                      :sign-releases false
+                      :checksum      :fail
+                      :update        :always}
+             :repository {:bucket "pav-maven-artifact-repository"}}
 	:lein-release {:scm :git
-                   :deploy-via :lein-install
-                   :build-uberjar true}
+                 :deploy-via :shell
+                 :shell ["lein" "essthree"]
+                 :build-uberjar true}
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
   :main system

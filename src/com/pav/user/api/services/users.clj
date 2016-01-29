@@ -220,13 +220,24 @@
 
 (defn get-user-profile
   ([user_id]
-     (-> (get-user-by-id user_id)
-         profile-info
+   (if-let [u (get-user-by-id user_id)]
+     (-> (profile-info u)
          (assoc :total_followers (count-followers user_id))
-         (assoc :total_following (count-following user_id))))
+         (assoc :total_following (count-following user_id)))))
   ([current-user user_id]
-     (-> (get-user-profile user_id)
-         (assoc :following (following? current-user user_id)))))
+     (if-let [u (get-user-profile user_id)]
+       (assoc u :following (following? current-user user_id)))))
+
+(defn authorized-to-view-profile?
+  "Used to determine if the current user can view their profile or another users.
+  Response includes response suitable for Liberator use."
+  ([user_id]
+    [true {:record (get-user-profile user_id)}])
+  ([current-user user-viewing]
+    (let [{:keys [public] :as user-profile} (get-user-profile current-user user-viewing)]
+      (if public
+        [true {:record user-profile}]
+        [false {:error {:error_message "This profile is not available."}}]))))
 
 (defn- update-user-profile [user_id param-map]
   (-> (get-user-by-id user_id)
