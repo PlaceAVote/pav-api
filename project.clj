@@ -37,7 +37,7 @@
   :essthree {:deploy {:type :library
                       :bucket "pav-maven-artifact-repository"
                       :snapshots     true
-                      :sign-releases true
+                      :sign-releases false
                       :checksum      :fail
                       :update        :always}
              :repository {:bucket "pav-maven-artifact-repository"}}
