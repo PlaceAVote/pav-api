@@ -30,6 +30,22 @@
 			(keys body) => [:user_id :first_name :last_name :country_code :public :total_followers :total_following :following]
 			body => (contains {:total_followers 1 :total_following 0 :following true} :in-any-order)))
 
+	(fact "Retrieve a user profile, when there profile is private, Then return 401 error"
+		(let [{caller :body} (pav-req :put "/user" test-user)
+					{token :token} (ch/parse-string caller true)
+					{search-user :body} (pav-req :put "/user" searchable-profile)
+					{user_id :user_id private-user-token :token} (ch/parse-string search-user true)
+					;;update the users profile via settings endpoint.  We don't currently support this option on signup.
+					_ (pav-req :post "/user/me/settings" private-user-token {:public false})
+					{status :status } (pav-req :get (str "/user/" user_id "/profile") token {})]
+			status => 401))
+
+  (fact "Retrieve a user profile, when the user profile doesn't exist, Then return 401 error"
+    (let [{caller :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string caller true)
+          {status :status } (pav-req :get (str "/user/21312321312/profile") token {})]
+      status => 401))
+
 	(fact "Retrieve the current users profile"
 		(let [{caller :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string caller true)
