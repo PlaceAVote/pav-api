@@ -18,10 +18,11 @@
 		(->> (esrsp/hits-from
 					 (esd/search connection "congress" "bill"
 						 :query (q/terms :keywords terms)
-						 :filter {:not {:term {:summary "No Summary Present..."}}}
 						 :_source [:subject :bill_id :official_title :short_title :popular_title :summary]
 						 :sort  {:updated_at "desc"}))
-			(mapv merge-type-and-fields))))
+			(mapv merge-type-and-fields)
+      (filterv (fn [{summary :summary}]
+                 (not (= summary "No Summary Present...")))))))
 
 (defn to-govtrack-subjects [topic]
 	(case topic

@@ -1,0 +1,51 @@
+{
+  "votes": [],
+  "urls": {
+    "congress": "http:\/\/beta.congress.gov\/bill\/114th\/house-bill\/4269",
+    "govtrack": "https:\/\/www.govtrack.us\/congress\/bills\/114\/hr4269",
+    "opencongress": "https:\/\/www.opencongress.org\/bill\/hr4269-114"
+  },
+  "bill_id": "hr4269-114",
+  "last_action_at": "2016-01-15",
+  "number": "4269",
+  "short_title": "Assault Weapons Ban of 2015",
+  "voted_against": false,
+  "history": {
+    "active": false,
+    "awaiting_signature": false,
+    "enacted": false,
+    "vetoed": false
+  },
+  "congress": "114",
+  "voted_for": false,
+  "keywords": ["Academic performance and assessments", "Administrative law and regulatory procedures", "Congressional oversight", "Crime and law enforcement", "Criminal justice information and records", "Criminal procedure and sentencing", "Department of Justice", "Domestic violence and child abuse", "Family relationships", "Firearms and explosives", "Games and hobbies", "Government studies and investigations", "Juvenile crime and gang violence", "Law enforcement administration and funding", "Mental health", "Poverty and welfare assistance", "Retail and wholesale trades", "Sports and recreation facilities", "Trade restrictions", "Violent crime"],
+  "summary": "No Summary Present...",
+  "updated_at": "2016-01-23T06:56:50-05:00",
+  "bill_type": "hr",
+  "last_vote": null,
+  "status": "REFERRED",
+  "official_title": "To regulate assault weapons, to ensure that the right to keep and bear arms is not unlimited, and for other purposes.",
+  "related_bill_id": [],
+  "last_action": {
+    "acted_at": "2016-01-15",
+    "committees": ["HSHM"],
+    "in_committee": null,
+    "references": [],
+    "text": "Referred to the Subcommittee on Crime, Terrorism, Homeland Security, and Investigations.",
+    "type": "referral"
+  },
+  "introduced_at": "2015-12-16",
+  "sponsor_id": "02055",
+  "cosponsors_count": 125,
+  "subject": "Crime and law enforcement",
+  "last_vote_at": null,
+  "featured_summary": null,
+  "sponsor": {
+    "district": "1",
+    "name": "Cicilline, David N.",
+    "state": "RI",
+    "thomas_id": "02055",
+    "title": "Rep",
+    "type": "person"
+  }
+}

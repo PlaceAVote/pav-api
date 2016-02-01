@@ -31,6 +31,7 @@
 (def test-bills [(ch/parse-string (slurp "test-resources/bills/hr2-114.json") true)
                  (ch/parse-string (slurp "test-resources/bills/hr1764-114.json") true)
                  (ch/parse-string (slurp "test-resources/bills/hr2029-114.json") true)
+                 (ch/parse-string (slurp "test-resources/bills/hr4269-114.json") true)
                  (ch/parse-string (slurp "test-resources/bills/s25-114.json") true)])
 
 (defn bootstrap-bills []

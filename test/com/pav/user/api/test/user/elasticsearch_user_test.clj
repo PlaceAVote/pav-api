@@ -30,4 +30,9 @@
 														 :official_title "To provide for the designation of the United States Chief Technology Officer."
 														 :short_title    "United States Chief Technology Officer Act"
 														 :subject        "Politics"
-														 :summary				 "United States Chief Technology Officer Act<br /><br />Amends the National Science and Technology Policy, Organization, and Priorities Act of 1976 to authorize the President to appoint a United States Chief Technology Officer whose duties shall include advising the President and the Director of the Office of Science and Technology Policy on federal information systems, technology, data, and innovation policies and initiatives."}]))))
+														 :summary				 "United States Chief Technology Officer Act<br /><br />Amends the National Science and Technology Policy, Organization, and Priorities Act of 1976 to authorize the President to appoint a United States Chief Technology Officer whose duties shall include advising the President and the Director of the Office of Science and Technology Policy on federal information systems, technology, data, and innovation policies and initiatives."}])))
+
+  (fact "Given a collection of topics containing the term Gun Rights, When the only bill has no summary, Then return no results"
+    (let [_ (Thread/sleep 3000)
+          results (gather-latest-bills-by-subject ["Gun Rights"])]
+      (empty? results) => true)))
