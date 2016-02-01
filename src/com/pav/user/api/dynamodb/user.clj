@@ -77,16 +77,20 @@
   {:next-page 0
    :results (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
 
-(defn add-bill-comment-count [{:keys [bill_id] :as event}]
-  (let [ccount (count (far/query client-opts dy/comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"}))]
-    (assoc event :comment_count ccount)))
+(defn add-bill-comment-count [{:keys [bill_id type] :as event}]
+  (if (= type "bill")
+    (let [ccount (count (far/query client-opts dy/comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"}))]
+     (assoc event :comment_count ccount))
+    event))
 
-(defn add-bill-vote-count [{:keys [bill_id] :as event}]
-  (let [vcount (far/get-item client-opts dy/vote-count-table-name {:bill_id bill_id}
-                             {:return [:yes-count :no-count]})]
-    (if vcount
-      (merge event vcount)
-      (merge event {:yes-count 0 :no-count 0}))))
+(defn add-bill-vote-count [{:keys [bill_id type] :as event}]
+  (if (= type "bill")
+    (let [vcount (far/get-item client-opts dy/vote-count-table-name {:bill_id bill_id}
+                   {:return [:yes-count :no-count]})]
+     (if vcount
+       (merge event vcount)
+       (merge event {:yes-count 0 :no-count 0})))
+    event))
 
 (defn get-user-feed [user_id]
   (let [empty-result-response {:next-page 0 :results []}
@@ -193,6 +197,8 @@ new ID assigned as issue_id and timestamp stored in table."
 (defn populate-followers-feed-table
   "Update followeres feed table when user publish particular issue."
   [user_id data]
+  ;;write to authors feed also.
+  (far/put-item client-opts dy/userfeed-table-name (assoc data :user_id user_id))
   (doseq [f (user-followers user_id)]
     ;; use follower id, since we are writing into 'their' table
     (let [follower-id (:user_id f)]

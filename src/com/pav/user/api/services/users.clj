@@ -326,16 +326,13 @@
                         :author_id user_id
                         :issue_id issue_id}
                        (select-keys user [:first_name :last_name :img_url])
-                       (select-keys details [:bill_id :article_link :article_title :article_img]))
-          ;; make sure only these fields are present
-          to-populate (select-keys to-populate [:article_link :article_img :article_title :author_id :bill_id :first_name
-                                                :img_url :issue_id :last_name :timestamp :type :user_id])]
+                       (select-keys details [:bill_id :article_link :article_title :article_img]))]
       ;; populate followers table as the last action
       (dynamo-dao/populate-followers-feed-table user_id to-populate)
       (merge
        details
        {:issue_id issue_id}
-       (select-keys user [:first_name :last_name :img_url]))))) 
+       (select-keys user [:first_name :last_name :img_url])))))
 
 (defn validate-user-issue-emotional-response
   "Check if emotional_response parameter is in valid range. Returns inverted logic

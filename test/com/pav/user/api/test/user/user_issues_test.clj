@@ -90,4 +90,19 @@
         => (contains {:article_title "Here’s the Deal: The Text of the Trans-Pacific Partnership — The Trans-Pacific Partnership"
                       :article_link  "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500"})
       (some nil? (vals response)) => nil))
+
+  (fact "Given new issue, Then new issue should be in the users feed."
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          _ (pav-req :put "/user/issue" token
+              {:bill_id "hr2-114"
+               :comment "Comment Body goes here"
+               :article_link "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500#.mn7t24yff"})
+          {status :status body :body} (pav-req :get "/user/feed" token {})
+          response (:results (ch/parse-string body true))]
+      status => 200
+      (count response) => 1
+      (some nil? (vals (first response))) => nil
+      (keys (first response)) => (contains [:first_name :issue_id :author_id :bill_id :article_title :type
+                                            :article_link :article_img :last_name :user_id :timestamp] :in-any-order)))
 )
