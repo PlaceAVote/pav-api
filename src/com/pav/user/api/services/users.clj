@@ -9,6 +9,7 @@
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email send-password-reset-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
                                                   account-settings indexable-profile]]
+            [com.pav.user.api.graph.graph-parser :as gp]
             [com.pav.user.api.s3.user :as s3]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
@@ -307,13 +308,17 @@
         new-img_url
         (catch Exception e (log/error "Error uploading Profile image. " e))))))
 
+(defn- merge-open-graph [body]
+  "If an article_link is present, then merge open graph data or return original body"
+  (if-let [url (:article_link body)]
+    (merge body (gp/extract-open-graph url))
+    body))
+
 (defn create-bill-issue
   "Create new bill issue, according to the details."
   [user_id details]
-  {:pre [(utils/has-keys? details [:bill_id :comment :article_link :article_title :article_img])]}
-
   (when-let [user (get-user-by-id user_id)]
-    (let [details (merge {:user_id user_id} details)
+    (let [details (merge {:user_id user_id} (merge-open-graph details))
           [issue_id timestamp] (dynamo-dao/create-bill-issue details)
           to-populate (merge
                        {:timestamp timestamp
@@ -340,6 +345,9 @@ so it can be fed to ':malformed?' handler."
    (when-let [resp (:emotional_response body)]
      (and (utils/has-only-keys? body [:emotional_response])
           (some #{resp} [1 0 -1])))))
+
+(defn validate-newissue-payload [payload]
+  (us/validate-new-issue-payload payload))
 
 (defn update-user-issue-emotional-response
   "Set emotional response for given issue_id."

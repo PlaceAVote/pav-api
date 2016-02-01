@@ -190,6 +190,8 @@
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
+  :malformed? (fn [ctx] (service/validate-newissue-payload (retrieve-body ctx)))
+  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors])))
   ;; see http://stackoverflow.com/questions/17765718/post-request-with-clojure-liberator
   ;; about using map to capture response and 
   ;; http://stackoverflow.com/questions/23723785/clojure-liberator-returning-json-from-a-put-request

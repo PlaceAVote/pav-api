@@ -14,7 +14,7 @@
 
    (fact "Add new issue"
      (let [{body :body} (pav-req :put "/user" test-user)
-           {token :token user_id :user_id } (ch/parse-string body true)
+           {token :token} (ch/parse-string body true)
            {status :status body :body} (pav-req :put "/user/issue" token
                                                 {:bill_id "hr2-114"
                                                  :comment "Comment Body goes here"
@@ -31,9 +31,19 @@
        ;; make sure all keys has values
        (some nil? (vals response)) => nil))
 
+  (fact "Given a new issue, When payload does not contain comment, Then throw 400"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {status :status} (pav-req :put "/user/issue" token
+                             {:bill_id "hr2-114"
+                              :article_link "http://medium.com/somethinginteresting"
+                              :article_title "Interesting Article"
+                              :article_img "http://medium.com/img/101"})]
+      status => 400))
+
    (fact "Add new emotional response"
      (let [{body :body} (pav-req :put "/user" test-user)
-           {token :token user_id :user_id } (ch/parse-string body true)
+           {token :token} (ch/parse-string body true)
            {status :status body :body} (pav-req :post "/user/issue/hr2-114/response" token
                                                 {:emotional_response 1})
            response (ch/parse-string body true)]
@@ -42,7 +52,7 @@
 
    (fact "Get emotional response"
      (let [{body :body} (pav-req :put "/user" test-user)
-           {token :token user_id :user_id } (ch/parse-string body true)
+           {token :token} (ch/parse-string body true)
            ;; save some data
            _ (pav-req :post "/user/issue/hr2-114/response" token {:emotional_response 1})
            ;; read it
@@ -53,14 +63,32 @@
 
    (fact "Invalid emotional_response in POST"
      (let [{body :body} (pav-req :put "/user" test-user)
-           {token :token user_id :user_id } (ch/parse-string body true)
-           {status :status body :body} (pav-req :post "/user/issue/hr2-114/response" token
+           {token :token} (ch/parse-string body true)
+           {status :status} (pav-req :post "/user/issue/hr2-114/response" token
                                                 {:emotional_response "junk"})]
        status => 400))
 
    (fact "No emotional_response in POST"
      (let [{body :body} (pav-req :put "/user" test-user)
-           {token :token user_id :user_id } (ch/parse-string body true)
-           {status :status body :body} (pav-req :post "/user/issue/hr2-114/response" token {})]
+           {token :token} (ch/parse-string body true)
+           {status :status} (pav-req :post "/user/issue/hr2-114/response" token {})]
        status => 400))
+
+  (fact "Given new issue, When article_link contains a resource with open graph data, Then parse and return graph data"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {status :status body :body} (pav-req :put "/user/issue" token
+                                        {:bill_id "hr2-114"
+                                         :comment "Comment Body goes here"
+                                         :article_link "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500#.mn7t24yff"})
+          response (ch/parse-string body true)]
+      status => 201
+      (keys response) => (contains [:user_id :first_name :last_name
+                                    :bill_id :comment :article_link :issue_id
+                                    :article_title :article_img] :in-any-order)
+      (select-keys response [:article_title :article_img :article_link])
+        => (contains {:article_title "Here’s the Deal: The Text of the Trans-Pacific Partnership — The Trans-Pacific Partnership"
+                      :article_link  "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500"
+                      :article_img   "https://cdn-images-1.medium.com/max/800/1*UvmT8RCXgLZWhniL90k0ig.png"})
+      (some nil? (vals response)) => nil))
 )

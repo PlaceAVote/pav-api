@@ -12,4 +12,4 @@
   (g/extract-open-graph "http://dsadsadasdsadasdasdasdas2321321.com") => nil)
 
 (fact "Given a url, When the resource doesn't contain open graph data, Then return nil"
-  (g/extract-open-graph "https://clojuredocs.org/") => nil) 
+  (g/extract-open-graph "https://clojuredocs.org/") => nil)
