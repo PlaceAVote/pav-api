@@ -88,7 +88,6 @@
                                     :article_title :article_img] :in-any-order)
       (select-keys response [:article_title :article_img :article_link])
         => (contains {:article_title "Here’s the Deal: The Text of the Trans-Pacific Partnership — The Trans-Pacific Partnership"
-                      :article_link  "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500"
-                      :article_img   "https://cdn-images-1.medium.com/max/800/1*UvmT8RCXgLZWhniL90k0ig.png"})
+                      :article_link  "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500"})
       (some nil? (vals response)) => nil))
 )
