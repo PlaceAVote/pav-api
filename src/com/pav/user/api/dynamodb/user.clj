@@ -194,16 +194,14 @@ new ID assigned as issue_id and timestamp stored in table."
                          details))
     [id timestamp]))
 
-(defn populate-followers-feed-table
-  "Update followeres feed table when user publish particular issue."
+(defn populate-user-and-followers-feed-table
+  "Populate given user and that users followers feed when user an publishes issue."
   [user_id data]
-  ;;write to authors feed also.
-  (far/put-item client-opts dy/userfeed-table-name (assoc data :user_id user_id))
-  (doseq [f (user-followers user_id)]
-    ;; use follower id, since we are writing into 'their' table
-    (let [follower-id (:user_id f)]
-      (far/put-item client-opts dy/userfeed-table-name
-                    (assoc data :user_id follower-id)))))
+  (let [author-event  (assoc data :user_id user_id)
+        follower-evts (->> (user-followers user_id)
+                           (map #(assoc data :user_id (:user_id %))))
+        follower-evts {:put (conj follower-evts author-event)}]
+    (far/batch-write-item client-opts {dy/userfeed-table-name follower-evts})))
 
 (defn update-user-issue-emotional-response [issue_id user_id response]
   (far/update-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id

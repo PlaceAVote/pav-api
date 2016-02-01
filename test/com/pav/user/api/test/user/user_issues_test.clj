@@ -104,5 +104,4 @@
       (count response) => 1
       (some nil? (vals (first response))) => nil
       (keys (first response)) => (contains [:first_name :issue_id :author_id :bill_id :article_title :type
-                                            :article_link :article_img :last_name :user_id :timestamp] :in-any-order)))
-)
+                                            :article_link :article_img :last_name :user_id :timestamp] :in-any-order))))

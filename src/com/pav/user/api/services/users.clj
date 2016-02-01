@@ -328,7 +328,7 @@
                        (select-keys user [:first_name :last_name :img_url])
                        (select-keys details [:bill_id :article_link :article_title :article_img]))]
       ;; populate followers table as the last action
-      (dynamo-dao/populate-followers-feed-table user_id to-populate)
+      (dynamo-dao/populate-user-and-followers-feed-table user_id to-populate)
       (merge
        details
        {:issue_id issue_id}
