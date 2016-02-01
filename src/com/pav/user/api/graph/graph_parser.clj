@@ -4,7 +4,12 @@
   (:import (java.net URL)))
 
 (defn- fetch-url [url]
-  (html/html-resource url))
+  (with-open [stream (-> (URL. url)
+                         .openConnection
+                         (doto (.setRequestProperty "User-Agent"
+                                 "Mozilla/5.0"))
+                         .getContent)]
+    (html/html-resource stream)))
 
 (defn- filter-props [meta-tags props]
   (filterv #(contains? props (get-in % [:attrs :property])) meta-tags))
@@ -26,7 +31,7 @@
 (defn extract-open-graph [url]
   "Extract Open Graph data from page if it exists, else return nil"
   (try
-    (-> (fetch-url (URL. url))
+    (-> (fetch-url url)
         (html/select [:head :meta])
         (filter-props #{"og:url" "og:title" "og:image"})
         merge-graph-content)
