@@ -117,6 +117,7 @@
         (= :img_url k) {k "A IMG URL is required for social media registerations and logins"}
 				(= :gender k) {k "Please specify a valid gender.  Valid values are male, female and they"}
 				(= :id k) {k "Please specify a facebook id"}
+				(= :comment k) {k "Please include a comment"}
 				:else {k "field is unknown"}))
 
 (defn construct-error-msg [errors]

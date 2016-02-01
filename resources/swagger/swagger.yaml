@@ -10,6 +10,22 @@ produces:
   - application/json
   - multipart/form-data
 parameters:
+  NewUserIssueParam:
+    name: NewUserIssue
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        comment:
+          type: string
+          format: string
+        bill_id:
+          type: string
+          format: string
+        article_link:
+          type: string
+          format: string
   AccountSettingsUpdateParam:
     name: AccountSettingsUpdate
     in: body
@@ -738,3 +754,24 @@ paths:
           description: Successful response
         '401':
           description: Token invalid
+  /user/issue:
+    put:
+      description: Create new user issue
+      parameters:
+        - $ref: "#/parameters/TokenParam"
+        - $ref: "#/parameters/NewUserIssueParam"
+      tags:
+        - Users
+      responses:
+        '201':
+          description: Successful response
+        '401':
+          description: Token invalid
+        '400':
+          description: Bad Request
+      
+    
+    
+    
+    
+    
