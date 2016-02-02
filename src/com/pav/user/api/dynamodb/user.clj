@@ -77,29 +77,36 @@
   {:next-page 0
    :results (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
 
-(defn add-bill-comment-count [{:keys [bill_id type] :as event}]
-  (if (= type "bill")
-    (let [ccount (count (far/query client-opts dy/comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"}))]
-     (assoc event :comment_count ccount))
-    event))
+(defn add-bill-comment-count [{:keys [bill_id] :as feed-event}]
+  "Count Bill comments associated with feed event."
+  (let [ccount (count (far/query client-opts dy/comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"}))]
+    (assoc feed-event :comment_count ccount)))
 
-(defn add-bill-vote-count [{:keys [bill_id type] :as event}]
-  (if (= type "bill")
-    (let [vcount (far/get-item client-opts dy/vote-count-table-name {:bill_id bill_id}
-                   {:return [:yes-count :no-count]})]
-     (if vcount
-       (merge event vcount)
-       (merge event {:yes-count 0 :no-count 0})))
-    event))
+(defn add-bill-vote-count [{:keys [bill_id] :as feed-event}]
+  "Count Bill votes associated with feed event."
+  (let [vcount (far/get-item client-opts dy/vote-count-table-name {:bill_id bill_id}
+                 {:return [:yes-count :no-count]})]
+    (if vcount
+      (merge feed-event vcount)
+      (merge feed-event {:yes-count 0 :no-count 0}))))
+
+(defmulti feed-meta-data
+  "Retrieve meta data for feed item by type"
+  :type)
+
+(defmethod feed-meta-data "bill" [feed-event]
+  (-> (add-bill-comment-count feed-event)
+      add-bill-vote-count))
+
+(defmethod feed-meta-data "userissue" [feed-event]
+  feed-event)
 
 (defn get-user-feed [user_id]
   (let [empty-result-response {:next-page 0 :results []}
         feed (far/query client-opts dy/userfeed-table-name {:user_id [:eq user_id]} {:limit 10 :order :desc})]
     (if (empty? feed)
       empty-result-response
-      (assoc empty-result-response :results (->> feed
-                                                 (mapv add-bill-comment-count)
-                                                 (mapv add-bill-vote-count))))))
+      (assoc empty-result-response :results (mapv feed-meta-data feed)))))
 
 (defn persist-to-newsfeed [events]
   (when events
