@@ -776,6 +776,8 @@ paths:
       parameters:
         - $ref: "#/parameters/TokenParam"
         - $ref: "#/parameters/IssueIDParam"
+      tags:
+        - Users
       responses:
         '200':
           description: Successful response
@@ -795,6 +797,8 @@ paths:
         - $ref: "#/parameters/TokenParam"
         - $ref: "#/parameters/IssueIDParam"
         - $ref: "#/parameters/IssueResponseBodyParam"
+      tags:
+        - Users
       responses:
         '201':
           description: Successful response

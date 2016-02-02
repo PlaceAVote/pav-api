@@ -1203,6 +1203,9 @@
             "$ref": "#/parameters/IssueIDParam"
           }
         ],
+        "tags": [
+          "Users"
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -1236,6 +1239,9 @@
           {
             "$ref": "#/parameters/IssueResponseBodyParam"
           }
+        ],
+        "tags": [
+          "Users"
         ],
         "responses": {
           "201": {
