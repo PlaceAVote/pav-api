@@ -13,6 +13,9 @@
 (defn merge-type-and-fields [hit]
 	(merge {:type (:_type hit)} (:_source hit)))
 
+(defn get-bill-info [bill_id]
+  (:_source (esd/get connection "congress" "bill" bill_id)))
+
 (defn search-for-term [terms]
 	(when terms
 		(->> (esrsp/hits-from

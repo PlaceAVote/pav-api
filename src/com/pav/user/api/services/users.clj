@@ -4,7 +4,7 @@
             [com.pav.user.api.utils.utils :as utils]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
-            [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject]]
+            [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject get-bill-info]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.user.api.mandril.mandril :refer [send-confirmation-email send-password-reset-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
@@ -314,11 +314,16 @@
     (merge body (gp/extract-open-graph url))
     body))
 
+(defn- retrieve-bill-title [bill_id]
+  "Given bill_id, Retrieve short_title if it exists or official_title."
+  (when-let [bill-info (get-bill-info bill_id)]
+    {:bill_title (or (:short_title bill-info) (:official_title bill-info))}))
+
 (defn create-bill-issue
   "Create new bill issue, according to the details."
   [user_id details]
   (when-let [user (get-user-by-id user_id)]
-    (let [details (merge {:user_id user_id} (merge-open-graph details))
+    (let [details (merge {:user_id user_id} (merge-open-graph details) (retrieve-bill-title (:bill_id details)))
           [issue_id timestamp] (dynamo-dao/create-bill-issue details)
           to-populate (merge
                        {:timestamp timestamp
@@ -326,7 +331,7 @@
                         :author_id user_id
                         :issue_id issue_id}
                        (select-keys user [:first_name :last_name :img_url])
-                       (select-keys details [:bill_id :article_link :article_title :article_img]))]
+                       (select-keys details [:bill_id :bill_title :article_link :article_title :article_img]))]
       ;; populate followers table as the last action
       (dynamo-dao/populate-user-and-followers-feed-table user_id to-populate)
       (merge

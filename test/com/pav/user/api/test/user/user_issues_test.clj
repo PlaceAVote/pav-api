@@ -3,6 +3,7 @@
   (:require [com.pav.user.api.test.utils.utils :refer [flush-redis
                                                        flush-dynamo-tables
                                                        flush-user-index
+                                                       bootstrap-bills
                                                        test-user
                                                        pav-req]]
             [cheshire.core :as ch]))
@@ -10,7 +11,8 @@
 (against-background [(before :facts (do
                                       (flush-dynamo-tables)
                                       (flush-redis)
-                                      (flush-user-index)))]
+                                      (flush-user-index)
+                                      (bootstrap-bills)))]
 
    (fact "Add new issue"
      (let [{body :body} (pav-req :put "/user" test-user)
@@ -26,7 +28,7 @@
        ;; part of response is :img_url, but midje is not able to take into account gaps present
        ;; on right side, but only left side, so this key is left out
        (keys response) => (contains [:user_id :first_name :last_name
-                                     :bill_id :comment :article_link :issue_id
+                                     :bill_id :bill_title :comment :article_link :issue_id
                                      :article_title :article_img] :in-any-order)
        ;; make sure all keys has values
        (some nil? (vals response)) => nil))
@@ -84,7 +86,7 @@
           response (ch/parse-string body true)]
       status => 201
       (keys response) => (contains [:user_id :first_name :last_name
-                                    :bill_id :comment :article_link :issue_id
+                                    :bill_id :bill_title :comment :article_link :issue_id
                                     :article_title :article_img] :in-any-order)
       (select-keys response [:article_title :article_img :article_link])
         => (contains {:article_title "Here’s the Deal: The Text of the Trans-Pacific Partnership — The Trans-Pacific Partnership"
@@ -103,5 +105,6 @@
       status => 200
       (count response) => 1
       (some nil? (vals (first response))) => nil
-      (keys (first response)) => (contains [:first_name :issue_id :author_id :bill_id :article_title :type
-                                            :article_link :article_img :last_name :user_id :timestamp] :in-any-order))))
+      (keys (first response)) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
+                                            :article_title :type :bill_id :bill_title
+                                            :article_link :article_img] :in-any-order))))

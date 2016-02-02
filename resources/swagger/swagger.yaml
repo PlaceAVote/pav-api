@@ -765,6 +765,42 @@ paths:
       responses:
         '201':
           description: Successful response
+          schema:
+            type: object
+            properties:
+              issue_id:
+                type: string
+                format: string
+              bill_id:
+                type: string
+                format: string
+              bill_title:
+                type: string
+                format: string
+              comment:
+                type: string
+                format: string
+              user_id:
+                type: string
+                format: string
+              first_name:
+                type: string
+                format: string
+              last_name:
+                type: string
+                format: string
+              img_url:
+                type: string
+                format: string
+              article_link:
+                type: string
+                format: string
+              article_img:
+                type: string
+                format: string
+              article_title:
+                type: string
+                format: string
         '401':
           description: Token invalid
         '400':
