@@ -3,7 +3,8 @@
 						[clojurewerkz.elastisch.rest.document :as esd]
 						[clojurewerkz.elastisch.rest.response :as esrsp]
 						[clojurewerkz.elastisch.query :as q]
-						[environ.core :refer [env]]))
+						[environ.core :refer [env]]
+            [taoensso.truss :refer [have]]))
 
 (def connection (connect (:es-url env)))
 
@@ -14,6 +15,7 @@
 	(merge {:type (:_type hit)} (:_source hit)))
 
 (defn get-bill-info [bill_id]
+  (have string? bill_id)
   (:_source (esd/get connection "congress" "bill" bill_id)))
 
 (defn search-for-term [terms]

@@ -207,9 +207,13 @@
   :malformed? (fn [ctx]
                 ;; make sure this is checked or will be triggered on GET too
                 (when (= :post (-> ctx :request :request-method))
-                  (-> ctx
-                      retrieve-body
-                      service/validate-user-issue-emotional-response)))
+                  (let [body-errors?   (-> ctx
+                                        retrieve-body
+                                        service/validate-user-issue-emotional-response)
+                        issue-exists? (service/user-issue-exist? issue_id)]
+                    (if (and (false? body-errors?) issue-exists?)
+                      false true))))
+  :exists? (service/user-issue-exist? issue_id)
   :post! (fn [ctx]
            {::user-issue-emotional-response
             (service/update-user-issue-emotional-response issue_id

@@ -214,3 +214,6 @@ new ID assigned as issue_id and timestamp stored in table."
                                                               :user_id user_id})
     (catch Exception e
       (log/errorf e "Error occured while getting emotional_response for '%s:%s'" issue_id user_id))))
+
+(defn get-user-issue [issue_id]
+  (first (far/query client-opts dy/user-issues-table-name {:issue_id [:eq issue_id]})))

@@ -316,8 +316,9 @@
 
 (defn- retrieve-bill-title [bill_id]
   "Given bill_id, Retrieve short_title if it exists or official_title."
-  (when-let [bill-info (get-bill-info bill_id)]
-    {:bill_title (or (:short_title bill-info) (:official_title bill-info))}))
+  (when bill_id
+    (when-let [bill-info (get-bill-info bill_id)]
+     {:bill_title (or (:short_title bill-info) (:official_title bill-info))})))
 
 (defn create-bill-issue
   "Create new bill issue, according to the details."
@@ -365,3 +366,6 @@ so it can be fed to ':malformed?' handler."
   [issue_id user_id]
   (select-keys (dynamo-dao/get-user-issue-emotional-response issue_id user_id)
                [:emotional_response]))
+
+(defn user-issue-exist? [issue_id]
+  (not (empty? (dynamo-dao/get-user-issue issue_id))))

@@ -33,6 +33,13 @@
        ;; make sure all keys has values
        (some nil? (vals response)) => nil))
 
+  (fact "Given a new issue, When payload only contains a comment, Then process issue"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {status :status} (pav-req :put "/user/issue" token
+                             {:comment "Comment goes here!!!"})]
+      status => 201))
+
   (fact "Given a new issue, When payload does not contain comment, Then throw 400"
     (let [{body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
@@ -43,22 +50,39 @@
                               :article_img "http://medium.com/img/101"})]
       status => 400))
 
-   (fact "Add new emotional response"
-     (let [{body :body} (pav-req :put "/user" test-user)
+   (fact "Add new emotional response, to existing issue"
+     (let [{body :body}   (pav-req :put "/user" test-user)
            {token :token} (ch/parse-string body true)
-           {status :status body :body} (pav-req :post "/user/issue/hr2-114/response" token
+           {body :body}   (pav-req :put "/user/issue" token
+                            {:bill_id "hr2-114"
+                             :comment "Goes here."
+                             :article_link "http://medium.com/somethinginteresting"
+                             :article_title "Interesting Article"
+                             :article_img "http://medium.com/img/101"})
+           {issue_id :issue_id} (ch/parse-string body true)
+           {status :status body :body} (pav-req :post (str "/user/issue/" issue_id "/response") token
                                                 {:emotional_response 1})
            response (ch/parse-string body true)]
        status => 201
        (:emotional_response response) => 1))
 
+  (fact "Add new emotional response, When issue_id is invalid, Then throw 400 error"
+    (let [{body :body}   (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {status :status} (pav-req :post "/user/issue/invalidID/response" token
+                             {:emotional_response 1})]
+      status => 400))
+
    (fact "Get emotional response"
      (let [{body :body} (pav-req :put "/user" test-user)
            {token :token} (ch/parse-string body true)
+           ;;create issue
+           {body :body}   (pav-req :put "/user/issue" token {:comment "Goes here."})
+           {issue_id :issue_id} (ch/parse-string body true)
            ;; save some data
-           _ (pav-req :post "/user/issue/hr2-114/response" token {:emotional_response 1})
+           _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response 1})
            ;; read it
-           {status :status body :body} (pav-req :get "/user/issue/hr2-114/response" token {})
+           {status :status body :body} (pav-req :get (str "/user/issue/" issue_id "/response") token {})
            response (ch/parse-string body true)]
        status => 200
        (:emotional_response response) => 1))
@@ -66,14 +90,18 @@
    (fact "Invalid emotional_response in POST"
      (let [{body :body} (pav-req :put "/user" test-user)
            {token :token} (ch/parse-string body true)
-           {status :status} (pav-req :post "/user/issue/hr2-114/response" token
+           {body :body}   (pav-req :put "/user/issue" token {:comment "Goes here."})
+           {issue_id :issue_id} (ch/parse-string body true)
+           {status :status} (pav-req :post (str "/user/issue/" issue_id "/response") token
                                                 {:emotional_response "junk"})]
        status => 400))
 
    (fact "No emotional_response in POST"
      (let [{body :body} (pav-req :put "/user" test-user)
            {token :token} (ch/parse-string body true)
-           {status :status} (pav-req :post "/user/issue/hr2-114/response" token {})]
+           {body :body}   (pav-req :put "/user/issue" token {:comment "Goes here."})
+           {issue_id :issue_id} (ch/parse-string body true)
+           {status :status} (pav-req :post (str "/user/issue/" issue_id "/response") token {})]
        status => 400))
 
   (fact "Given new issue, When article_link contains a resource with open graph data, Then parse and return graph data"
