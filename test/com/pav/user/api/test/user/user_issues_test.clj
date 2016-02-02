@@ -135,4 +135,17 @@
       (some nil? (vals (first response))) => nil
       (keys (first response)) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
                                             :article_title :type :bill_id :bill_title
-                                            :article_link :article_img] :in-any-order))))
+                                            :article_link :article_img] :in-any-order)))
+
+  (fact "Given new issue, When user responses positively, Then issue should have an emotional response for the given user."
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+          {issue_id :issue_id} (ch/parse-string body true)
+          _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response 1})
+          {status :status body :body} (pav-req :get "/user/feed" token {})
+          response (:results (ch/parse-string body true))]
+      status => 200
+      (count response) => 1
+      (some nil? (vals (first response))) => nil
+      (keys (first response)) => (contains [:emotional_response] :in-any-order))))

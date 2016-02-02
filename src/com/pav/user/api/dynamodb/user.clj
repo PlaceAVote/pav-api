@@ -92,21 +92,24 @@
 
 (defmulti feed-meta-data
   "Retrieve meta data for feed item by type"
-  :type)
+  (fn [event user_id]
+    (:type event)))
 
-(defmethod feed-meta-data "bill" [feed-event]
+(defmethod feed-meta-data "bill" [feed-event _]
   (-> (add-bill-comment-count feed-event)
       add-bill-vote-count))
 
-(defmethod feed-meta-data "userissue" [feed-event]
-  feed-event)
+(declare get-user-issue-emotional-response)
+
+(defmethod feed-meta-data "userissue" [feed-event user_id]
+  (merge feed-event (get-user-issue-emotional-response (:issue_id feed-event) user_id)))
 
 (defn get-user-feed [user_id]
   (let [empty-result-response {:next-page 0 :results []}
         feed (far/query client-opts dy/userfeed-table-name {:user_id [:eq user_id]} {:limit 10 :order :desc})]
     (if (empty? feed)
       empty-result-response
-      (assoc empty-result-response :results (mapv feed-meta-data feed)))))
+      (assoc empty-result-response :results (mapv #(feed-meta-data % user_id) feed)))))
 
 (defn persist-to-newsfeed [events]
   (when events
