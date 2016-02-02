@@ -107,6 +107,27 @@
         "format": "PAV_AUTH_TOKEN token"
       }
     },
+    "IssueIDParam": {
+      "name": "issue_id",
+      "in": "path",
+      "description": "Issue ID",
+      "required": true,
+      "type": "string"
+    },
+    "IssueResponseBodyParam": {
+      "name": "IssueResponse",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "emotional_response": {
+            "type": "number",
+            "format": "1, 0, -1"
+          }
+        }
+      }
+    },
     "UserIDParam": {
       "name": "user_id",
       "in": "path",
@@ -1164,6 +1185,73 @@
         "responses": {
           "200": {
             "description": "Successful response"
+          },
+          "401": {
+            "description": "Token invalid"
+          }
+        }
+      }
+    },
+    "/user/issue/{issue_id}/response": {
+      "get": {
+        "description": "Get users response to issue",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/IssueIDParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "emotional_response": {
+                  "type": "string",
+                  "format": "1, 0, -1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Token invalid"
+          }
+        }
+      },
+      "post": {
+        "description": "Get users response to issue",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/IssueIDParam"
+          },
+          {
+            "$ref": "#/parameters/IssueResponseBodyParam"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "emotional_response": {
+                  "type": "string",
+                  "format": "1, 0, -1"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "401": {
             "description": "Token invalid"
