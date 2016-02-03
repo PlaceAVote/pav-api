@@ -367,5 +367,11 @@ so it can be fed to ':malformed?' handler."
   (select-keys (dynamo-dao/get-user-issue-emotional-response issue_id user_id)
                [:emotional_response]))
 
+(defn delete-user-issue-emotional-response
+  "Delete emotional response for given issue_id and user_id"
+  [issue_id user_id]
+  (select-keys (dynamo-dao/delete-user-issue-emotional-response issue_id user_id)
+    [:emotional_response]))
+
 (defn user-issue-exist? [issue_id]
   (not (empty? (dynamo-dao/get-user-issue issue_id))))

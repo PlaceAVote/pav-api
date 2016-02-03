@@ -108,6 +108,23 @@
                                                 {:emotional_response "junk"})]
        status => 400))
 
+  (fact "Delete emotional_response"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          ;;create issue
+          {body :body}   (pav-req :put "/user/issue" token {:comment "Goes here."})
+          {issue_id :issue_id} (ch/parse-string body true)
+          ;;respond negatively
+          _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response "negative"})
+          ;;delete negative response
+          {delete-status :status} (pav-req :delete (str "/user/issue/" issue_id "/response") token {})
+          ;; read it
+          {status :status body :body} (pav-req :get (str "/user/issue/" issue_id "/response") token {})
+          response (ch/parse-string body true)]
+      delete-status => 204
+      status => 200
+      (:emotional_response response) => "none"))
+
    (fact "No emotional_response in POST"
      (let [{body :body} (pav-req :put "/user" test-user)
            {token :token} (ch/parse-string body true)

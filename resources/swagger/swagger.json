@@ -1228,7 +1228,7 @@
         }
       },
       "post": {
-        "description": "Get users response to issue",
+        "description": "Create a user response to issue",
         "parameters": [
           {
             "$ref": "#/parameters/TokenParam"
@@ -1245,6 +1245,40 @@
         ],
         "responses": {
           "201": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "emotional_response": {
+                  "type": "string",
+                  "format": "positive, neutral, negative, none"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Token invalid"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete users response to issue",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/IssueIDParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "204": {
             "description": "Successful response",
             "schema": {
               "type": "object",

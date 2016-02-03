@@ -74,6 +74,7 @@
   (PUT "/user/issue" [] user-issue)
   (POST "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (GET "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
+  (DELETE "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (route/resources "/")
   (route/not-found "Not Found"))
 

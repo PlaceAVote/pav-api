@@ -202,7 +202,7 @@
 
 (defresource user-issue-emotional-response [issue_id]
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
-  :allowed-methods [:get :post]
+  :allowed-methods [:get :post :delete]
   :available-media-types ["application/json"]
   :malformed? (fn [ctx]
                 ;; make sure this is checked or will be triggered on GET too
@@ -219,6 +219,8 @@
             (service/update-user-issue-emotional-response issue_id
                                                           (retrieve-token-user-id ctx)
                                                           (retrieve-body ctx))})
+  :delete! (fn [ctx]
+             (service/delete-user-issue-emotional-response issue_id (retrieve-token-user-id ctx)))
   :handle-created ::user-issue-emotional-response
   :handle-ok (fn [ctx]
                (service/get-user-issue-emotional-response issue_id
