@@ -102,9 +102,7 @@
 (declare get-user-issue-emotional-response)
 
 (defmethod feed-meta-data "userissue" [feed-event user_id]
-  (if-let [response (get-user-issue-emotional-response (:issue_id feed-event) user_id)]
-    (merge feed-event response)
-    (merge feed-event {:emotional_response "none"})))
+  (merge feed-event (get-user-issue-emotional-response (:issue_id feed-event) user_id)))
 
 (defn get-user-feed [user_id]
   (let [empty-result-response {:next-page 0 :results []}
@@ -222,8 +220,10 @@ new ID assigned as issue_id and timestamp stored in table."
 
 (defn get-user-issue-emotional-response [issue_id user_id]
   (try
-    (far/get-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id
-                                                              :user_id user_id})
+    (if-let [response (far/get-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id
+                                                                                    :user_id  user_id})]
+      response
+      {:emotional_response "none"})
     (catch Exception e
       (log/errorf e "Error occured while getting emotional_response for '%s:%s'" issue_id user_id))))
 

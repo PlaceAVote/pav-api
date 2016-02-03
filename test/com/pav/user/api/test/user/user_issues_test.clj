@@ -73,7 +73,7 @@
                              {:emotional_response "positive"})]
       status => 400))
 
-   (fact "Get emotional response"
+   (fact "Get emotional response, when user has responded negatively, Then return negative response"
      (let [{body :body} (pav-req :put "/user" test-user)
            {token :token} (ch/parse-string body true)
            ;;create issue
@@ -86,6 +86,18 @@
            response (ch/parse-string body true)]
        status => 200
        (:emotional_response response) => "negative"))
+
+  (fact "Get emotional response, when user hasn't responded, Then return none as emotional response"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          ;;create issue
+          {body :body}   (pav-req :put "/user/issue" token {:comment "Goes here."})
+          {issue_id :issue_id} (ch/parse-string body true)
+          ;; read it
+          {status :status body :body} (pav-req :get (str "/user/issue/" issue_id "/response") token {})
+          response (ch/parse-string body true)]
+      status => 200
+      (:emotional_response response) => "none"))
 
    (fact "Invalid emotional_response in POST"
      (let [{body :body} (pav-req :put "/user" test-user)
