@@ -1214,7 +1214,7 @@
               "properties": {
                 "emotional_response": {
                   "type": "string",
-                  "format": "1, 0, -1"
+                  "format": "positive, neutral, negative, none"
                 }
               }
             }
@@ -1251,7 +1251,7 @@
               "properties": {
                 "emotional_response": {
                   "type": "string",
-                  "format": "1, 0, -1"
+                  "format": "positive, neutral, negative, none"
                 }
               }
             }
@@ -1328,6 +1328,10 @@
                 "article_title": {
                   "type": "string",
                   "format": "string"
+                },
+                "emotional_response": {
+                  "type": "string",
+                  "format": "positive, neutral, negative, none"
                 }
               }
             }

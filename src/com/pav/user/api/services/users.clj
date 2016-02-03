@@ -337,7 +337,7 @@
       (dynamo-dao/populate-user-and-followers-feed-table user_id to-populate)
       (merge
        details
-       {:issue_id issue_id}
+       {:issue_id issue_id :emotional_response "none"}
        (select-keys user [:first_name :last_name :img_url])))))
 
 (defn validate-user-issue-emotional-response
@@ -347,7 +347,7 @@ so it can be fed to ':malformed?' handler."
   (not
    (when-let [resp (:emotional_response body)]
      (and (utils/has-only-keys? body [:emotional_response])
-          (some #{resp} [1 0 -1])))))
+          (some #{resp} ["positive" "neutral" "negative" "none"])))))
 
 (defn validate-newissue-payload [payload]
   (us/validate-new-issue-payload payload))

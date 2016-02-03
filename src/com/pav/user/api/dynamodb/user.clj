@@ -102,7 +102,9 @@
 (declare get-user-issue-emotional-response)
 
 (defmethod feed-meta-data "userissue" [feed-event user_id]
-  (merge feed-event (get-user-issue-emotional-response (:issue_id feed-event) user_id)))
+  (if-let [response (get-user-issue-emotional-response (:issue_id feed-event) user_id)]
+    (merge feed-event response)
+    (merge feed-event {:emotional_response "none"})))
 
 (defn get-user-feed [user_id]
   (let [empty-result-response {:next-page 0 :results []}

@@ -29,7 +29,7 @@
        ;; on right side, but only left side, so this key is left out
        (keys response) => (contains [:user_id :first_name :last_name
                                      :bill_id :bill_title :comment :article_link :issue_id
-                                     :article_title :article_img] :in-any-order)
+                                     :article_title :article_img :emotional_response] :in-any-order)
        ;; make sure all keys has values
        (some nil? (vals response)) => nil))
 
@@ -61,16 +61,16 @@
                              :article_img "http://medium.com/img/101"})
            {issue_id :issue_id} (ch/parse-string body true)
            {status :status body :body} (pav-req :post (str "/user/issue/" issue_id "/response") token
-                                                {:emotional_response 1})
+                                                {:emotional_response "positive"})
            response (ch/parse-string body true)]
        status => 201
-       (:emotional_response response) => 1))
+       (:emotional_response response) => "positive"))
 
   (fact "Add new emotional response, When issue_id is invalid, Then throw 400 error"
     (let [{body :body}   (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
           {status :status} (pav-req :post "/user/issue/invalidID/response" token
-                             {:emotional_response 1})]
+                             {:emotional_response "positive"})]
       status => 400))
 
    (fact "Get emotional response"
@@ -80,12 +80,12 @@
            {body :body}   (pav-req :put "/user/issue" token {:comment "Goes here."})
            {issue_id :issue_id} (ch/parse-string body true)
            ;; save some data
-           _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response 1})
+           _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response "negative"})
            ;; read it
            {status :status body :body} (pav-req :get (str "/user/issue/" issue_id "/response") token {})
            response (ch/parse-string body true)]
        status => 200
-       (:emotional_response response) => 1))
+       (:emotional_response response) => "negative"))
 
    (fact "Invalid emotional_response in POST"
      (let [{body :body} (pav-req :put "/user" test-user)
@@ -135,14 +135,14 @@
       (some nil? (vals (first response))) => nil
       (keys (first response)) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
                                             :article_title :type :bill_id :bill_title
-                                            :article_link :article_img] :in-any-order)))
+                                            :article_link :article_img :emotional_response] :in-any-order)))
 
   (fact "Given new issue, When user responses positively, Then issue should have an emotional response for the given user."
     (let [{body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
           {body :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
           {issue_id :issue_id} (ch/parse-string body true)
-          _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response 1})
+          _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response "neutral"})
           {status :status body :body} (pav-req :get "/user/feed" token {})
           response (:results (ch/parse-string body true))]
       status => 200
