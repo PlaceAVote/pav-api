@@ -80,6 +80,12 @@
 			(ch/parse-string pauls-followers true) => (contains {:user_id my_id :first_name "john" :last_name "stuff" :img_url nil
 																													 :follower_count 0})))
 
+	(fact "Follow a user, When that user is the same person, Then return 400 error."
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {user_id :user_id token :token} (ch/parse-string body true)
+          {status :status} (pav-req :put (str "/user/follow") token {:user_id user_id})]
+      status => 400))
+
 	(fact "Unfollow user"
 		(let [{follower :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string follower true)

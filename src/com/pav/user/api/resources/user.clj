@@ -150,6 +150,9 @@
 
 (defresource follow
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+  :malformed? (fn [ctx]
+                (if (= (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))
+                  true false))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
   :put! (fn [ctx] (service/follow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))))
