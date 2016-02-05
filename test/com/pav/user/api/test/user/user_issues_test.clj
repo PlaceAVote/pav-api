@@ -8,6 +8,9 @@
                                                        pav-req]]
             [cheshire.core :as ch]))
 
+(def follower {:email "peter@pl.com" :password "stuff2" :first_name "peter" :last_name "pan" :dob "05/10/1984"
+               :country_code "USA" :topics ["Defense"] :gender "male"})
+
 (against-background [(before :facts (do
                                       (flush-dynamo-tables)
                                       (flush-redis)
@@ -177,4 +180,20 @@
       status => 200
       (count response) => 1
       (some nil? (vals (first response))) => nil
-      (keys (first response)) => (contains [:emotional_response] :in-any-order))))
+      (keys (first response)) => (contains [:emotional_response] :in-any-order)))
+
+  (fact "Given a new issue, When user has followers, Then verify the issue appears in there feed."
+    (let [{body :body} (pav-req :put "/user" follower)
+          {follower_token :token} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user" test-user)
+          {token :token user_id :user_id} (ch/parse-string body true)
+          ;;follow user
+          _ (pav-req :put (str "/user/follow") follower_token {:user_id user_id})
+          ;;publish issue
+          _(pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+          ;;retrieve followers feed
+          {status :status body :body} (pav-req :get "/user/feed" follower_token {})
+          response (:results (ch/parse-string body true))]
+      status => 200
+      (count response) => 1
+      (some nil? (vals (first response))) => nil)))

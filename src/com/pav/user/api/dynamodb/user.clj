@@ -209,6 +209,9 @@ new ID assigned as issue_id and timestamp stored in table."
   [user_id data]
   (let [author-event  (assoc data :user_id user_id)
         follower-evts (->> (user-followers user_id)
+                           ;; Remove any followers with the same user_id.  Temporary fix to avoid the same issue we
+                           ;;discovered in development
+                           (remove #(= user_id (:user_id %)))
                            (map #(assoc data :user_id (:user_id %))))
         follower-evts {:put (conj follower-evts author-event)}]
     (far/batch-write-item client-opts {dy/userfeed-table-name follower-evts})))
