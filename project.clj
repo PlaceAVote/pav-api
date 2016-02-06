@@ -1,4 +1,4 @@
-(defproject pav-user-api "0.1.10"
+(defproject pav-user-api "0.1.11-SNAPSHOT"
   :description "User API for registering, authenticating and managing user profiles"
   :url "https://github.com/PlaceAVote/pav-user-api"
   :dependencies [[org.clojure/clojure "1.7.0"]
