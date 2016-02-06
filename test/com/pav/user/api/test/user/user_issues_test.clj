@@ -182,7 +182,7 @@
       (some nil? (vals (first response))) => nil
       (keys (first response)) => (contains [:emotional_response] :in-any-order)))
 
-  (fact "Given a new issue, When user has followers, Then verify the issue appears in there feed."
+  (fact "Given a new issue, When user has followers, Then verify the issue appears in the followers feed."
     (let [{body :body} (pav-req :put "/user" follower)
           {follower_token :token} (ch/parse-string body true)
           {body :body} (pav-req :put "/user" test-user)
@@ -196,4 +196,6 @@
           response (:results (ch/parse-string body true))]
       status => 200
       (count response) => 1
-      (some nil? (vals (first response))) => nil)))
+      (some nil? (vals (first response))) => nil
+      (keys (first response)) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
+                                            :comment :emotional_response :type] :in-any-order))))
