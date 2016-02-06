@@ -166,7 +166,7 @@
       (count response) => 1
       (some nil? (vals (first response))) => nil
       (keys (first response)) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
-                                            :article_title :type :bill_id :bill_title
+                                            :article_title :type :bill_id :bill_title :comment
                                             :article_link :article_img :emotional_response] :in-any-order)))
 
   (fact "Given new issue, When user responses positively, Then issue should have an emotional response for the given user."
