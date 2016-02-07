@@ -14,6 +14,7 @@
             [environ.core :refer [env]]
             [clojure.tools.logging :as log]
             [clojure.edn :as edn]
+            [clojure.string :refer [lower-case]]
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
@@ -68,7 +69,7 @@
   (POST "/user/authenticate" _ (authenticate :pav))
   (POST "/user/facebook/authenticate" _ (authenticate :facebook))
   (POST "/user/confirm/:confirm-token" [confirm-token] (confirm-user confirm-token))
-  (POST "/password/reset" [email] (reset-password email))
+  (POST "/password/reset" [email] (reset-password (lower-case email)))
   (POST "/password/reset/confirm" _ confirm-password-reset)
   (POST "/password/change" _ change-password)
   (PUT "/user/issue" [] user-issue)

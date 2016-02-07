@@ -24,6 +24,14 @@
 					{status :status} (pav-req :post "/user/authenticate" {:email (:email test-user) :password "password1"})]
 			status => 201))
 
+  (fact "Reset existing user password, When email contains Capital letters, Then treat it as case insensitve."
+    (let [_ (pav-req :put "/user" test-user)
+          _ (pav-req :post (str "/password/reset?email=" (clojure.string/upper-case (:email test-user))))
+          reset-token (redis-dao/retrieve-password-reset-token-by-useremail (:email test-user))
+          _ (pav-req :post "/password/reset/confirm" {:new_password "password1" :reset_token reset-token})
+          {status :status} (pav-req :post "/user/authenticate" {:email (:email test-user) :password "password1"})]
+      status => 201))
+
 	(fact "Reset existing user password, When given an invalid reset_token, Then return 401"
 		(let [_ (pav-req :put "/user" test-user)
 					_ (pav-req :post (str "/password/reset?email=" (:email test-user)))
