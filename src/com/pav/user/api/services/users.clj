@@ -55,8 +55,7 @@
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."
   [{:keys [user_id topics] :as profile}]
   (let [cached-bills (gather-cached-bills topics)
-        issues (->> (cached-issues (default-followers (:default-followers env)))
-                    (map #(assoc % :author_id (:user_id %))))
+        issues       (cached-issues (default-followers (:default-followers env)))
         feed-items (into cached-bills issues)]
     (if (seq feed-items)
       (dynamo-dao/persist-to-newsfeed
