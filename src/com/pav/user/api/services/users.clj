@@ -30,9 +30,8 @@
              bills)))))
 
 (declare get-user-by-email)
-
-(defn get-default-followers []
-  (when-let [follower-emails (:default-followers env)]
+(defn get-default-followers [followers]
+  (when-let [follower-emails followers]
     (->> (clojure.string/split follower-emails #",")
          (map get-user-by-email)
          (remove nil?))))
@@ -44,7 +43,7 @@
 (declare follow-user)
 (defn assign-default-followers [user_id]
   "For intial users, lets assign them some automatic followers and have the default followers follow them."
-  (doseq [f (default-followers)]
+  (doseq [f (default-followers (:default-followers env))]
     (log/info (str "Assigning default follower " (:user_id f) " to " user_id))
     (follow-user user_id (:user_id f))
     (follow-user (:user_id f) user_id)))
