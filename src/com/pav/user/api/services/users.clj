@@ -22,7 +22,7 @@
   "Retrieve cached bills that match previous topic arguments.  For performance purposes."
   (memo/ttl gather-latest-bills-by-subject :ttl/threshold 86400))
 
-(declare get-user-by-email)
+(declare get-user-by-email get-user-by-id follow-user construct-issue-feed-object)
 (defn- get-default-followers [followers]
   (when-let [follower-emails followers]
     (->> (clojure.string/split follower-emails #",")
@@ -33,7 +33,6 @@
   "Retrieve cached default followers for all new users."
   (memo/ttl get-default-followers :ttl/threshold 86400000))
 
-(declare follow-user)
 (defn- assign-default-followers [user_id]
   "For intial users, lets assign them some automatic followers and have the default followers follow them."
   (doseq [f (default-followers (:default-followers env))]
@@ -42,22 +41,22 @@
     (follow-user (:user_id f) user_id)))
 
 (defn get-default-issues
-  "Retrieve top 2 issues per default user"
+  "Retrieve top 2 issue events per user"
   [followers]
-  (-> (map #(dynamo-dao/get-issues-by-user (:user_id %) 2) followers)
-      flatten))
+  (->> (map #(dynamo-dao/get-issues-by-user (:user_id %) 2) followers)
+       flatten
+       (map #(construct-issue-feed-object (get-user-by-id (:user_id %)) %))))
 
 (def cached-issues
   "Retrieve cached issues from followers"
   (memo/ttl get-default-issues :ttl/threshold 86400000))
 
-(declare construct-issue-feed-object)
 (defn- pre-populate-newsfeed
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."
   [{:keys [user_id topics] :as profile}]
   (let [cached-bills (gather-cached-bills topics)
         issues (->> (cached-issues (default-followers (:default-followers env)))
-                    (map #(assoc % :user_id user_id :type "userissue")))
+                    (map #(assoc % :author_id (:user_id %))))
         feed-items (into cached-bills issues)]
     (if (seq feed-items)
       (dynamo-dao/persist-to-newsfeed
