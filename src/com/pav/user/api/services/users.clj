@@ -54,7 +54,7 @@
 
 (defn- add-timestamp [payload]
   (have map? payload)
-  (assoc payload :timestamp (.getTime (Timestamp. (+ (.getTime (Date.)) (* 600 1000))))))
+  (assoc payload :timestamp (.getTime (Timestamp. (+ (System/currentTimeMillis) (* 600 1000))))))
 
 (defn- pre-populate-newsfeed
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."
