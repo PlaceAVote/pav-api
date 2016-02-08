@@ -360,8 +360,7 @@
           to-populate (construct-issue-feed-object user new-issue)]
       ;; populate followers table as the last action
       (dynamo-dao/populate-user-and-followers-feed-table user_id to-populate)
-      (->(merge new-issue {:emotional_response "none"} (select-keys user [:first_name :last_name :img_url]))
-         (dissoc :positive_responses :negative_responses :neutral_responses)))))
+      (merge new-issue {:emotional_response "none"} (select-keys user [:first_name :last_name :img_url])))))
 
 (defn validate-user-issue-emotional-response
   "Check if emotional_response parameter is in valid range. Returns inverted logic

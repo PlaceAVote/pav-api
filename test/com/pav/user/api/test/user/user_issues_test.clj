@@ -32,7 +32,8 @@
        ;; on right side, but only left side, so this key is left out
        (keys response) => (contains [:user_id :first_name :last_name
                                      :bill_id :bill_title :comment :article_link :issue_id
-                                     :article_title :article_img :emotional_response] :in-any-order)
+                                     :article_title :article_img :emotional_response
+                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)
        ;; make sure all keys has values
        (some nil? (vals response)) => nil))
 
@@ -147,7 +148,8 @@
       status => 201
       (keys response) => (contains [:user_id :first_name :last_name
                                     :bill_id :bill_title :comment :article_link :issue_id
-                                    :article_title :article_img] :in-any-order)
+                                    :article_title :article_img :emotional_response
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)
       (select-keys response [:article_title :article_img :article_link])
         => (contains {:article_title "Here’s the Deal: The Text of the Trans-Pacific Partnership — The Trans-Pacific Partnership"
                       :article_link  "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500"})
@@ -167,7 +169,8 @@
       (some nil? (vals (first response))) => nil
       (keys (first response)) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
                                             :article_title :type :bill_id :bill_title :comment
-                                            :article_link :article_img :emotional_response] :in-any-order)))
+                                            :article_link :article_img :emotional_response
+                                            :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
   (fact "Given new issue, When user responses positively, Then issue should have an emotional response for the given user."
     (let [{body :body} (pav-req :put "/user" test-user)

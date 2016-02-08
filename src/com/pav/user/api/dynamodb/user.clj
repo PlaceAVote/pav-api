@@ -100,9 +100,11 @@
       add-bill-vote-count))
 
 (declare get-user-issue-emotional-response)
-
-(defmethod feed-meta-data "userissue" [feed-event user_id]
-  (merge feed-event (get-user-issue-emotional-response (:issue_id feed-event) user_id)))
+(declare get-user-issue-emotional-counts)
+(defmethod feed-meta-data "userissue" [{:keys [issue_id] :as feed-event} user_id]
+  (merge feed-event
+    (get-user-issue-emotional-response issue_id user_id)
+    (get-user-issue-emotional-counts   issue_id (:user_id feed-event))))
 
 (defn get-user-feed [user_id]
   (let [empty-result-response {:next-page 0 :results []}
@@ -229,6 +231,10 @@ new ID assigned as issue_id and timestamp stored in table."
       {:emotional_response "none"})
     (catch Exception e
       (log/errorf e "Error occured while getting emotional_response for '%s:%s'" issue_id user_id))))
+
+(defn get-user-issue-emotional-counts [issue_id user_id]
+  (far/get-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id user_id}
+    {:attrs [:positive_responses :neutral_responses :negative_responses]}))
 
 (defn delete-user-issue-emotional-response [issue_id user_id]
   (far/delete-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id
