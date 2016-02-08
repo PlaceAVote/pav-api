@@ -16,7 +16,8 @@
             [clojure.core.memoize :as memo]
             [taoensso.truss :refer [have]]
             [environ.core :refer [env]])
-  (:import (java.util Date UUID)))
+  (:import (java.util Date UUID)
+           (java.sql Timestamp)))
 
 (def gather-cached-bills
   "Retrieve cached bills that match previous topic arguments.  For performance purposes."
@@ -51,10 +52,14 @@
   "Retrieve cached issues from followers"
   (memo/ttl get-default-issues :ttl/threshold 86400000))
 
+(defn- add-timestamp [payload]
+  (have map? payload)
+  (assoc payload :timestamp (.getTime (Timestamp. (+ (.getTime (Date.)) (* 600 1000))))))
+
 (defn- pre-populate-newsfeed
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."
   [{:keys [user_id topics] :as profile}]
-  (let [cached-bills (gather-cached-bills topics)
+  (let [cached-bills (map add-timestamp (gather-cached-bills topics))
         issues       (cached-issues (default-followers (:default-followers env)))
         feed-items (into cached-bills issues)]
     (if (seq feed-items)

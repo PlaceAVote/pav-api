@@ -116,8 +116,8 @@
 (defn persist-to-newsfeed [events]
   (when events
     (log/info "Events being persisted to users newsfeed " events)
-    (doseq [evt events]
-      (far/put-item client-opts dy/userfeed-table-name (assoc evt :timestamp (.getTime (Date.)))))))
+    (far/batch-write-item client-opts
+      {dy/userfeed-table-name {:put events}})))
 
 (defn build-follow-profile [profile]
   (when profile
