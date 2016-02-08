@@ -44,7 +44,8 @@
 (defn get-default-issues
   "Retrieve top 2 issues per default user"
   [followers]
-  (map #(dynamo-dao/get-issues-by-user (:user_id %) 2) followers))
+  (-> (map #(dynamo-dao/get-issues-by-user (:user_id %) 2) followers)
+      flatten))
 
 (def cached-issues
   "Retrieve cached issues from followers"
@@ -56,7 +57,7 @@
   [{:keys [user_id topics] :as profile}]
   (let [cached-bills (gather-cached-bills topics)
         issues (->> (cached-issues (default-followers (:default-followers env)))
-                    (map #(construct-issue-feed-object profile %)))
+                    (map #(assoc % :user_id user_id :type "userissue")))
         feed-items (into cached-bills issues)]
     (if (seq feed-items)
       (dynamo-dao/persist-to-newsfeed
@@ -360,7 +361,6 @@
 (defn- construct-issue-feed-object
   "Given a user object and issue data, construct feed object for populating a users feed."
   [{:keys [user_id] :as user} {:keys [timestamp issue_id] :as issue-data}]
-  (log/info "Cached Issues Data " issue-data)
   (have map? user)
   (have map? issue-data)
   (merge
