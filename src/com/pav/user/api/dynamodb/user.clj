@@ -244,5 +244,5 @@ new ID assigned as issue_id and timestamp stored in table."
   (first (far/query client-opts dy/user-issues-table-name {:issue_id [:eq issue_id]})))
 
 (defn get-issues-by-user [user_id limit]
-  (far/query client-opts dy/user-issues-table-name {:user_id user_id}
+  (far/query client-opts dy/user-issues-table-name {:user_id [:eq user_id]}
     {:index "user-issues-idx" :limit limit}))
