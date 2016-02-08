@@ -21,32 +21,45 @@
   "Retrieve cached bills that match previous topic arguments.  For performance purposes."
   (memo/ttl gather-latest-bills-by-subject :ttl/threshold 86400))
 
-(defn- pre-populate-newsfeed [{:keys [user_id topics]}]
-  (let [bills (gather-cached-bills topics)]
-    (when (seq bills)
-      (dynamo-dao/persist-to-newsfeed
-       (mapv #(assoc % :event_id (.toString (UUID/randomUUID))
-                     :user_id user_id)
-             bills)))))
-
 (declare get-user-by-email)
-(defn get-default-followers [followers]
+(defn- get-default-followers [followers]
   (when-let [follower-emails followers]
     (->> (clojure.string/split follower-emails #",")
-         (map get-user-by-email)
-         (remove nil?))))
+      (map get-user-by-email)
+      (remove nil?))))
 
 (def default-followers
   "Retrieve cached default followers for all new users."
   (memo/ttl get-default-followers :ttl/threshold 86400000))
 
 (declare follow-user)
-(defn assign-default-followers [user_id]
+(defn- assign-default-followers [user_id]
   "For intial users, lets assign them some automatic followers and have the default followers follow them."
   (doseq [f (default-followers (:default-followers env))]
     (log/info (str "Assigning default follower " (:user_id f) " to " user_id))
     (follow-user user_id (:user_id f))
     (follow-user (:user_id f) user_id)))
+
+(defn get-default-issues
+  "Retrieve top 2 issues per default user"
+  [followers]
+  (map #(dynamo-dao/get-issues-by-user (:user_id %) 2) followers))
+
+(def cached-issues
+  "Retrieve cached issues from followers"
+  (memo/ttl get-default-issues :ttl/threshold 86400000))
+
+(declare construct-issue-feed-object)
+(defn- pre-populate-newsfeed
+  "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."
+  [{:keys [user_id topics]}]
+  (let [cached-bills (gather-cached-bills topics)
+        issues (->> (cached-issues (default-followers (:default-followers env)))
+                    (map #(construct-issue-feed-object user_id %)))
+        feed-items (into cached-bills issues)]
+    (if (seq feed-items)
+      (dynamo-dao/persist-to-newsfeed
+        (mapv #(assoc % :event_id (.toString (UUID/randomUUID)) :user_id user_id) feed-items)))))
 
 (defn- persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
@@ -54,11 +67,11 @@
     (try
       (dynamo-dao/create-user profile)
       (redis-dao/create-user-profile profile)
+      (assign-default-followers user_id)
       (pre-populate-newsfeed profile)
       (thread ;; Expensive call to mandril.  Execute in seperate thread.
        (index-user (indexable-profile profile))
-       (send-confirmation-email profile)
-       (assign-default-followers user_id))
+       (send-confirmation-email profile))
       (catch Exception e
         (log/errorf e "Error occured persisting user profile for '%s'" user_id)))
     profile))
