@@ -14,6 +14,7 @@
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
             [clojure.core.memoize :as memo]
+            [taoensso.truss :refer [have]]
             [environ.core :refer [env]])
   (:import (java.util Date UUID)))
 
@@ -359,6 +360,9 @@
 (defn- construct-issue-feed-object
   "Given a user object and issue data, construct feed object for populating a users feed."
   [{:keys [user_id] :as user} {:keys [timestamp issue_id] :as issue-data}]
+  (log/info "Cached Issues Data " issue-data)
+  (have map? user)
+  (have map? issue-data)
   (merge
     {:timestamp timestamp :type "userissue" :author_id user_id :issue_id issue_id}
     (select-keys user [:first_name :last_name :img_url])
