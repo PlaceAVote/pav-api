@@ -882,6 +882,15 @@ paths:
               emotional_response:
                 type: string
                 format: "positive, neutral, negative, none"
+              positive_responses:
+                type: number
+                format: number
+              neutral_responses:
+                type: number
+                format: number
+              negative_responses:
+                type: number
+                format: number
         '401':
           description: Token invalid
         '400':
