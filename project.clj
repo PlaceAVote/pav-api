@@ -95,5 +95,6 @@
                             :mandril-pwd-reset-template          "password-reset-template-dev"
                             :cdn-bucket-name                     "placeavote-cdn"
                             :cdn-url                             "https://cdn.placeavote.com"
-                            :s3-region                           "us-west-1"}
+                            :s3-region                           "us-west-1"
+                            :default-followers                   "wam@stuff.com,wam2@pl.com"}
              :plugins      [[lein-midje "3.1.3"]]}})

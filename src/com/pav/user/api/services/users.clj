@@ -29,6 +29,26 @@
                      :user_id user_id)
              bills)))))
 
+(declare get-user-by-email)
+
+(defn get-default-followers []
+  (when-let [follower-emails (:default-followers env)]
+    (->> (clojure.string/split follower-emails #",")
+         (map get-user-by-email)
+         (remove nil?))))
+
+(def default-followers
+  "Retrieve cached default followers for all new users."
+  (memo/ttl get-default-followers :ttl/threshold 86400000))
+
+(declare follow-user)
+(defn assign-default-followers [user_id]
+  "For intial users, lets assign them some automatic followers and have the default followers follow them."
+  (doseq [f (default-followers)]
+    (log/info (str "Assigning default follower " (:user_id f) " to " user_id))
+    (follow-user user_id (:user_id f))
+    (follow-user (:user_id f) user_id)))
+
 (defn- persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
   (when profile
@@ -38,7 +58,8 @@
       (pre-populate-newsfeed profile)
       (thread ;; Expensive call to mandril.  Execute in seperate thread.
        (index-user (indexable-profile profile))
-       (send-confirmation-email profile))
+       (send-confirmation-email profile)
+       (assign-default-followers user_id))
       (catch Exception e
         (log/errorf e "Error occured persisting user profile for '%s'" user_id)))
     profile))
@@ -242,17 +263,6 @@
    (if-let [profile (get-user-profile current-user user-viewing)]
      [true {:record profile}]
      [false {:error {:error_message "Not Authorized to view profile."}}])))
-
-;(defn authorized-to-view-profile?
-;  "Used to determine if the current user can view their profile or another users.
-;  Response includes response suitable for Liberator use."
-;  ([user_id]
-;    [true {:record (get-user-profile user_id)}])
-;  ([current-user user-viewing]
-;    (let [{:keys [public] :as user-profile} (get-user-profile current-user user-viewing)]
-;      (if public
-;        [true {:record user-profile}]
-;        [false {:error {:error_message "This profile is not available."}}]))))
 
 (defn- update-user-profile [user_id param-map]
   (-> (get-user-by-id user_id)
