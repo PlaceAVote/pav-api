@@ -343,25 +343,25 @@
     (when-let [bill-info (get-bill-info bill_id)]
      {:bill_title (or (:short_title bill-info) (:official_title bill-info))})))
 
+(defn- construct-issue-feed-object
+  "Given a user object and issue data, construct feed object for populating a users feed."
+  [{:keys [user_id] :as user} {:keys [timestamp issue_id] :as issue-data}]
+  (merge
+    {:timestamp timestamp :type "userissue" :author_id user_id :issue_id issue_id}
+    (select-keys user [:first_name :last_name :img_url])
+    (select-keys issue-data [:bill_id :bill_title :article_link :article_title :article_img :comment])))
+
 (defn create-bill-issue
   "Create new bill issue, according to the details."
   [user_id details]
   (when-let [user (get-user-by-id user_id)]
     (let [details (merge {:user_id user_id} (merge-open-graph details) (retrieve-bill-title (:bill_id details)))
-          [issue_id timestamp] (dynamo-dao/create-bill-issue details)
-          to-populate (merge
-                       {:timestamp timestamp
-                        :type "userissue"
-                        :author_id user_id
-                        :issue_id issue_id}
-                       (select-keys user [:first_name :last_name :img_url])
-                       (select-keys details [:bill_id :bill_title :article_link :article_title :article_img :comment]))]
+          new-issue (dynamo-dao/create-bill-issue details)
+          to-populate (construct-issue-feed-object user new-issue)]
       ;; populate followers table as the last action
       (dynamo-dao/populate-user-and-followers-feed-table user_id to-populate)
-      (merge
-       details
-       {:issue_id issue_id :emotional_response "none"}
-       (select-keys user [:first_name :last_name :img_url])))))
+      (->(merge new-issue {:emotional_response "none"} (select-keys user [:first_name :last_name :img_url]))
+         (dissoc :positive_responses :negative_responses :neutral_responses)))))
 
 (defn validate-user-issue-emotional-response
   "Check if emotional_response parameter is in valid range. Returns inverted logic

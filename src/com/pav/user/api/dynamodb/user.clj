@@ -194,15 +194,15 @@
 new ID assigned as issue_id and timestamp stored in table."
   [details]
   (let [id (.toString (UUID/randomUUID))
-        timestamp (.getTime (Date.))]
-    (far/put-item client-opts dy/user-issues-table-name
-                  (merge {:issue_id id
-                          :timestamp timestamp
-                          :positive_responses 0
-                          :neutral_responses 0
-                          :negative_responsed 0}
-                         details))
-    [id timestamp]))
+        timestamp (.getTime (Date.))
+        issue-data (merge {:issue_id id
+                           :timestamp timestamp
+                           :positive_responses 0
+                           :neutral_responses 0
+                           :negative_responses 0}
+                     details)]
+    (far/put-item client-opts dy/user-issues-table-name issue-data)
+    issue-data))
 
 (defn populate-user-and-followers-feed-table
   "Populate given user and that users followers feed when user an publishes issue."
