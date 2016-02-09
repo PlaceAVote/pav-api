@@ -172,7 +172,7 @@
                                             :article_link :article_img :emotional_response
                                             :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
-  (fact "Given new issue, When user responses positively, Then issue should have an emotional response for the given user."
+  (fact "Given new issue, When user responses positively, Then issue should have an emotional response for the given user in the feed item."
     (let [{body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
           {body :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
@@ -183,7 +183,8 @@
       status => 200
       (count response) => 1
       (some nil? (vals (first response))) => nil
-      (keys (first response)) => (contains [:emotional_response] :in-any-order)))
+      (keys (first response)) => (contains [:emotional_response] :in-any-order)
+      (:neutral_responses (first response)) => 1))
 
   (fact "Given a new issue, When user has followers, Then verify the issue appears in the followers feed."
     (let [{body :body} (pav-req :put "/user" follower)
