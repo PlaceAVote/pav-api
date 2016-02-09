@@ -352,9 +352,15 @@ definitions:
         type: string
         format: string
   FeedEventRecords:
-    type: array
-    items:
-      $ref: "#/definitions/FeedEventRecord"
+    type: object
+    properties:
+      last_timestamp:
+        type: number
+        format: number
+      results:
+        type: array
+        items:
+          $ref: "#/definitions/FeedEventRecord"
   FeedEventRecord:
     type: object
     properties:
