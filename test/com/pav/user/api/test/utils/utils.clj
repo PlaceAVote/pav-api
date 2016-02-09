@@ -11,6 +11,8 @@
            [clojurewerkz.elastisch.rest :refer [connect]]
            [clojurewerkz.elastisch.rest.index :as esi]
            [clojurewerkz.elastisch.rest.document :as esd]
+           [clojurewerkz.elastisch.rest.bulk :as erb]
+           [clojurewerkz.elastisch.common.bulk :as ecb]
            [clojure.edn :as edn]
            [com.pav.user.api.dynamodb.db :as db]))
 
@@ -35,8 +37,8 @@
                  (ch/parse-string (slurp "test-resources/bills/s25-114.json") true)])
 
 (defn bootstrap-bills []
-  (doseq [bill test-bills]
-    (esd/create es-connection "congress" "bill" bill :id (:bill_id bill))))
+  (erb/bulk-with-index-and-type es-connection "congress" "bill"
+    (ecb/bulk-index (map #(assoc % :_id (:bill_id %)) test-bills)) {:refresh true}))
 
 (def wizard-questions (edn/read-string (slurp "resources/questions.edn")))
 

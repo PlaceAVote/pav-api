@@ -14,11 +14,11 @@
 (against-background [(before :facts (do
                                       (flush-dynamo-tables)
                                       (flush-redis)
-                                      (flush-es-indexes)))]
+                                      (flush-es-indexes)
+                                      (bootstrap-bills)))]
 
    (fact "Add new issue"
-     (let [_ (bootstrap-bills)
-           {body :body} (pav-req :put "/user" test-user)
+     (let [{body :body} (pav-req :put "/user" test-user)
            {token :token} (ch/parse-string body true)
            {status :status body :body} (pav-req :put "/user/issue" token
                                                 {:bill_id "hr2-114"
@@ -138,8 +138,7 @@
        status => 400))
 
   (fact "Given new issue, When article_link contains a resource with open graph data, Then parse and return graph data"
-    (let [_ (bootstrap-bills)
-          {body :body} (pav-req :put "/user" test-user)
+    (let [{body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
           {status :status body :body} (pav-req :put "/user/issue" token
                                         {:bill_id "hr2-114"
@@ -157,22 +156,20 @@
       (some nil? (vals response)) => nil))
 
   (fact "Given new issue, Then new issue should be in the users feed."
-    (let [_ (bootstrap-bills)
-          {body :body} (pav-req :put "/user" test-user)
+    (let [{body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
           _ (pav-req :put "/user/issue" token
               {:bill_id "hr2-114"
                :comment "Comment Body goes here"
                :article_link "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500#.mn7t24yff"})
           {status :status body :body} (pav-req :get "/user/feed" token {})
-          response (:results (ch/parse-string body true))]
+          response (second (:results (ch/parse-string body true)))]
       status => 200
-      (count response) => 1
-      (some nil? (vals (first response))) => nil
-      (keys (first response)) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
-                                            :article_title :type :bill_id :bill_title :comment
-                                            :article_link :article_img :emotional_response
-                                            :positive_responses :negative_responses :neutral_responses] :in-any-order)))
+      (some nil? (vals response)) => nil
+      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
+                                    :article_title :type :bill_id :bill_title :comment
+                                    :article_link :article_img :emotional_response
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
   (fact "Given new issue, When user responses positively, Then issue should have an emotional response for the given user in the feed item."
     (let [{body :body} (pav-req :put "/user" test-user)
@@ -181,12 +178,11 @@
           {issue_id :issue_id} (ch/parse-string body true)
           _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response "neutral"})
           {status :status body :body} (pav-req :get "/user/feed" token {})
-          response (:results (ch/parse-string body true))]
+          response (second (:results (ch/parse-string body true)))]
       status => 200
-      (count response) => 1
-      (some nil? (vals (first response))) => nil
-      (keys (first response)) => (contains [:emotional_response] :in-any-order)
-      (:neutral_responses (first response)) => 1))
+      (some nil? (vals response)) => nil
+      (keys response) => (contains [:emotional_response] :in-any-order)
+      (:neutral_responses response) => 1))
 
   (fact "Given a new issue, When user has followers, Then verify the issue appears in the followers feed."
     (let [{body :body} (pav-req :put "/user" follower)
@@ -199,9 +195,8 @@
           _(pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
           ;;retrieve followers feed
           {status :status body :body} (pav-req :get "/user/feed" follower_token {})
-          response (:results (ch/parse-string body true))]
+          response (second (:results (ch/parse-string body true)))]
       status => 200
-      (count response) => 1
-      (some nil? (vals (first response))) => nil
-      (keys (first response)) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
-                                            :comment :emotional_response :type] :in-any-order))))
+      (some nil? (vals response)) => nil
+      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
+                                    :comment :emotional_response :type] :in-any-order))))

@@ -112,12 +112,14 @@
     (get-user-issue-emotional-counts   issue_id (:user_id feed-event))))
 
 (defn get-user-feed [user_id]
-  (let [empty-result-response {:next-page 0 :results []}
+  (let [empty-result-response {:last_timestamp 0 :results []}
         feed (far/query client-opts dy/userfeed-table-name {:user_id [:eq user_id]}
                {:limit 10 :span-reqs {:max 1} :order :desc})]
     (if (empty? feed)
       empty-result-response
-      (assoc empty-result-response :results (mapv #(feed-meta-data % user_id) feed)))))
+      (assoc empty-result-response
+        :last_timestamp (:timestamp (last feed))
+        :results (mapv #(feed-meta-data % user_id) feed)))))
 
 (defn persist-to-newsfeed [events]
   (when events
