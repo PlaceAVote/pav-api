@@ -376,9 +376,9 @@ definitions:
   TimelineEventRecords:
     type: object
     properties:
-      next-page:
+      last_timestamp:
         type: number
-        format: If equal to zero then there are no more results
+        format: number
       results:
         type: array
         items:
@@ -441,7 +441,7 @@ paths:
       description: Given a user ID then retrieve that users personal timeline
       parameters:
         - $ref: "#/parameters/UserIDParam"
-        - $ref: "#/parameters/PageParam"
+        - $ref: "#/parameters/FromParam"
         - $ref: "#/parameters/TokenParam"
       tags:
         - Users
@@ -484,7 +484,7 @@ paths:
     get:
       description: Given a user ID then retrieve that users personal timeline
       parameters:
-        - $ref: "#/parameters/PageParam"
+        - $ref: "#/parameters/FromParam"
         - $ref: "#/parameters/TokenParam"
       tags:
         - Users
