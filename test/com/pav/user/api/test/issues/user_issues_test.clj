@@ -199,4 +199,5 @@
       status => 200
       (some nil? (vals response)) => nil
       (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
-                                    :comment :emotional_response :type] :in-any-order))))
+                                    :comment :emotional_response :type
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order))))

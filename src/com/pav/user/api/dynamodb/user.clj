@@ -114,7 +114,7 @@
 (defmethod feed-meta-data "userissue" [{:keys [issue_id] :as feed-event} user_id]
   (merge feed-event
     (get-user-issue-emotional-response issue_id user_id)
-    (get-user-issue-emotional-counts   issue_id (:user_id feed-event))))
+    (get-user-issue-emotional-counts   issue_id (:author_id feed-event))))
 
 (defn get-user-feed [user_id & [from]]
   (let [empty-result-response {:last_timestamp 0 :results []}
