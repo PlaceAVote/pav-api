@@ -2,7 +2,7 @@
 	(:use midje.sweet)
 	(:require [com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables
 																											 flush-redis
-																											 flush-user-index
+																											 flush-es-indexes
 																											 bootstrap-bills
 																											 test-user
 																											 test-fb-user
@@ -13,7 +13,7 @@
 (against-background [(before :facts (do
 																			(flush-redis)
 																			(flush-dynamo-tables)
-																			(flush-user-index)
+																			(flush-es-indexes)
 																			(bootstrap-bills)))]
 
 	(fact "Reset existing user password"

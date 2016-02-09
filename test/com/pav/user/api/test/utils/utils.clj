@@ -70,7 +70,7 @@
 (defn create-comment [comment]
   (far/put-item client-opts db/comment-details-table-name comment))
 
-(defn flush-user-index []
+(defn flush-es-indexes []
   (try
     (esi/delete es-connection "pav")
     (esi/delete es-connection "congress")

@@ -2,7 +2,7 @@
 	(:use midje.sweet)
     (:require [com.pav.user.api.test.utils.utils :refer [flush-redis
                                                          flush-dynamo-tables
-                                                         flush-user-index
+                                                         flush-es-indexes
                                                          test-user
                                                          test-fb-user
                                                          bootstrap-bills
@@ -12,7 +12,7 @@
 (against-background [(before :facts (do
                                       (flush-dynamo-tables)
                                       (flush-redis)
-                                      (flush-user-index)
+                                      (flush-es-indexes)
                                       (bootstrap-bills)))]
 	(fact "Retrieve a users account settings"
 		(let [{body :body} (pav-req :put "/user" test-user)

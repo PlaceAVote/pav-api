@@ -2,7 +2,7 @@
 	(:use midje.sweet)
 	(:require [com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables
 																											 flush-redis
-																											 flush-user-index
+																											 flush-es-indexes
 																											 bootstrap-bills
 																											 test-user
 																											 test-fb-user
@@ -16,7 +16,7 @@
 (against-background [(before :facts (do
 																			(flush-dynamo-tables)
 																			(flush-redis)
-																			(flush-user-index)
+																			(flush-es-indexes)
 																			(bootstrap-bills)))]
 	(fact "Retrieve a users profile in relation to current user"
 		(let [{caller :body} (pav-req :put "/user" test-user)

@@ -1,10 +1,11 @@
 (ns com.pav.user.api.elasticsearch.user
-	(:require [clojurewerkz.elastisch.rest :refer [connect]]
-						[clojurewerkz.elastisch.rest.document :as esd]
-						[clojurewerkz.elastisch.rest.response :as esrsp]
-						[clojurewerkz.elastisch.query :as q]
-						[environ.core :refer [env]]
-            [taoensso.truss :refer [have]]))
+  (:require [clojurewerkz.elastisch.rest :refer [connect]]
+            [clojurewerkz.elastisch.rest.document :as esd]
+            [clojurewerkz.elastisch.rest.response :as esrsp]
+            [clojurewerkz.elastisch.query :as q]
+            [environ.core :refer [env]]
+            [taoensso.truss :refer [have]]
+            [clojure.tools.logging :as log]))
 
 (def connection (connect (:es-url env)))
 
@@ -19,15 +20,17 @@
   (:_source (esd/get connection "congress" "bill" bill_id)))
 
 (defn search-for-term [terms]
-	(when terms
-		(->> (esrsp/hits-from
-					 (esd/search connection "congress" "bill"
-						 :query (q/terms :keywords terms)
-						 :_source [:subject :bill_id :official_title :short_title :popular_title :summary]
-						 :sort  {:updated_at "desc"}))
-			(mapv merge-type-and-fields)
-      (filterv (fn [{summary :summary}]
-                 (not (= summary "No Summary Present...")))))))
+  (try
+    (when terms
+     (->> (esrsp/hits-from
+            (esd/search connection "congress" "bill"
+              :query (q/terms :keywords terms)
+              :_source [:subject :bill_id :official_title :short_title :popular_title :summary]
+              :sort {:updated_at "desc"}))
+       (mapv merge-type-and-fields)
+       (filterv (fn [{summary :summary}]
+                  (not (= summary "No Summary Present..."))))))
+    (catch Exception e (log/error (str "Error occured search for bills by term " e)))))
 
 (defn to-govtrack-subjects [topic]
 	(case topic

@@ -3,7 +3,7 @@
 	(:require [cheshire.core :as ch]
 						[com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables
 																											 flush-redis
-																											 flush-user-index
+																											 flush-es-indexes
 																											 bootstrap-bills
 																											 test-user
 																											 pav-req]]))
@@ -11,7 +11,7 @@
 (against-background [(before :facts (do
 																			(flush-redis)
 																			(flush-dynamo-tables)
-																			(flush-user-index)
+																			(flush-es-indexes)
 																			(bootstrap-bills)))]
 	(fact "Verify the JWT Token"
 		(let [{follower :body} (pav-req :put "/user" test-user)

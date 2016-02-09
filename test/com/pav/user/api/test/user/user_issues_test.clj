@@ -2,7 +2,7 @@
   (:use midje.sweet)
   (:require [com.pav.user.api.test.utils.utils :refer [flush-redis
                                                        flush-dynamo-tables
-                                                       flush-user-index
+                                                       flush-es-indexes
                                                        bootstrap-bills
                                                        test-user
                                                        pav-req]]
@@ -14,11 +14,11 @@
 (against-background [(before :facts (do
                                       (flush-dynamo-tables)
                                       (flush-redis)
-                                      (flush-user-index)
-                                      (bootstrap-bills)))]
+                                      (flush-es-indexes)))]
 
    (fact "Add new issue"
-     (let [{body :body} (pav-req :put "/user" test-user)
+     (let [_ (bootstrap-bills)
+           {body :body} (pav-req :put "/user" test-user)
            {token :token} (ch/parse-string body true)
            {status :status body :body} (pav-req :put "/user/issue" token
                                                 {:bill_id "hr2-114"
@@ -138,7 +138,8 @@
        status => 400))
 
   (fact "Given new issue, When article_link contains a resource with open graph data, Then parse and return graph data"
-    (let [{body :body} (pav-req :put "/user" test-user)
+    (let [_ (bootstrap-bills)
+          {body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
           {status :status body :body} (pav-req :put "/user/issue" token
                                         {:bill_id "hr2-114"
@@ -156,7 +157,8 @@
       (some nil? (vals response)) => nil))
 
   (fact "Given new issue, Then new issue should be in the users feed."
-    (let [{body :body} (pav-req :put "/user" test-user)
+    (let [_ (bootstrap-bills)
+          {body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
           _ (pav-req :put "/user/issue" token
               {:bill_id "hr2-114"

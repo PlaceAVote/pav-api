@@ -4,7 +4,7 @@
             [com.pav.user.api.test.utils.utils :refer [make-request parse-response-body
 																											 flush-dynamo-tables
                                                        flush-redis
-                                                       flush-user-index
+                                                       flush-es-indexes
                                                        bootstrap-bills
 																											 test-user
 																											 test-fb-user
@@ -17,7 +17,7 @@
 (against-background [(before :facts (do
                                       (flush-dynamo-tables)
                                       (flush-redis)
-                                      (flush-user-index)
+                                      (flush-es-indexes)
                                       (bootstrap-bills)))]
 
    (fact "Create a new user, will return 201 status and newly created token"

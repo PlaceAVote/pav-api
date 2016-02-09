@@ -4,7 +4,7 @@
 																											 persist-notification-event
 																											 flush-dynamo-tables
 																											 flush-redis
-																											 flush-user-index
+																											 flush-es-indexes
 																											 test-user
 																											 bootstrap-bills]]
 						[cheshire.core :as ch]))
@@ -12,7 +12,7 @@
 (against-background [(before :facts (do
 																			(flush-redis)
 																			(flush-dynamo-tables)
-																			(flush-user-index)
+																			(flush-es-indexes)
 																			(bootstrap-bills)))]
 	(fact "Make a websocket connection to the websocket notification endpoint")
 
