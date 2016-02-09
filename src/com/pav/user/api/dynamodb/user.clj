@@ -77,10 +77,15 @@
       (far/update-item client-opts dy/notification-table-name notification
         {:update-map {:read [:put true]}}))))
 
-(defn get-user-timeline [user_id]
-  {:next-page 0
-   :results (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]}
-              {:order :desc :limit 10 :span-reqs {:max 1}})})
+(defn get-user-timeline [user_id & [from]]
+  (let [empty-result-response {:last_timestamp 0 :results []}
+        opts (merge
+               {:limit 10 :span-reqs {:max 1} :order :desc}
+               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))
+        timeline (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]} opts)]
+    (if (empty? timeline)
+      empty-result-response
+      (assoc empty-result-response :last_timestamp (:timestamp (last timeline)) :results timeline))))
 
 (defn add-bill-comment-count [{:keys [bill_id] :as feed-event}]
   "Count Bill comments associated with feed event."

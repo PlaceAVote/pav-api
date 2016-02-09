@@ -126,14 +126,14 @@
   :post! (fn [ctx] (let [{token :reset_token password :new_password} (retrieve-body ctx)]
                      (service/confirm-password-reset token password))))
 
-(defresource timeline
+(defresource timeline [from]
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :handle-ok (fn [ctx]
                (if-not (nil? (retrieve-request-param ctx :user_id))
-                 (service/get-timeline (retrieve-request-param ctx :user_id) (retrieve-page-param ctx))
-                 (service/get-timeline (retrieve-token-user-id ctx) (retrieve-page-param ctx)))))
+                 (service/get-timeline (retrieve-request-param ctx :user_id) from)
+                 (service/get-timeline (retrieve-token-user-id ctx) from))))
 
 (defresource feed [from]
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))

@@ -215,7 +215,7 @@
   (dynamo-dao/mark-notification id))
 
 (defn get-timeline [user from]
-  (dynamo-dao/get-user-timeline user))
+  (dynamo-dao/get-user-timeline user from))
 
 (defn get-feed [user & [from]]
   (dynamo-dao/get-user-feed user from))
