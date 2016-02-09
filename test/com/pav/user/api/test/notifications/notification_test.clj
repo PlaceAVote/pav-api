@@ -1,4 +1,4 @@
-(ns com.pav.user.api.test.user.notification-test
+(ns com.pav.user.api.test.notifications.notification-test
 	(:use midje.sweet)
 	(:require [com.pav.user.api.test.utils.utils :refer [pav-req
 																											 persist-notification-event

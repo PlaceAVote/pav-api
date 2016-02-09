@@ -1,4 +1,4 @@
-(ns com.pav.user.api.test.user.wizard-test
+(ns com.pav.user.api.test.wizard.wizard-test
   (:use midje.sweet)
   (:require [cheshire.core :refer [parse-string]]
             [com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables flush-redis

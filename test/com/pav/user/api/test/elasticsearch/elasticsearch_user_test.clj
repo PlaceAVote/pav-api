@@ -1,4 +1,4 @@
-(ns com.pav.user.api.test.user.elasticsearch-user-test
+(ns com.pav.user.api.test.elasticsearch.elasticsearch-user-test
   (:use [midje.sweet])
   (:require [com.pav.user.api.elasticsearch.user :as eu :refer [index-user
 																																gather-latest-bills-by-subject]]

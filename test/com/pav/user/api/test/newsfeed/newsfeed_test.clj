@@ -1,4 +1,4 @@
-(ns com.pav.user.api.test.user.newsfeed-test
+(ns com.pav.user.api.test.newsfeed.newsfeed-test
   (:use midje.sweet)
   (:require [cheshire.core :as ch]
             [com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables

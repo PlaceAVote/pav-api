@@ -1,4 +1,4 @@
-(ns com.pav.user.api.test.user.redis-test
+(ns com.pav.user.api.test.redis.redis-test
   (:use midje.sweet)
   (:require [com.pav.user.api.test.utils.utils :refer [flush-redis]]
             [com.pav.user.api.redis.redis :refer [create-user-profile get-user-profile get-user-profile-by-email

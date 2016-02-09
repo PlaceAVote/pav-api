@@ -1,4 +1,4 @@
-(ns com.pav.user.api.test.user.timeline-test
+(ns com.pav.user.api.test.timeline.timeline-test
 	(:use midje.sweet)
 	(:require [cheshire.core :as ch]
 						[com.pav.user.api.test.utils.utils :refer [make-request parse-response-body

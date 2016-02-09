@@ -1,4 +1,4 @@
-(ns com.pav.user.api.test.user.user-issues-test
+(ns com.pav.user.api.test.issues.user-issues-test
   (:use midje.sweet)
   (:require [com.pav.user.api.test.utils.utils :refer [flush-redis
                                                        flush-dynamo-tables
