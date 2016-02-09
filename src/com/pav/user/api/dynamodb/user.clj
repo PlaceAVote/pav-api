@@ -43,13 +43,15 @@
 
 (defn update-user-token [user_id new-token]
   (try
-    (far/update-item client-opts dy/user-table-name {:user_id user_id} {:token [:put (:token new-token)]})
+    (far/update-item client-opts dy/user-table-name {:user_id user_id}
+      {:update-map {:token [:put (:token new-token)]}})
     (catch Exception e (log/info (str "Error occured updating user token " e)))))
 
 (defn update-facebook-user-token [user_id new-facebook-token new-token]
   (try
-    (far/update-item client-opts dy/user-table-name {:user_id user_id} {:token          [:put (:token new-token)]
-                                                                     :facebook_token [:put new-facebook-token]})
+    (far/update-item client-opts dy/user-table-name {:user_id user_id}
+      {:update-map {:token          [:put (:token new-token)]
+                    :facebook_token [:put new-facebook-token]}})
     (catch Exception e (log/info (str "Error occured updating user token " e)))))
 
 (defn get-confirmation-token [token]
@@ -59,7 +61,8 @@
   (try
     (let [{user_id :user_id} (get-confirmation-token token)]
       (if-not (empty? user_id)
-        (far/update-item client-opts dy/user-table-name {:user_id user_id} {:registered [:put true]})))
+        (far/update-item client-opts dy/user-table-name {:user_id user_id}
+          {:update-map {:registered [:put true]}})))
     (catch Exception e (log/info (str "Error occured updating registeration status for token " token " " e)))))
 
 (defn get-notifications [user_id]
@@ -71,7 +74,8 @@
                       (far/query client-opts dy/notification-table-name {:notification_id [:eq id]}
                                  {:index "notification_id-idx" :return [:user_id :timestamp]}))]
     (when notification
-      (far/update-item client-opts dy/notification-table-name notification {:read [:put true]}))))
+      (far/update-item client-opts dy/notification-table-name notification
+        {:update-map {:read [:put true]}}))))
 
 (defn get-user-timeline [user_id]
   {:next-page 0
@@ -168,17 +172,18 @@
 
 (defn update-user-password [user_id password]
   (far/update-item client-opts dy/user-table-name {:user_id user_id}
-                   {:password [:put password]}))
+    {:update-map {:password [:put password]}}))
 
 (defn update-account-settings [user_id param-map]
   (far/update-item client-opts dy/user-table-name {:user_id user_id}
-                   (into {}
-                         (for [[k v] param-map]
-                           [k [:put v]]))))
+    {:update-map
+     (into {}
+       (for [[k v] param-map]
+         [k [:put v]]))}))
 
 (defn assign-facebook-id [user_id facebook_id]
   (far/update-item client-opts dy/user-table-name {:user_id user_id}
-                   {:facebook_id [:put facebook_id]}))
+    {:update-map {:facebook_id [:put facebook_id]}}))
 
 (defn bootstrap-wizard-questions [questions]
   (far/batch-write-item client-opts
@@ -219,9 +224,8 @@ new ID assigned as issue_id and timestamp stored in table."
     (far/batch-write-item client-opts {dy/userfeed-table-name follower-evts})))
 
 (defn update-user-issue-emotional-response [issue_id user_id response]
-  (far/update-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id
-                                                               :user_id user_id}
-                   {:emotional_response [:put response]}))
+  (far/update-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id user_id}
+    {:update-map {:emotional_response [:put response]}}))
 
 (defn get-user-issue-emotional-response [issue_id user_id]
   (try

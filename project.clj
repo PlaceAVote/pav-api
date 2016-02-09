@@ -23,7 +23,6 @@
                                                     com.sun.jmx/jmxri]]
                  [com.taoensso/carmine "2.12.0" :exclusions [org.clojure/data.json
                                                              org.clojure/tools.reader]]
-                 [com.taoensso/faraday "1.8.0" :exclusions [org.clojure/tools.reader]]
                  [clojure-msgpack "1.1.2"]
                  [clojurewerkz/elastisch "2.2.0-beta4"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
@@ -32,7 +31,12 @@
                  [org.clojure/core.memoize "0.5.8"]
 								 [amazonica "0.3.48"]
                  [enlive "1.1.6"]
-                 [com.taoensso/truss "1.0.0"]]
+                 [com.taoensso/truss "1.0.0"]
+                 [com.taoensso/faraday "1.9.0-beta1" :exclusions [joda-time
+                                                                  com.amazonaws/aws-java-sdk-s3
+                                                                  com.amazonaws/aws-java-sdk-kms
+                                                                  com.amazonaws/aws-java-sdk-core]]
+                 [com.taoensso/encore "2.33.0"]]
   :plugins [[lein-environ "1.0.0"]
 						[lein-release "1.0.5"]
             [lein-essthree "0.2.1"]]

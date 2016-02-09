@@ -5,13 +5,15 @@
                                                          flush-user-index
                                                          test-user
                                                          test-fb-user
+                                                         bootstrap-bills
                                                          pav-req]]
               [cheshire.core :as ch]))
 
 (against-background [(before :facts (do
                                       (flush-dynamo-tables)
                                       (flush-redis)
-                                      (flush-user-index)))]
+                                      (flush-user-index)
+                                      (bootstrap-bills)))]
 	(fact "Retrieve a users account settings"
 		(let [{body :body} (pav-req :put "/user" test-user)
               {token :token user_id :user_id} (ch/parse-string body true)
@@ -75,9 +77,9 @@
 
 	(fact "Try updating users email address.  Ensure you can login with new email address"
 		(let [{body :body} (pav-req :put "/user" test-user)
-              {token :token} (ch/parse-string body true)
-              _ (pav-req :post "/user/me/settings" token {:email "newemail@placeavote.com"})
-              {status :status} (pav-req :post "/user/authenticate" {:email "newemail@placeavote.com" :password (:password test-user)})]
+          {token :token} (ch/parse-string body true)
+          _ (pav-req :post "/user/me/settings" token {:email "newemail@placeavote.com"})
+          {status :status} (pav-req :post "/user/authenticate" {:email "newemail@placeavote.com" :password (:password test-user)})]
           status => 201))
 
 	(fact "Try updating user with empty payload. Ensure user remains untouched"
