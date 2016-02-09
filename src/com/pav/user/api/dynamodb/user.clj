@@ -79,7 +79,8 @@
 
 (defn get-user-timeline [user_id]
   {:next-page 0
-   :results (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
+   :results (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]}
+              {:order :desc :limit 10 :span-reqs {:max 1}})})
 
 (defn add-bill-comment-count [{:keys [bill_id] :as feed-event}]
   "Count Bill comments associated with feed event."
@@ -112,7 +113,8 @@
 
 (defn get-user-feed [user_id]
   (let [empty-result-response {:next-page 0 :results []}
-        feed (far/query client-opts dy/userfeed-table-name {:user_id [:eq user_id]} {:limit 10 :order :desc})]
+        feed (far/query client-opts dy/userfeed-table-name {:user_id [:eq user_id]}
+               {:limit 10 :span-reqs {:max 1} :order :desc})]
     (if (empty? feed)
       empty-result-response
       (assoc empty-result-response :results (mapv #(feed-meta-data % user_id) feed)))))
