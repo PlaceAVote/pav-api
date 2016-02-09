@@ -1,7 +1,7 @@
 (defproject pav-user-api "0.1.15-SNAPSHOT"
   :description "User API for registering, authenticating and managing user profiles"
   :url "https://github.com/PlaceAVote/pav-user-api"
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [compojure "1.1.6"]
                  [hiccup "1.0.5"]
                  [ring-server "0.3.1"]
