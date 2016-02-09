@@ -54,7 +54,7 @@
 
 (defn- add-timestamp [payload]
   (have map? payload)
-  (assoc payload :timestamp (.getTime (Timestamp. (+ (System/currentTimeMillis) (* 600 1000))))))
+  (assoc payload :timestamp (.getTime (Timestamp. (+ (System/nanoTime) (* 600 1000))))))
 
 (defn- pre-populate-newsfeed
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."
@@ -217,8 +217,8 @@
 (defn get-timeline [user from]
   (dynamo-dao/get-user-timeline user))
 
-(defn get-feed [user]
-  (dynamo-dao/get-user-feed user))
+(defn get-feed [user & [from]]
+  (dynamo-dao/get-user-feed user from))
 
 (defn publish-to-timeline [event]
   (redis-dao/publish-to-timeline event))

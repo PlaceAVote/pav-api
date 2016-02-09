@@ -111,10 +111,12 @@
     (get-user-issue-emotional-response issue_id user_id)
     (get-user-issue-emotional-counts   issue_id (:user_id feed-event))))
 
-(defn get-user-feed [user_id]
+(defn get-user-feed [user_id & [from]]
   (let [empty-result-response {:last_timestamp 0 :results []}
-        feed (far/query client-opts dy/userfeed-table-name {:user_id [:eq user_id]}
-               {:limit 10 :span-reqs {:max 1} :order :desc})]
+        opts (merge
+               {:limit 10 :span-reqs {:max 1} :order :desc}
+               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))
+        feed (far/query client-opts dy/userfeed-table-name {:user_id [:eq user_id]} opts)]
     (if (empty? feed)
       empty-result-response
       (assoc empty-result-response

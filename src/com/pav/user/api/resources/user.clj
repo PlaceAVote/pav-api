@@ -135,11 +135,13 @@
                  (service/get-timeline (retrieve-request-param ctx :user_id) (retrieve-page-param ctx))
                  (service/get-timeline (retrieve-token-user-id ctx) (retrieve-page-param ctx)))))
 
-(defresource feed
+(defresource feed [from]
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok (fn [ctx] (service/get-feed (retrieve-token-user-id ctx))))
+  :handle-ok (fn [ctx] (if from
+                         (service/get-feed (retrieve-token-user-id ctx) from)
+                         (service/get-feed (retrieve-token-user-id ctx)))))
 
 (defresource questions
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))

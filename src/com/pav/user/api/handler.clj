@@ -48,7 +48,7 @@
   (GET "/user/me/profile" [] user-profile)
   (POST "/user/me/profile/image" [] upload-profile-image)
   (GET "/user/:user_id/profile" [_] user-profile)
-  (GET "/user/feed" [] feed)
+  (GET "/user/feed" [from] (feed from))
   (GET "/user/questions" [] questions)
   (POST "/user/questions" [] questions)
   (GET "/user/notifications" [] notifications)
