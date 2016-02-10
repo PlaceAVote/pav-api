@@ -129,6 +129,21 @@
       status => 200
       (:emotional_response response) => "none"))
 
+  (fact "Delete emotional_response, When deleting emotional response twice, ensure score is not minus in users feed."
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          ;;create issue
+          {body :body}   (pav-req :put "/user/issue" token {:comment "Goes here."})
+          {issue_id :issue_id} (ch/parse-string body true)
+          ;;respond negatively
+          _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response "negative"})
+          ;;try deleting negative response
+          _ (pav-req :delete (str "/user/issue/" issue_id "/response") token {})
+          _ (pav-req :delete (str "/user/issue/" issue_id "/response") token {})
+          {body :body} (pav-req :get "/user/feed" token {})
+          response (second (:results (ch/parse-string body true)))]
+      (:neutral_responses response) => 0))
+
    (fact "No emotional_response in POST"
      (let [{body :body} (pav-req :put "/user" test-user)
            {token :token} (ch/parse-string body true)

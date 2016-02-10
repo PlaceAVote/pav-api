@@ -277,8 +277,7 @@ new ID assigned as issue_id and timestamp stored in table."
 
 (defn get-user-issue-emotional-response [issue_id user_id]
   (try
-    (if-let [response (far/get-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id
-                                                                                    :user_id  user_id})]
+    (if-let [response (far/get-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id  user_id})]
       response
       {:emotional_response "none"})
     (catch Exception e
@@ -292,14 +291,17 @@ new ID assigned as issue_id and timestamp stored in table."
   (when-let [current-response (get-user-issue-emotional-response issue_id user_id)]
     (let [{author_id :user_id} (get-user-issue issue_id)
           count-payload (case (:emotional_response current-response)
-                          "positive" {:positive_responses [:add -1]}
-                          "neutral" {:neutral_responses [:add -1]}
-                          "negative" {:negative_responses [:add -1]}
+                          "positive"  {:cond-expr "#a > :z" :update-expr "ADD #a :n"
+                                       :expr-attr-names {"#a" "positive_responses"} :expr-attr-vals {":n" -1 ":z" 0}}
+                          "neutral"   {:cond-expr "#a > :z" :update-expr "ADD #a :n"
+                                       :expr-attr-names {"#a" "neutral_responses"} :expr-attr-vals {":n" -1 ":z" 0}}
+                          "negative"  {:cond-expr "#a > :z" :update-expr "ADD #a :n"
+                                       :expr-attr-names {"#a" "negative_responses"} :expr-attr-vals {":n" -1 ":z" 0}}
                           nil)]
-      (far/delete-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id user_id})
-      (if count-payload
-        (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id author_id}
-          {:update-map count-payload})))))
+      (when current-response
+        (far/delete-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id user_id})
+        (if count-payload
+          (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id author_id} count-payload))))))
 
 (defn get-user-issue [issue_id]
   (first (far/query client-opts dy/user-issues-table-name {:issue_id [:eq issue_id]})))
