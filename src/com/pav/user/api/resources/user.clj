@@ -12,11 +12,6 @@
 (def existing-user-error-msg {:error "A User already exists with this email"})
 (def login-error-msg "Invalid Login credientials")
 
-(defn- retrieve-page-param [payload]
-  (some-> payload
-          (get-in [:request :params :page])
-          read-string))
-
 (defresource create
   :allowed-methods [:put]
   :available-media-types ["application/json"]
@@ -99,11 +94,11 @@
   :available-media-types ["application/json"]
   :post! (service/update-registration token))
 
-(defresource notifications
+(defresource notifications [from]
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok (fn [ctx] (service/get-notifications (retrieve-token-user-id ctx))))
+  :handle-ok (fn [ctx] (service/get-notifications (retrieve-token-user-id ctx) from)))
 
 (defresource mark-notification [id]
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))

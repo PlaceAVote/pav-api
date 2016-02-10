@@ -135,13 +135,6 @@
       "type": "string",
       "format": "string"
     },
-    "PageParam": {
-      "name": "page",
-      "in": "query",
-      "required": false,
-      "type": "string",
-      "format": "string"
-    },
     "NotificationIDParam": {
       "name": "notification_id",
       "in": "path",
@@ -542,9 +535,9 @@
     "NotificationRecords": {
       "type": "object",
       "properties": {
-        "next-page": {
+        "last_timestamp": {
           "type": "number",
-          "format": "If equal to zero then there are no more results"
+          "format": "number"
         },
         "results": {
           "type": "array",
@@ -740,6 +733,9 @@
         "parameters": [
           {
             "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/FromParam"
           }
         ],
         "tags": [

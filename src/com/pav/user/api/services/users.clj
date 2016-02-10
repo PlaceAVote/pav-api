@@ -208,11 +208,11 @@
     true
     false))
 
-(defn get-notifications [user]
-  (dynamo-dao/get-notifications user))
-
 (defn mark-notification [id]
   (dynamo-dao/mark-notification id))
+
+(defn get-notifications [user from]
+  (dynamo-dao/get-notifications user from))
 
 (defn get-timeline [user from]
   (dynamo-dao/get-user-timeline user from))

@@ -65,9 +65,15 @@
           {:update-map {:registered [:put true]}})))
     (catch Exception e (log/info (str "Error occured updating registeration status for token " token " " e)))))
 
-(defn get-notifications [user_id]
-  {:next-page 0
-   :results (far/query client-opts dy/notification-table-name {:user_id [:eq user_id]} {:order :desc :limit 10})})
+(defn get-notifications [user_id & [from]]
+  (let [empty-result-response {:last_timestamp 0 :results []}
+        opts (merge
+               {:limit 10 :span-reqs {:max 1} :order :desc}
+               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))
+        notifications (far/query client-opts dy/notification-table-name {:user_id [:eq user_id]} opts)]
+    (if (empty? notifications)
+      empty-result-response
+      (assoc empty-result-response :last_timestamp (:timestamp (last notifications)) :results notifications))))
 
 (defn mark-notification [id]
   (let [notification (first

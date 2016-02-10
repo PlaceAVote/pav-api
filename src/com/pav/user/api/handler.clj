@@ -51,7 +51,7 @@
   (GET "/user/feed" [from] (feed from))
   (GET "/user/questions" [] questions)
   (POST "/user/questions" [] questions)
-  (GET "/user/notifications" [] notifications)
+  (GET "/user/notifications" [from] (notifications from))
   (GET "/user/notifications/ws" [_] ws-notification-handler)
   (POST "/user/notification/:notification_id/mark" [notification_id] (mark-notification notification_id))
   (GET "/user/me/timeline" [from] (timeline from))

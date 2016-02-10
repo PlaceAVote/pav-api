@@ -103,12 +103,6 @@ parameters:
     required: true
     type: string
     format: string
-  PageParam:
-    name: page
-    in: query
-    required: false
-    type: string
-    format: string
   NotificationIDParam:
     name: notification_id
     in: path
@@ -398,9 +392,9 @@ definitions:
   NotificationRecords:
     type: object
     properties:
-      next-page:
+      last_timestamp:
         type: number
-        format: If equal to zero then there are no more results
+        format: number
       results:
         type: array
         items:
@@ -513,6 +507,7 @@ paths:
       description: Get the current users notifications
       parameters:
         - $ref: "#/parameters/TokenParam"
+        - $ref: "#/parameters/FromParam"
       tags:
         - Users
       responses:

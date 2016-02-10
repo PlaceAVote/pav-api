@@ -27,9 +27,9 @@
 																:timestamp 1446462364297 :notification_id "11"}]
 					_ (persist-notification-event notification-events)
 					{status :status body :body} (pav-req :get "/user/notifications" token {})
-					{next-page :next-page results :results} (ch/parse-string body true)]
+					{last_timestamp :last_timestamp results :results} (ch/parse-string body true)]
 			status => 200
-			next-page => 0
+			last_timestamp => 1446462364297
 			results => (contains notification-events)))
 
 	(fact "Retrieve user notifications, mark notification as read"
@@ -44,9 +44,9 @@
 					_ (persist-notification-event notification-events)
 					{status :status} (pav-req :post "/user/notification/10/mark" token {})
 					{body :body} (pav-req :get "/user/notifications" token {})
-					{next-page :next-page results :results} (ch/parse-string body true)]
+					{last_timestamp :last_timestamp results :results} (ch/parse-string body true)]
 			status => 201
-			next-page => 0
+			last_timestamp => 1446462364297
 			(first results) => (contains {:read true})))
 
 	(fact "Retrieving user notifications without Authentication token, results in 401"
