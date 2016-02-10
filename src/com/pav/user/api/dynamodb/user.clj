@@ -117,8 +117,10 @@
   (-> (add-bill-comment-count feed-event)
       add-bill-vote-count))
 
-(declare get-user-issue-emotional-response)
-(declare get-user-issue-emotional-counts)
+(defmethod event-meta-data :default [feed-event _]
+  feed-event)
+
+(declare get-user-issue-emotional-response get-user-issue-emotional-counts)
 (defmethod event-meta-data "userissue" [{:keys [issue_id] :as feed-event} user_id]
   (merge feed-event
     (get-user-issue-emotional-response issue_id user_id)
