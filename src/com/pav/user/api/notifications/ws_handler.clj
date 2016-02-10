@@ -1,7 +1,7 @@
 (ns com.pav.user.api.notifications.ws-handler
 	(:require [org.httpkit.server :refer [send! with-channel on-close on-receive close]]
 						[clojure.tools.logging :as log]
-						[com.pav.user.api.utils.utils :refer [retrieve-token-user-id unpack-redis-msg to-json]]
+						[com.pav.user.api.utils.utils :refer [retrieve-token-user-id pack-event unpack-redis-msg to-json]]
 						[com.pav.user.api.authentication.authentication :as auth]
 						[com.pav.user.api.redis.redis :refer [redis-conn]]
 						[taoensso.carmine :as car]
@@ -12,6 +12,10 @@
 
 ;;Redis Notification Topic
 (def redis-notification-pubsub (:redis-notification-pubsub env))
+
+(defn publish-notification [notification]
+  (car/wcar redis-conn
+    (car/publish redis-notification-pubsub (pack-event notification))))
 
 (defn notify-client [[_ _ msg]]
 	"When a Notification is received from the redis pub/sub.  Iterate through current channels, if the user_id on the

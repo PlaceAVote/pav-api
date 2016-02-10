@@ -32,6 +32,9 @@
           retrieve-user-details
           :user_id))
 
+(defn pack-event [evt]
+  (-> (ch/generate-string evt) msg/pack))
+
 (defn unpack-redis-msg [msg]
   (-> msg
       msg/unpack

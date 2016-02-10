@@ -3,7 +3,8 @@
             [environ.core :refer [env]]
             [clojure.tools.logging :as log]
             [com.pav.user.api.domain.user :refer [convert-to-correct-profile-type]]
-            [com.pav.user.api.dynamodb.db :as dy :refer [client-opts]])
+            [com.pav.user.api.dynamodb.db :as dy :refer [client-opts]]
+            [com.pav.user.api.notifications.ws-handler :refer [publish-notification]])
   (:import [java.util Date UUID]))
 
 (defn get-user-by-id [id]
@@ -252,7 +253,8 @@ new ID assigned as issue_id and timestamp stored in table."
                        (select-keys user [:first_name :last_name]) ;;author names
                        (select-keys user-issue [:bill_id :bill_title]) ;; bill issue is related to
                        {:emotional_response response})]
-    (far/put-item client-opts dy/notification-table-name notification)))
+    (far/put-item client-opts dy/notification-table-name notification)
+    (publish-notification notification)))
 
 (defn update-user-issue-emotional-response [issue_id user_id response]
   (delete-user-issue-emotional-response issue_id user_id)
