@@ -32,6 +32,23 @@
 			last_timestamp => 1446462364297
 			results => (contains notification-events)))
 
+  (fact "Retrieve users notifications, When from parameter is present, Then return the last record only."
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token user_id :user_id} (ch/parse-string body true)
+          notification-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
+                                :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+                                :score 0 :body "Comment text goes here!!" :notification_id "10"}
+                               {:type "vote" :bill_id "s1182-114" :user_id user_id
+                                :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+                                :timestamp 1446462364297 :notification_id "11"}]
+          _ (persist-notification-event notification-events)
+          {status :status body :body} (pav-req :get "/user/notifications?from=1446479124991" token {})
+          {last_timestamp :last_timestamp results :results} (ch/parse-string body true)]
+      status => 200
+      last_timestamp => 1446462364297
+      (count results) => 1
+      results => (contains (second notification-events))))
+
 	(fact "Retrieve user notifications, mark notification as read"
 		(let [{body :body} (pav-req :put "/user" test-user)
 					{token :token user_id :user_id} (ch/parse-string body true)

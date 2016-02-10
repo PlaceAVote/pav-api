@@ -134,9 +134,7 @@
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok (fn [ctx] (if from
-                         (service/get-feed (retrieve-token-user-id ctx) from)
-                         (service/get-feed (retrieve-token-user-id ctx)))))
+  :handle-ok (fn [ctx] (service/get-feed (retrieve-token-user-id ctx) from)))
 
 (defresource questions
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))

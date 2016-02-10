@@ -65,15 +65,18 @@
           {:update-map {:registered [:put true]}})))
     (catch Exception e (log/info (str "Error occured updating registeration status for token " token " " e)))))
 
+(defn wrap-query-with-pagination
+  "Helper function to wrap common pagination functionality for timeline related data."
+  [key-conds opts table]
+  (if-let [results (far/query client-opts table key-conds opts)]
+    {:last_timestamp (:timestamp (last results)) :results results}
+    {:last_timestamp 0 :results []}))
+
 (defn get-notifications [user_id & [from]]
-  (let [empty-result-response {:last_timestamp 0 :results []}
-        opts (merge
+  (let [opts (merge
                {:limit 10 :span-reqs {:max 1} :order :desc}
-               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))
-        notifications (far/query client-opts dy/notification-table-name {:user_id [:eq user_id]} opts)]
-    (if (empty? notifications)
-      empty-result-response
-      (assoc empty-result-response :last_timestamp (:timestamp (last notifications)) :results notifications))))
+               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
+    (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/notification-table-name)))
 
 (defn mark-notification [id]
   (let [notification (first
@@ -84,14 +87,10 @@
         {:update-map {:read [:put true]}}))))
 
 (defn get-user-timeline [user_id & [from]]
-  (let [empty-result-response {:last_timestamp 0 :results []}
-        opts (merge
+  (let [opts (merge
                {:limit 10 :span-reqs {:max 1} :order :desc}
-               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))
-        timeline (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]} opts)]
-    (if (empty? timeline)
-      empty-result-response
-      (assoc empty-result-response :last_timestamp (:timestamp (last timeline)) :results timeline))))
+               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
+    (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/timeline-table-name)))
 
 (defn add-bill-comment-count [{:keys [bill_id] :as feed-event}]
   "Count Bill comments associated with feed event."
@@ -123,16 +122,12 @@
     (get-user-issue-emotional-counts   issue_id (:author_id feed-event))))
 
 (defn get-user-feed [user_id & [from]]
-  (let [empty-result-response {:last_timestamp 0 :results []}
-        opts (merge
+  (let [opts (merge
                {:limit 10 :span-reqs {:max 1} :order :desc}
-               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))
-        feed (far/query client-opts dy/userfeed-table-name {:user_id [:eq user_id]} opts)]
-    (if (empty? feed)
-      empty-result-response
-      (assoc empty-result-response
-        :last_timestamp (:timestamp (last feed))
-        :results (mapv #(feed-meta-data % user_id) feed)))))
+               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
+    (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/userfeed-table-name)
+        (update-in [:results] (fn [results]
+                                (mapv #(feed-meta-data % user_id) results))))))
 
 (defn persist-to-newsfeed [events]
   (when events
