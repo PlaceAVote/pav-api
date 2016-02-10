@@ -7,8 +7,7 @@
   (with-open [stream (-> (URL. url)
                          .openConnection
                          (doto (.setRequestProperty "User-Agent"
-                                 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/45.0.2454.101 Chrome/45.0.2454.101 Safari/537.36"))
-;Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/45.0.2454.101 Chrome/45.0.2454.101 Safari/537.36
+                                 "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chromium/45.0.2454.101 Chrome/45.0.2454.101 Safari/537.36"))
                          .getContent)]
     (html/html-resource stream)))
 
