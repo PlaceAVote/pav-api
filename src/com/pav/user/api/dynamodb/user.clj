@@ -240,7 +240,7 @@ new ID assigned as issue_id and timestamp stored in table."
         follower-evts {:put (conj follower-evts author-event)}]
     (far/batch-write-item client-opts
       {dy/userfeed-table-name follower-evts
-       dy/timeline-table-name {:put [author-event]}})))
+       dy/timeline-table-name {:put [(assoc author-event :event_id (.toString (UUID/randomUUID)))]}})))
 
 (declare get-user-issue delete-user-issue-emotional-response)
 (defn update-user-issue-emotional-response [issue_id user_id response]

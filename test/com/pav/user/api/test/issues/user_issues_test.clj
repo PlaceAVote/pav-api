@@ -184,7 +184,7 @@
       (some nil? (vals response)) => nil
       (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
                                     :article_title :type :bill_id :bill_title :comment
-                                    :article_link :article_img :emotional_response
+                                    :article_link :article_img :emotional_response :event_id
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
   (fact "Given new issue, When user responses positively, Then issue should have an emotional response for the given user in the feed item."
