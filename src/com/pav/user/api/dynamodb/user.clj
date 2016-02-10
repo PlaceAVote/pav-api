@@ -243,17 +243,35 @@ new ID assigned as issue_id and timestamp stored in table."
        dy/timeline-table-name {:put [(assoc author-event :event_id (.toString (UUID/randomUUID)))]}})))
 
 (declare get-user-issue delete-user-issue-emotional-response)
+(defn- publish-issues-notification
+  "Publish Notification to author of issue that someone has responsed to there issue."
+  [notification-author user user-issue response]
+  (let [notification (merge
+                       {:author notification-author :user_id (:user_id user-issue) :timestamp (.getTime (Date.))
+                        :type   "issueresponse" :notification_id (.toString (UUID/randomUUID))} ;;author and notification user ids
+                       (select-keys user [:first_name :last_name]) ;;author names
+                       (select-keys user-issue [:bill_id :bill_title]) ;; bill issue is related to
+                       {:emotional_response response})]
+    (far/put-item client-opts dy/notification-table-name notification)))
+
 (defn update-user-issue-emotional-response [issue_id user_id response]
   (delete-user-issue-emotional-response issue_id user_id)
-  (let [{author_id :user_id} (get-user-issue issue_id)
+  (let [user       (get-user-by-id user_id)
+        user-issue (get-user-issue issue_id)
+        issue-author  (:user_id user-issue)
         count-payload (case response
-                        "positive"  {:positive_responses  [:add 1]}
-                        "neutral"   {:neutral_responses   [:add 1]}
-                        "negative"  {:negative_responses  [:add 1]})]
+                        "positive" {:positive_responses [:add 1]}
+                        "neutral" {:neutral_responses [:add 1]}
+                        "negative" {:negative_responses [:add 1]})]
+    ;;update users emotional response
     (far/update-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id user_id}
       {:update-map {:emotional_response [:put response]}})
-    (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id author_id}
-      {:update-map count-payload})))
+    ;; update issue count
+    (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id issue-author}
+      {:update-map count-payload})
+    ;; notify author of response
+    (when-not (= user_id (:user_id user-issue))
+      (publish-issues-notification user_id user user-issue response))))
 
 (defn get-user-issue-emotional-response [issue_id user_id]
   (try

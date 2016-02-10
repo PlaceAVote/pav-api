@@ -216,4 +216,34 @@
       (some nil? (vals response)) => nil
       (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
                                     :comment :emotional_response :type
-                                    :positive_responses :negative_responses :neutral_responses] :in-any-order))))
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)))
+
+  (fact "Given an emotional response, When the user is from another user, Then verify response is in authors notification feed"
+    (let [{body :body} (pav-req :put "/user" follower)
+          {follower_token :token} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          ;;publish issue
+          {body :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here" :bill_id "hr2-114"})
+          {issue_id :issue_id} (ch/parse-string body true)
+          ;;follower responds positively
+          _ (pav-req :post (str "/user/issue/" issue_id "/response") follower_token {:emotional_response "positive"})
+          ;;retrieve authors notification feed
+          {body :body} (pav-req :get "/user/notifications" token {})
+          {results :results} (ch/parse-string body true)]
+      (some nil? (vals (first results))) => nil
+      (keys (first results)) => (contains [:bill_id :bill_title :first_name :last_name :emotional_response :user_id :author :timestamp
+                                          :type :notification_id] :in-any-order)))
+
+  (fact "Given an emotional response, When the user is also the author, Then verify no response is present in the users notification feed"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          ;;publish issue
+          {body :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here" :bill_id "hr2-114"})
+          {issue_id :issue_id} (ch/parse-string body true)
+          ;;user responds positively to his own issue
+          _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response "positive"})
+          ;;retrieve users notification feed
+          {body :body} (pav-req :get "/user/notifications" token {})
+          {results :results} (ch/parse-string body true)]
+      results => [])))
