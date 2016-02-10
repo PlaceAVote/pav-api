@@ -86,11 +86,14 @@
       (far/update-item client-opts dy/notification-table-name notification
         {:update-map {:read [:put true]}}))))
 
+(declare event-meta-data)
 (defn get-user-timeline [user_id & [from]]
   (let [opts (merge
                {:limit 10 :span-reqs {:max 1} :order :desc}
                (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
-    (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/timeline-table-name)))
+    (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/timeline-table-name)
+        (update-in [:results] (fn [results]
+                                (mapv #(event-meta-data % user_id) results))))))
 
 (defn add-bill-comment-count [{:keys [bill_id] :as feed-event}]
   "Count Bill comments associated with feed event."
@@ -105,18 +108,18 @@
       (merge feed-event vcount)
       (merge feed-event {:yes-count 0 :no-count 0}))))
 
-(defmulti feed-meta-data
-  "Retrieve meta data for feed item by type"
+(defmulti event-meta-data
+  "Retrieve meta data for event item by type"
   (fn [event user_id]
     (:type event)))
 
-(defmethod feed-meta-data "bill" [feed-event _]
+(defmethod event-meta-data "bill" [feed-event _]
   (-> (add-bill-comment-count feed-event)
       add-bill-vote-count))
 
 (declare get-user-issue-emotional-response)
 (declare get-user-issue-emotional-counts)
-(defmethod feed-meta-data "userissue" [{:keys [issue_id] :as feed-event} user_id]
+(defmethod event-meta-data "userissue" [{:keys [issue_id] :as feed-event} user_id]
   (merge feed-event
     (get-user-issue-emotional-response issue_id user_id)
     (get-user-issue-emotional-counts   issue_id (:author_id feed-event))))
@@ -127,7 +130,7 @@
                (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
     (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/userfeed-table-name)
         (update-in [:results] (fn [results]
-                                (mapv #(feed-meta-data % user_id) results))))))
+                                (mapv #(event-meta-data % user_id) results))))))
 
 (defn persist-to-newsfeed [events]
   (when events
@@ -233,7 +236,9 @@ new ID assigned as issue_id and timestamp stored in table."
                            (remove #(= user_id (:user_id %)))
                            (map #(assoc data :user_id (:user_id %))))
         follower-evts {:put (conj follower-evts author-event)}]
-    (far/batch-write-item client-opts {dy/userfeed-table-name follower-evts})))
+    (far/batch-write-item client-opts
+      {dy/userfeed-table-name follower-evts
+       dy/timeline-table-name {:put [author-event]}})))
 
 (declare get-user-issue delete-user-issue-emotional-response)
 (defn update-user-issue-emotional-response [issue_id user_id response]

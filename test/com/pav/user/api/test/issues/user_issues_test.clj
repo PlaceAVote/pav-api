@@ -171,6 +171,22 @@
                                     :article_link :article_img :emotional_response
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
+  (fact "Given new issue, Then new issue should be in the users activity timeline."
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          _ (pav-req :put "/user/issue" token
+              {:bill_id "hr2-114"
+               :comment "Comment Body goes here"
+               :article_link "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500#.mn7t24yff"})
+          {status :status body :body} (pav-req :get "/user/me/timeline" token {})
+          response (first (:results (ch/parse-string body true)))]
+      status => 200
+      (some nil? (vals response)) => nil
+      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
+                                    :article_title :type :bill_id :bill_title :comment
+                                    :article_link :article_img :emotional_response
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)))
+
   (fact "Given new issue, When user responses positively, Then issue should have an emotional response for the given user in the feed item."
     (let [{body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
