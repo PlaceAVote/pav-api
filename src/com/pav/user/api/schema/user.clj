@@ -56,9 +56,13 @@
 	 :token    str-schema})
 
 (def NewIssuesWithBill
-  {:comment                       str-schema
-   :bill_id                       str-schema
-   (s/optional-key :article_link) str-schema})
+  (s/either
+    {:comment                       str-schema
+     :bill_id                       str-schema
+     (s/optional-key :article_link) str-schema}
+
+    {:bill_id                       str-schema
+     :article_link                  str-schema}))
 
 (def NewIssue
   (s/both

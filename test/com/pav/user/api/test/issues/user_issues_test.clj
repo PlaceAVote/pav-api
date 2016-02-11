@@ -55,13 +55,13 @@
                              {:bill_id "hr2-114"})]
       status => 400))
 
-  (fact "Given a new issue, When payload does not contain comment but bill id and article information, Then throw 400"
+  (fact "Given a new issue, When payload does not contain comment but bill id and article information, Then process issue"
     (let [{body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
           {status :status} (pav-req :put "/user/issue" token
                              {:bill_id "hr2-114"
                               :article_link "http://medium.com/somethinginteresting"})]
-      status => 400))
+      status => 201))
 
   (fact "Given a new issue, When payload contains only an article link, Then process issue"
     (let [{body :body} (pav-req :put "/user" test-user)
