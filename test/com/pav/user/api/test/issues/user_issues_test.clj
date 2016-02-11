@@ -23,9 +23,7 @@
            {status :status body :body} (pav-req :put "/user/issue" token
                                                 {:bill_id "hr2-114"
                                                  :comment "Comment Body goes here"
-                                                 :article_link "http://medium.com/somethinginteresting"
-                                                 :article_title "Interesting Article"
-                                                 :article_img "http://medium.com/img/101"})
+                                                 :article_link "http://time.com/3319278/isis-isil-twitter/"})
            response (ch/parse-string body true)]
        status => 201
        ;; part of response is :img_url, but midje is not able to take into account gaps present
@@ -44,15 +42,33 @@
                              {:comment "Comment goes here!!!"})]
       status => 201))
 
-  (fact "Given a new issue, When payload does not contain comment, Then throw 400"
+  (fact "Try creating a new issue with an empty payload, Then return 400 error"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {status :status} (pav-req :put "/user/issue" token {})]
+      status => 400))
+
+  (fact "Given a new issue, When payload has a bill_id without a comment, Then throw 400 error"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {status :status} (pav-req :put "/user/issue" token
+                             {:bill_id "hr2-114"})]
+      status => 400))
+
+  (fact "Given a new issue, When payload does not contain comment but bill id and article information, Then throw 400"
     (let [{body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
           {status :status} (pav-req :put "/user/issue" token
                              {:bill_id "hr2-114"
-                              :article_link "http://medium.com/somethinginteresting"
-                              :article_title "Interesting Article"
-                              :article_img "http://medium.com/img/101"})]
+                              :article_link "http://medium.com/somethinginteresting"})]
       status => 400))
+
+  (fact "Given a new issue, When payload contains only an article link, Then process issue"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {status :status} (pav-req :put "/user/issue" token
+                             {:article_link "http://medium.com/somethinginteresting"})]
+      status => 201))
 
    (fact "Add new emotional response, to existing issue"
      (let [{body :body}   (pav-req :put "/user" test-user)
@@ -60,9 +76,7 @@
            {body :body}   (pav-req :put "/user/issue" token
                             {:bill_id "hr2-114"
                              :comment "Goes here."
-                             :article_link "http://medium.com/somethinginteresting"
-                             :article_title "Interesting Article"
-                             :article_img "http://medium.com/img/101"})
+                             :article_link "http://medium.com/somethinginteresting"})
            {issue_id :issue_id} (ch/parse-string body true)
            {status :status body :body} (pav-req :post (str "/user/issue/" issue_id "/response") token
                                                 {:emotional_response "positive"})

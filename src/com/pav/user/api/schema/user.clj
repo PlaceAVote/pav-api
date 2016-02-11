@@ -52,15 +52,20 @@
 
 (def FacebookLogin
 	{:email    email-schema
-	 :id    str-schema
-	 :token str-schema})
+	 :id       str-schema
+	 :token    str-schema})
 
-(def NewIssues
-  {:comment str-schema
-   (s/optional-key :bill_id) str-schema
-   (s/optional-key :article_link) str-schema
-   (s/optional-key :article_img) str-schema
-   (s/optional-key :article_title) str-schema})
+(def NewIssuesWithBill
+  {:comment                       str-schema
+   :bill_id                       str-schema
+   (s/optional-key :article_link) str-schema})
+
+(def NewIssue
+  (s/both
+    (s/pred (complement empty?))
+    {(s/optional-key :comment) str-schema
+     (s/optional-key :bill_id) str-schema
+     (s/optional-key :article_link) str-schema}))
 
 (def AccountSettingUpdate
 	{(s/optional-key :email)      email-schema
@@ -98,8 +103,10 @@
 (defn validate-confirm-reset-password-payload [payload]
 	(s/check ResetPasswordConfirm payload))
 
-(defn validate-new-issue-payload [payload]
-  (s/check NewIssues payload))
+(defn validate-new-issue-payload [{:keys [bill_id] :as payload}]
+  (if bill_id
+    (s/check NewIssuesWithBill payload)
+    (s/check NewIssue payload)))
 
 (defn find-suitable-error [[k _]]
   (cond (= :email k) {k "A valid email address is a required"}
