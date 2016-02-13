@@ -54,7 +54,8 @@
 
 (defn- add-timestamp [payload]
   (have map? payload)
-  (assoc payload :timestamp (.getTime (Timestamp. (+ (System/nanoTime) (* 600 1000))))))
+  (Thread/sleep 1) ;; This is a hack but its the only way i can gurantee the timestamps are unique
+  (assoc payload :timestamp (.getTime (Timestamp. (System/currentTimeMillis)))))
 
 (defn- pre-populate-newsfeed
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."

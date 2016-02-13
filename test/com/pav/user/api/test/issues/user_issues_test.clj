@@ -192,7 +192,7 @@
                :comment "Comment Body goes here"
                :article_link "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500#.mn7t24yff"})
           {status :status body :body} (pav-req :get "/user/feed" token {})
-          response (second (:results (ch/parse-string body true)))]
+          response (first (:results (ch/parse-string body true)))]
       status => 200
       (some nil? (vals response)) => nil
       (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
@@ -223,7 +223,7 @@
           {issue_id :issue_id} (ch/parse-string body true)
           _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response "neutral"})
           {status :status body :body} (pav-req :get "/user/feed" token {})
-          response (second (:results (ch/parse-string body true)))]
+          response (first (:results (ch/parse-string body true)))]
       status => 200
       (some nil? (vals response)) => nil
       (keys response) => (contains [:emotional_response] :in-any-order)
@@ -240,7 +240,7 @@
           _(pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
           ;;retrieve followers feed
           {status :status body :body} (pav-req :get "/user/feed" follower_token {})
-          response (second (:results (ch/parse-string body true)))]
+          response (first (:results (ch/parse-string body true)))]
       status => 200
       (some nil? (vals response)) => nil
       (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
