@@ -15,7 +15,8 @@
             [clojure.tools.logging :as log]
             [clojure.core.memoize :as memo]
             [taoensso.truss :refer [have]]
-            [environ.core :refer [env]])
+            [environ.core :refer [env]]
+            [taoensso.faraday :as far])
   (:import (java.util Date UUID)
            (java.sql Timestamp)))
 
@@ -383,6 +384,17 @@
       (dynamo-dao/populate-user-and-followers-feed-table user_id to-populate)
       (merge new-issue {:emotional_response "none"} (select-keys user [:first_name :last_name :img_url])))))
 
+(declare get-user-issue-emotional-response)
+(defn update-user-issue
+  "Update user issue"
+  [user_id issue_id update-map]
+  (let [update-map (merge (merge-open-graph update-map) (retrieve-bill-title (:bill_id update-map)))]
+    (println "Updated map" update-map)
+    (merge
+      (dynamo-dao/update-user-issue user_id issue_id update-map)
+      (select-keys (get-user-by-id user_id) [:first_name :last_name :img_url])
+      (get-user-issue-emotional-response issue_id user_id))))
+
 (defn validate-user-issue-emotional-response
   "Check if emotional_response parameter is in valid range. Returns inverted logic
 so it can be fed to ':malformed?' handler."
@@ -418,3 +430,6 @@ so it can be fed to ':malformed?' handler."
 
 (defn user-issue-exist? [issue_id]
   (not (empty? (dynamo-dao/get-user-issue issue_id))))
+
+(defn get-user-issue [user_id issue_id]
+  (dynamo-dao/get-user-issue user_id issue_id))

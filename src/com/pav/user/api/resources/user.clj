@@ -198,6 +198,15 @@
                    (service/create-bill-issue (retrieve-token-user-id ctx) (retrieve-body ctx))})
   :handle-created ::user-issue-response)
 
+(defresource update-user-issue [issue_id]
+  :authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))
+                           (not (nil? (service/get-user-issue (retrieve-token-user-id ctx) issue_id)))))
+  :allowed-methods [:post]
+  :available-media-types ["application/json"]
+  :post! (fn [ctx] {::user-issue-response
+                    (service/update-user-issue (retrieve-token-user-id ctx) issue_id (retrieve-body ctx))})
+  :handle-created ::user-issue-response)
+
 (defresource user-issue-emotional-response [issue_id]
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get :post :delete]

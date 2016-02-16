@@ -229,6 +229,16 @@ new ID assigned as issue_id and timestamp stored in table."
     (far/put-item client-opts dy/user-issues-table-name issue-data)
     issue-data))
 
+(defn update-user-issue
+  "Update user issue and return new issue."
+  [user_id issue_id update-map]
+  (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id user_id}
+    {:update-map
+     (into {}
+       (for [[k v] update-map]
+         [k [:put v]]))
+     :return :all-new}))
+
 (defn populate-user-and-followers-feed-table
   "Populate given user and that users followers feed when user an publishes issue."
   [user_id data]
@@ -303,8 +313,9 @@ new ID assigned as issue_id and timestamp stored in table."
         (if count-payload
           (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id author_id} count-payload))))))
 
-(defn get-user-issue [issue_id]
-  (first (far/query client-opts dy/user-issues-table-name {:issue_id [:eq issue_id]})))
+(defn get-user-issue
+  ([issue_id] (first (far/query client-opts dy/user-issues-table-name {:issue_id [:eq issue_id]})))
+  ([user_id issue_id] (far/get-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id user_id})))
 
 (defn get-issues-by-user [user_id limit]
   (far/query client-opts dy/user-issues-table-name {:user_id [:eq user_id]}

@@ -275,4 +275,55 @@
           ;;retrieve users notification feed
           {body :body} (pav-req :get "/user/notifications" token {})
           {results :results} (ch/parse-string body true)]
-      results => [])))
+      results => []))
+
+  (fact "Given an existing issue, When the user updates the comment body, Then verify updated body is in response."
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          ;;publish issue
+          {body :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here" :bill_id "hr2-114"})
+          {issue_id :issue_id} (ch/parse-string body true)
+          ;;update issue
+          {status :status body :body} (pav-req :post (str "/user/issue/" issue_id) token {:comment "Updated comment body"})
+          response (ch/parse-string body true)]
+      status => 201
+      (:comment response) => "Updated comment body"
+      (keys response) => (contains [:user_id :first_name :last_name :timestamp
+                                    :bill_id :bill_title :comment :issue_id :emotional_response
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)
+      ;; make sure all keys has values
+      (some nil? (vals response)) => nil))
+
+  (fact "Given an existing issue, When another user tries to update the issue, Then return 401 error"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          ;;publish issue
+          {body :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here" :bill_id "hr2-114"})
+          {issue_id :issue_id} (ch/parse-string body true)
+          ;;update issue with by user without permission
+          {body :body} (pav-req :put "/user" follower)
+          {token :token} (ch/parse-string body true)
+          {status :status} (pav-req :post (str "/user/issue/" issue_id) token {:comment "Updated comment body"})]
+      status => 401))
+
+  (fact "Update an existing issue, When the payload contains a new article_link, Then verify correct open graph data"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user/issue" token
+                                        {:bill_id "hr2-114"
+                                         :comment "Comment Body goes here"
+                                         :article_link "http://time.com/3319278/isis-isil-twitter/"})
+          {issue_id :issue_id} (ch/parse-string body true)
+          {status :status body :body} (pav-req :post (str "/user/issue/" issue_id) token
+                                        {:article_link "http://time.com/4225033/george-w-bush-counter-punches-donald-trump-at-jeb-rally/"})
+          response (ch/parse-string body true)]
+      status => 201
+      response => (contains {:article_link "http://time.com/4225033/george-w-bush-counter-punches-donald-trump-at-jeb-rally/"
+                             :article_img "https://timedotcom.files.wordpress.com/2016/02/george-jeb-bush.jpg?quality=75&strip=color&w=1012"
+                             :article_title "George W. Bush Counterpunches Donald Trump at Jeb! Rally"})
+      (keys response) => (contains [:user_id :first_name :last_name
+                                    :bill_id :bill_title :comment :article_link :issue_id
+                                    :article_title :article_img :emotional_response
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)
+      ;; make sure all keys has values
+      (some nil? (vals response)) => nil)))
