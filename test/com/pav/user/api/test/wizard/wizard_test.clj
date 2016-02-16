@@ -10,7 +10,8 @@
                 :country_code "USA" :topics ["Gun Rights"] :gender "male"})
 
 (def test-answers [{:question_id "1001" :answer ["I want more gun control"]}
-                   {:question_id "1002" :answer ["I want less tanks"]}])
+                   {:question_id "1002" :answer ["I want less tanks"]}
+                   {:question_id "1003" :answer [193000 ""]}])
 
 (against-background [(before :facts (do
                                       (flush-dynamo-tables)
