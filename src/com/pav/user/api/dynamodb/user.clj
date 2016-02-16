@@ -126,7 +126,7 @@
   (merge feed-event
     (get-user-issue-emotional-response issue_id user_id)
     (get-user-issue (:author_id feed-event) issue_id)
-    (select-keys (get-user-by-id user_id) [:first_name :last_name :img_url])))
+    (select-keys (get-user-by-id (:author_id feed-event)) [:first_name :last_name :img_url])))
 
 (defn get-user-feed [user_id & [from]]
   (let [opts (merge

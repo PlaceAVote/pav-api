@@ -328,7 +328,8 @@
       ;; make sure all keys has values
       (some nil? (vals response)) => nil))
 
-  (fact "Given an existing issue, When issue is updated, Then verify changes are reflected in followers feed."
+  (fact "Given an existing issue, When issue is updated, Then verify changes are reflected in followers feed
+         and feed item has correct user meta data."
     (let [{body :body} (pav-req :put "/user" follower)
           {follower_token :token} (ch/parse-string body true)
           {body :body} (pav-req :put "/user" test-user)
@@ -350,6 +351,9 @@
       status => 200
       response => (contains {:article_link "http://time.com/4225033/george-w-bush-counter-punches-donald-trump-at-jeb-rally/"
                              :article_img anything
-                             :article_title "George W. Bush Counterpunches Donald Trump at Jeb! Rally"})
+                             :article_title "George W. Bush Counterpunches Donald Trump at Jeb! Rally"
+                             :first_name (:first_name test-user)
+                             :last_name (:last_name test-user)
+                             :user_id user_id})
       ;; make sure all keys has values
       (some nil? (vals response)) => nil)))
