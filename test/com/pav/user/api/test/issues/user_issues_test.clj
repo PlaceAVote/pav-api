@@ -319,7 +319,7 @@
           response (ch/parse-string body true)]
       status => 201
       response => (contains {:article_link "http://time.com/4225033/george-w-bush-counter-punches-donald-trump-at-jeb-rally/"
-                             :article_img "https://timedotcom.files.wordpress.com/2016/02/george-jeb-bush.jpg?quality=75&strip=color&w=1012"
+                             :article_img anything
                              :article_title "George W. Bush Counterpunches Donald Trump at Jeb! Rally"})
       (keys response) => (contains [:user_id :first_name :last_name
                                     :bill_id :bill_title :comment :article_link :issue_id
@@ -349,7 +349,7 @@
           response (first (:results (ch/parse-string body true)))]
       status => 200
       response => (contains {:article_link "http://time.com/4225033/george-w-bush-counter-punches-donald-trump-at-jeb-rally/"
-                             :article_img "https://timedotcom.files.wordpress.com/2016/02/george-jeb-bush.jpg?quality=75&strip=color&w=1012"
+                             :article_img anything
                              :article_title "George W. Bush Counterpunches Donald Trump at Jeb! Rally"})
       ;; make sure all keys has values
       (some nil? (vals response)) => nil)))
