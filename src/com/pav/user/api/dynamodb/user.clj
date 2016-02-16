@@ -121,11 +121,11 @@
 (defmethod event-meta-data :default [feed-event _]
   feed-event)
 
-(declare get-user-issue-emotional-response get-user-issue-emotional-counts)
+(declare get-user-issue-emotional-response get-user-issue)
 (defmethod event-meta-data "userissue" [{:keys [issue_id] :as feed-event} user_id]
   (merge feed-event
     (get-user-issue-emotional-response issue_id user_id)
-    (get-user-issue-emotional-counts   issue_id (:author_id feed-event))))
+    (get-user-issue (:author_id feed-event) issue_id)))
 
 (defn get-user-feed [user_id & [from]]
   (let [opts (merge
@@ -253,7 +253,7 @@ new ID assigned as issue_id and timestamp stored in table."
       {dy/userfeed-table-name follower-evts
        dy/timeline-table-name {:put [(assoc author-event :event_id (.toString (UUID/randomUUID)))]}})))
 
-(declare get-user-issue delete-user-issue-emotional-response)
+(declare delete-user-issue-emotional-response)
 (defn- publish-issues-notification
   "Publish Notification to author of issue that someone has responsed to there issue."
   [notification-author user user-issue response]
@@ -292,10 +292,6 @@ new ID assigned as issue_id and timestamp stored in table."
       {:emotional_response "none"})
     (catch Exception e
       (log/errorf e "Error occured while getting emotional_response for '%s:%s'" issue_id user_id))))
-
-(defn get-user-issue-emotional-counts [issue_id user_id]
-  (far/get-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id user_id}
-    {:attrs [:positive_responses :neutral_responses :negative_responses]}))
 
 (defn delete-user-issue-emotional-response [issue_id user_id]
   (when-let [current-response (get-user-issue-emotional-response issue_id user_id)]

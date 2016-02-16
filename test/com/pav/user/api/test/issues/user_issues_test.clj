@@ -326,4 +326,30 @@
                                     :article_title :article_img :emotional_response
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)
       ;; make sure all keys has values
+      (some nil? (vals response)) => nil))
+
+  (fact "Given an existing issue, When issue is updated, Then verify changes are reflected in followers feed."
+    (let [{body :body} (pav-req :put "/user" follower)
+          {follower_token :token} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user" test-user)
+          {token :token user_id :user_id} (ch/parse-string body true)
+          ;;follow user
+          _ (pav-req :put (str "/user/follow") follower_token {:user_id user_id})
+          ;;publish issue
+          {body :body} (pav-req :put "/user/issue" token
+                         {:bill_id "hr2-114"
+                          :comment "Comment Body goes here"
+                          :article_link "http://time.com/3319278/isis-isil-twitter/"})
+          {issue_id :issue_id} (ch/parse-string body true)
+          ;;update issue
+          _ (pav-req :post (str "/user/issue/" issue_id) token
+              {:article_link "http://time.com/4225033/george-w-bush-counter-punches-donald-trump-at-jeb-rally/"})
+          ;;extract issue from followers feed
+          {status :status body :body} (pav-req :get "/user/feed" follower_token {})
+          response (first (:results (ch/parse-string body true)))]
+      status => 200
+      response => (contains {:article_link "http://time.com/4225033/george-w-bush-counter-punches-donald-trump-at-jeb-rally/"
+                             :article_img "https://timedotcom.files.wordpress.com/2016/02/george-jeb-bush.jpg?quality=75&strip=color&w=1012"
+                             :article_title "George W. Bush Counterpunches Donald Trump at Jeb! Rally"})
+      ;; make sure all keys has values
       (some nil? (vals response)) => nil)))

@@ -370,8 +370,7 @@
   (have map? issue-data)
   (merge
     {:timestamp timestamp :type "userissue" :author_id user_id :issue_id issue_id}
-    (select-keys user [:first_name :last_name :img_url])
-    (select-keys issue-data [:bill_id :bill_title :article_link :article_title :article_img :comment])))
+    (select-keys user [:first_name :last_name :img_url])))
 
 (defn create-bill-issue
   "Create new bill issue, according to the details."
