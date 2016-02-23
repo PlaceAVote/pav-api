@@ -573,7 +573,7 @@ paths:
     get:
       description: Given a user_id retrieve user profile in relation to current user.
       parameters:
-        - $ref: "#/parameters/TokenParam"
+        - $ref: "#/parameters/OptionalTokenParam"
         - $ref: "#/parameters/UserIDParam"
       tags:
         - Users

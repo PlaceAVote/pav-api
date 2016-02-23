@@ -45,7 +45,7 @@
     (let [{caller :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string caller true)
           {status :status } (pav-req :get (str "/user/21312321312/profile") token {})]
-      status => 401))
+      status => 404))
 
 	(fact "Retrieve the current users profile"
 		(let [{caller :body} (pav-req :put "/user" test-user)

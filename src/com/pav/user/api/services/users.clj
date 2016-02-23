@@ -271,17 +271,17 @@
      (if-let [u (get-user-profile user_id)]
        (assoc u :following (following? current-user user_id)))))
 
-(defn authorized-to-view-profile?
-  "Used to determine if the current user can view their profile or another users.
+(defn user-profile-exist?
+  "Retrieve user profile, option to include current user for extra meta data on the relationship between both users.
   Response includes response suitable for Liberator use."
   ([user_id]
    (if-let [profile (get-user-profile user_id)]
      [true {:record profile}]
-     [false {:error {:error_message "Not Authorized to view profile."}}]))
+     [false {:error {:error_message "User Profile does not exist"}}]))
   ([current-user user-viewing]
    (if-let [profile (get-user-profile current-user user-viewing)]
      [true {:record profile}]
-     [false {:error {:error_message "Not Authorized to view profile."}}])))
+     [false {:error {:error_message "User Profile does not exist"}}])))
 
 (defn- update-user-profile [user_id param-map]
   (-> (get-user-by-id user_id)

@@ -78,14 +78,12 @@
   :post! (fn [ctx] (service/change-password (retrieve-token-user-id ctx) (retrieve-body-param ctx :new_password))))
 
 (defresource user-profile
-  :authorized? (fn [ctx] (if (service/is-authenticated? (retrieve-user-details ctx))
-                           (if-let [id (retrieve-request-param ctx :user_id)]
-                             (service/authorized-to-view-profile? (retrieve-token-user-id ctx) id)
-                             (service/authorized-to-view-profile? (retrieve-token-user-id ctx)))
-                           [false {:error {:error_message "Not Authorized to view profile."}}]))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :exists? :record
+  :exists? (fn [ctx]
+             (if-let [id (retrieve-request-param ctx :user_id)]
+               (service/user-profile-exist? (retrieve-token-user-id ctx) id)
+               (service/user-profile-exist? (retrieve-token-user-id ctx))))
   :handle-ok :record)
 
 (defresource confirm-user [token]
