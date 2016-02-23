@@ -184,7 +184,7 @@
   :available-media-types ["application/json"]
   :handle-ok {:message "Token is valid"})
 
-(defresource user-issue
+(defresource create-user-issue
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
@@ -197,6 +197,11 @@
   :put! (fn [ctx] {::user-issue-response
                    (service/create-bill-issue (retrieve-token-user-id ctx) (retrieve-body ctx))})
   :handle-created ::user-issue-response)
+
+(defresource get-user-issue [issue_id]
+  :allowed-methods [:get]
+  :available-media-types ["application/json"]
+  :handle-ok (fn [ctx] (service/get-user-issue-feed-item issue_id (retrieve-token-user-id ctx))))
 
 (defresource update-user-issue [issue_id]
   :authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))

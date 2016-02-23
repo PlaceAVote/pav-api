@@ -356,4 +356,20 @@
                              :last_name (:last_name test-user)
                              :user_id user_id})
       ;; make sure all keys has values
+      (some nil? (vals response)) => nil))
+
+  (fact "Given a new issue, Then retrieve single issue by id"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user/issue" token
+                         {:bill_id "hr2-114" :comment "Comment Body goes here"
+                          :article_link "http://time.com/3319278/isis-isil-twitter/"})
+          {issue_id :issue_id} (ch/parse-string body true)
+          {status :status body :body} (pav-req :get (str "/user/issue/" issue_id))
+          response (ch/parse-string body true)]
+      status => 200
+      (keys response) => (contains [:user_id :first_name :last_name
+                                    :bill_id :bill_title :comment :article_link :issue_id
+                                    :article_title :article_img :emotional_response
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)
       (some nil? (vals response)) => nil)))

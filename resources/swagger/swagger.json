@@ -107,6 +107,17 @@
         "format": "PAV_AUTH_TOKEN token"
       }
     },
+    "OptionalTokenParam": {
+      "name": "Authorization",
+      "in": "header",
+      "description": "token to be passed as a header",
+      "required": false,
+      "type": "string",
+      "items": {
+        "type": "string",
+        "format": "PAV_AUTH_TOKEN token"
+      }
+    },
     "IssueIDParam": {
       "name": "issue_id",
       "in": "path",
@@ -1408,6 +1419,96 @@
       }
     },
     "/user/issue/{issue_id}": {
+      "get": {
+        "description": "Get user issue",
+        "parameters": [
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          },
+          {
+            "$ref": "#/parameters/IssueIDParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "issue_id": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "bill_id": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "bill_title": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "comment": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "user_id": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "first_name": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "last_name": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "img_url": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "article_link": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "article_img": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "article_title": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "emotional_response": {
+                  "type": "string",
+                  "format": "positive, neutral, negative, none"
+                },
+                "positive_responses": {
+                  "type": "number",
+                  "format": "number"
+                },
+                "neutral_responses": {
+                  "type": "number",
+                  "format": "number"
+                },
+                "negative_responses": {
+                  "type": "number",
+                  "format": "number"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Token invalid"
+          }
+        }
+      },
       "post": {
         "description": "Create new user issue",
         "parameters": [

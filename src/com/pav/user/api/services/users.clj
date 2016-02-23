@@ -428,5 +428,16 @@ so it can be fed to ':malformed?' handler."
 (defn user-issue-exist? [issue_id]
   (not (empty? (dynamo-dao/get-user-issue issue_id))))
 
-(defn get-user-issue [user_id issue_id]
-  (dynamo-dao/get-user-issue user_id issue_id))
+(defn get-user-issue
+  ([issue_id] (dynamo-dao/get-user-issue issue_id))
+  ([user_id issue_id] (dynamo-dao/get-user-issue user_id issue_id)))
+
+(defn get-user-issue-feed-item
+  "Retrieve Single User Issue in the same format as that displayed in a feed item."
+  ([issue_id & [user_id]]
+    (let [issue (get-user-issue issue_id)
+          user-info (select-keys (get-user-by-id (:user_id issue)) [:first_name :last_name :img_url])]
+      (merge issue user-info
+        (if user_id
+          (dynamo-dao/get-user-issue-emotional-response issue_id user_id)
+          {:emotional_response "none"})))))
