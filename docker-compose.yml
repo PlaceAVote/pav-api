@@ -8,5 +8,5 @@ web:
     - AUTH_PUB_KEY_PWD=password
     - LEIN_ROOT=1
   ports:
-    - 8080:8080
+    - 80:8080
     - 443:8080
