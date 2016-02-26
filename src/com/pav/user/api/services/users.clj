@@ -439,5 +439,5 @@ so it can be fed to ':malformed?' handler."
           user-info (select-keys (get-user-by-id (:user_id issue)) [:first_name :last_name :img_url])]
       (merge issue user-info
         (if user_id
-          (dynamo-dao/get-user-issue-emotional-response issue_id user_id)
+          (select-keys (dynamo-dao/get-user-issue-emotional-response issue_id user_id) [:emotional_response])
           {:emotional_response "none"})))))

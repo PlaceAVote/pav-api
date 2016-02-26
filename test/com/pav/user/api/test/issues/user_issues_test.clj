@@ -5,7 +5,8 @@
                                                        flush-es-indexes
                                                        bootstrap-bills
                                                        test-user
-                                                       pav-req]]
+                                                       pav-req
+                                                       test-fb-user]]
             [cheshire.core :as ch]))
 
 (def follower {:email "peter@pl.com" :password "stuff2" :first_name "peter" :last_name "pan" :dob "05/10/1984"
@@ -368,6 +369,42 @@
           {status :status body :body} (pav-req :get (str "/user/issue/" issue_id))
           response (ch/parse-string body true)]
       status => 200
+      (keys response) => (contains [:user_id :first_name :last_name
+                                    :bill_id :bill_title :comment :article_link :issue_id
+                                    :article_title :article_img :emotional_response
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)
+      (some nil? (vals response)) => nil))
+
+  (fact "Given a new issue, When authors token is present, Then retrieve single issue by id with emotional response data"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token author_id :user_id} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user/issue" token
+                         {:bill_id "hr2-114" :comment "Comment Body goes here"
+                          :article_link "http://time.com/3319278/isis-isil-twitter/"})
+          {issue_id :issue_id} (ch/parse-string body true)
+          {status :status body :body} (pav-req :get (str "/user/issue/" issue_id) token {})
+          response (ch/parse-string body true)]
+      status => 200
+      (:user_id response) => author_id
+      (keys response) => (contains [:user_id :first_name :last_name
+                                    :bill_id :bill_title :comment :article_link :issue_id
+                                    :article_title :article_img :emotional_response
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)
+      (some nil? (vals response)) => nil))
+
+  (fact "Given a new issue, When an alternative user token is present, Then retrieve single issue by id with emotional response data"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token author_id :user_id} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user/issue" token
+                         {:bill_id "hr2-114" :comment "Comment Body goes here"
+                          :article_link "http://time.com/3319278/isis-isil-twitter/"})
+          {issue_id :issue_id} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user/facebook" test-fb-user)
+          {nonauthor_token :token} (ch/parse-string body true)
+          {status :status body :body} (pav-req :get (str "/user/issue/" issue_id) nonauthor_token {})
+          response (ch/parse-string body true)]
+      status => 200
+      (:user_id response) => author_id
       (keys response) => (contains [:user_id :first_name :last_name
                                     :bill_id :bill_title :comment :article_link :issue_id
                                     :article_title :article_img :emotional_response
