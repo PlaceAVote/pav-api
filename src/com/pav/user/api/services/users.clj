@@ -269,7 +269,10 @@
          (assoc :total_following (count-following user_id)))))
   ([current-user user_id]
      (if-let [u (get-user-profile user_id)]
-       (assoc u :following (following? current-user user_id)))))
+       (assoc u :following
+                (if current-user
+                  (following? current-user user_id)
+                  false)))))
 
 (defn user-profile-exist?
   "Retrieve user profile, option to include current user for extra meta data on the relationship between both users.

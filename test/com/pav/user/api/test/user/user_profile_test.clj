@@ -30,6 +30,18 @@
 			(keys body) => [:user_id :first_name :last_name :country_code :public :total_followers :total_following :following]
 			body => (contains {:total_followers 1 :total_following 0 :following true} :in-any-order)))
 
+	(fact "Retrieve a users profile without an authentication token, Then verify user is returned."
+		(let [{caller :body} (pav-req :put "/user" test-user)
+					{token :token} (ch/parse-string caller true)
+					{search-user :body} (pav-req :put "/user" searchable-profile)
+					{user_id :user_id} (ch/parse-string search-user true)
+					_ (pav-req :put (str "/user/follow") token {:user_id user_id})
+					{status :status body :body} (update-in (pav-req :get (str "/user/" user_id "/profile")) [:body]
+																				#(ch/parse-string % true))]
+			status => 200
+			(keys body) => [:user_id :first_name :last_name :country_code :public :total_followers :total_following :following]
+			body => (contains {:total_followers 1 :total_following 0 :following false} :in-any-order)))
+
   ;;FUTURE TEST CASE ONCE THE PRIVATE PROFILE FUNCTIONALITY IS ENABLED ON THE FRONTEND.
 	(future-fact "Retrieve a user profile, when there profile is private, Then return 401 error"
 		(let [{caller :body} (pav-req :put "/user" test-user)
