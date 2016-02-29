@@ -409,4 +409,10 @@
                                     :bill_id :bill_title :comment :article_link :issue_id
                                     :article_title :article_img :emotional_response
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)
-      (some nil? (vals response)) => nil)))
+      (some nil? (vals response)) => nil))
+
+  (fact "Try retrieving issue that doesn't exist, Then return 404"
+    (let [{status :status body :body} (pav-req :get "/user/issue/94873662-5d2d-497a-9d30-7c185b042abdd")
+          response (ch/parse-string body true)]
+      status => 404
+      (keys response) => [:error_message])))

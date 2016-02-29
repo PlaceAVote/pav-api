@@ -199,7 +199,11 @@
 (defresource get-user-issue [issue_id]
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok (fn [ctx] (service/get-user-issue-feed-item issue_id (retrieve-token-user-id ctx))))
+  :exists? (fn [ctx] (if-let [issue (service/get-user-issue-feed-item issue_id (retrieve-token-user-id ctx))]
+                       [true {:record issue}]
+                       [false {:error {:error_message "Issue not found"}}]))
+  :handle-ok :record
+  :handle-not-found :error)
 
 (defresource update-user-issue [issue_id]
   :authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))

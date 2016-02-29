@@ -977,6 +977,8 @@ paths:
           description: Token invalid
         '400':
           description: Bad Request
+        '404':
+          description: Issue Not Found
     post:
       description: Create new user issue
       parameters:

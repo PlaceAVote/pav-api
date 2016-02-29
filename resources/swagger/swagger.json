@@ -1506,6 +1506,9 @@
           },
           "401": {
             "description": "Token invalid"
+          },
+          "404": {
+            "description": "Issue not found"
           }
         }
       },
