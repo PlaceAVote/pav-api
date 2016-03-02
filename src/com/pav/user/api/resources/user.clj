@@ -82,8 +82,7 @@
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :exists? (fn [ctx]
-             (log/info (str "x-forwarded-for " (get-in ctx [:request :headers "x-forwarded-for"])
-                            "remote-addr "     (get-in ctx [:request :remote-addr])))
+             (log/info (str "request object " (get-in ctx [:request])))
              (if-let [id (retrieve-request-param ctx :user_id)]
                (service/user-profile-exist? (retrieve-token-user-id ctx) id)
                (service/user-profile-exist? (retrieve-token-user-id ctx))))
