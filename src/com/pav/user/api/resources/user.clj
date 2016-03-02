@@ -7,7 +7,8 @@
 																								 retrieve-body-param retrieve-user-details
 																								 retrieve-token-user-id retrieve-request-param]]
 					 [com.pav.user.api.utils.utils :refer [decodeBase64ImageString]]
-           [cheshire.core :as ch]))
+           [cheshire.core :as ch]
+           [clojure.tools.logging :as log]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
 (def login-error-msg "Invalid Login credientials")
@@ -81,6 +82,7 @@
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :exists? (fn [ctx]
+             (log/info "Requesting Address. " (or (get-in ctx [:request :headers "x-forwarded-for"]) (get-in ctx [:request :remote-addr])))
              (if-let [id (retrieve-request-param ctx :user_id)]
                (service/user-profile-exist? (retrieve-token-user-id ctx) id)
                (service/user-profile-exist? (retrieve-token-user-id ctx))))
