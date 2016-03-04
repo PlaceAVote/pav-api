@@ -5,7 +5,8 @@
             [com.pav.user.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.user.api.dynamodb.db :as dy :refer [client-opts]]
             [com.pav.user.api.notifications.ws-handler :refer [publish-notification]]
-            [com.pav.user.api.utils.utils :refer [uuid->base64Str]])
+            [com.pav.user.api.utils.utils :refer [uuid->base64Str
+                                                  base64->uuidStr]])
   (:import [java.util Date UUID]))
 
 (defn get-user-by-id [id]
@@ -126,7 +127,10 @@
 (defmethod event-meta-data "userissue" [{:keys [issue_id] :as feed-event} user_id]
   (merge feed-event
     (get-user-issue-emotional-response issue_id user_id)
-    (get-user-issue (:author_id feed-event) issue_id)
+    (if-let [issue (get-user-issue (:author_id feed-event) issue_id)]
+      (if (empty? (:short_issue_id issue_id))
+        (assoc issue :short_issue_id (uuid->base64Str (UUID/fromString (:issue_id issue))))
+        issue))
     (select-keys (get-user-by-id (:author_id feed-event)) [:first_name :last_name :img_url])))
 
 (defn get-user-feed [user_id & [from]]
