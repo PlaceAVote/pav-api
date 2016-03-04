@@ -11,7 +11,7 @@
 
 
 (def searchable-profile {:email "peter@pl.com" :password "stuff2" :first_name "peter" :last_name "pan" :dob "05/10/1984"
-												 :country_code "USA" :topics ["Defense"] :gender "male"})
+												 :country_code "USA" :topics ["Defense"] :gender "male" :zipcode "12345"})
 
 (against-background [(before :facts (do
 																			(flush-dynamo-tables)

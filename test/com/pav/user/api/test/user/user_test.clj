@@ -25,6 +25,23 @@
            status => 201
            (keys (ch/parse-string body true)) => (contains [:user_id :token] :in-any-order)))
 
+  (fact "Create new user, When valid zip+4 is provided, Then create new user"
+    (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :zipcode "77068"))]
+      status => 201
+      (keys (ch/parse-string body true)) => (contains [:user_id :token] :in-any-order)))
+
+  (fact "Create new user, When zip+4 contains only 2 characters, Then return 400 exception"
+    (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :zipcode "77"))
+          response (ch/parse-string body true)]
+      status => 400
+      response => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
+
+  (fact "Create new user, When zip+4 code doesn't correspond to a state and district, Then return 400 exception"
+    (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :zipcode "00045"))
+          response (ch/parse-string body true)]
+      status => 400
+      response => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
+
    (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
          (let [{status :status body :body} (pav-req :put "/user/facebook" test-fb-user)]
            status => 201
@@ -52,7 +69,8 @@
 																											{:dob "Date of birth is a required field"}
 																											{:country_code "Country Code is a required field.  Please Specify Country Code"}
 																											{:topics "Please specify a list of topics."}
-																											{:gender "Please specify a valid gender.  Valid values are male, female and they"}]}) :in-any-order)))
+																											{:gender "Please specify a valid gender.  Valid values are male, female and they"}
+                                                      {:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}) :in-any-order)))
 
 	(fact "Create a new facebook user, when the payload is empty, return 400 with appropriate error messages"
 		(let [{status :status body :body} (pav-req :put "/user/facebook" {})]
@@ -66,7 +84,8 @@
 																											{:topics "Please specify a list of topics."}
 																											{:token "A token is required for social media registerations and logins"}
 																											{:gender "Please specify a valid gender.  Valid values are male, female and they"}
-																											{:id "Please specify a facebook id"}]}) :in-any-order)))
+																											{:id "Please specify a facebook id"}
+                                                      {:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}) :in-any-order)))
 
   (fact "Create a new user, when the email is invalid, return 400 with appropriate error message"
     (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :email "johnstuffcom"))]

@@ -100,5 +100,6 @@
                             :cdn-bucket-name                     "placeavote-cdn"
                             :cdn-url                             "https://cdn.placeavote.com"
                             :s3-region                           "us-west-1"
-                            :default-followers                   "wam@stuff.com,wam2@pl.com"}
+                            :default-followers                   "wam@stuff.com,wam2@pl.com"
+                            :sunlight-congress-apikey            "4a8d55c9cf12410e95ad2c09615a46a4"}
              :plugins      [[lein-midje "3.1.3"]]}})

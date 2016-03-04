@@ -14,28 +14,31 @@
 (def county-code-schema (s/both s/Str (s/pred (complement empty?)) (s/pred #(contains? iso3-codes %))))
 (def gender-schema (s/both s/Str (s/pred (complement empty?)) (s/enum "male" "female" "they")))
 (def str-schema (s/both (s/pred (complement empty?)) s/Str))
+(def zip-schema #"^[0-9]{5}")
 
 (def User
-	{:email        email-schema
-	 :password     pwd-schema
-	 :first_name   str-schema
-	 :last_name    str-schema
-	 :dob          dob-schema
-	 :country_code county-code-schema
-	 :topics       [str-schema]
-	 :gender       gender-schema})
+  {:email                    email-schema
+   :password                 pwd-schema
+   :first_name               str-schema
+   :last_name                str-schema
+   :dob                      dob-schema
+   :country_code             county-code-schema
+   :topics                   [str-schema]
+   :gender                   gender-schema
+   :zipcode                  zip-schema})
 
 (def FacebookUser
-	{:email        email-schema
-	 :first_name   str-schema
-	 :last_name    str-schema
-	 :dob          dob-schema
-	 :country_code county-code-schema
-	 :topics       [str-schema]
-	 :gender			 gender-schema
-	 :img_url      str-schema
-	 :token        str-schema
-	 :id					 str-schema})
+  {:email                    email-schema
+   :first_name               str-schema
+   :last_name                str-schema
+   :dob                      dob-schema
+   :country_code             county-code-schema
+   :topics                   [str-schema]
+   :gender                   gender-schema
+   :img_url                  str-schema
+   :token                    str-schema
+   :id                       str-schema
+   :zipcode                  zip-schema})
 
 (def UserRecord
 	{:email        email-schema
@@ -129,6 +132,7 @@
 				(= :gender k) {k "Please specify a valid gender.  Valid values are male, female and they"}
 				(= :id k) {k "Please specify a facebook id"}
 				(= :comment k) {k "Please include a comment"}
+        (= :zipcode k) {k "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}
 				:else {k "field is unknown"}))
 
 (defn construct-error-msg [errors]

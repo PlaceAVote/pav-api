@@ -7,7 +7,7 @@
                                                        pav-req]]))
 
 (def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
-                :country_code "USA" :topics ["Gun Rights"] :gender "male"})
+                :country_code "USA" :topics ["Gun Rights"] :gender "male" :zipcode "12345"})
 
 (def test-answers [{:question_id "1001" :answer ["I want more gun control"]}
                    {:question_id "1002" :answer ["I want less tanks"]}
