@@ -441,7 +441,9 @@ so it can be fed to ':malformed?' handler."
                         ;; To accomdate social sharing we might need to retrieve an issue id by short_issue_id field
                         (get-user-issue (utils/base64->uuidStr issue_id)))]
      (merge
-       issue
+       (if (empty? (:short_issue_id issue))
+         (assoc issue :short_issue_id (utils/uuid->base64Str (UUID/fromString issue_id)))
+         issue)
        (select-keys (get-user-by-id (:user_id issue)) [:first_name :last_name :img_url])
        (if user_id
          (select-keys (dynamo-dao/get-user-issue-emotional-response issue_id user_id) [:emotional_response])
