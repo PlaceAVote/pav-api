@@ -210,9 +210,9 @@ parameters:
         dob:
           type: string
           format: string
-        country_code:
+        zipcode:
           type: string
-          format: USA
+          format: '90210'
         img_url:
           type: string
           format: string
@@ -244,9 +244,9 @@ parameters:
         dob:
           type: string
           format: 01/10/1999
-        country_code:
+        zipcode:
           type: string
-          format: USA
+          format: '90210'
         topics:
           type: array
           items:
@@ -277,6 +277,9 @@ definitions:
       country_code:
         type: string
         format: USA
+      state:
+        type: string
+        format: string
       city:
         type: string
         format: string
