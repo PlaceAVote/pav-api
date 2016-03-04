@@ -22,7 +22,6 @@
    :first_name               str-schema
    :last_name                str-schema
    :dob                      dob-schema
-   :country_code             county-code-schema
    :topics                   [str-schema]
    :gender                   gender-schema
    :zipcode                  zip-schema})
@@ -32,7 +31,6 @@
    :first_name               str-schema
    :last_name                str-schema
    :dob                      dob-schema
-   :country_code             county-code-schema
    :topics                   [str-schema]
    :gender                   gender-schema
    :img_url                  str-schema

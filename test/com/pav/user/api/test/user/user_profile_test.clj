@@ -11,7 +11,7 @@
 
 
 (def searchable-profile {:email "peter@pl.com" :password "stuff2" :first_name "peter" :last_name "pan" :dob "05/10/1984"
-												 :country_code "USA" :topics ["Defense"] :gender "male" :zipcode "12345"})
+                         :topics ["Defense"] :gender "male" :zipcode "12345"})
 
 (against-background [(before :facts (do
 																			(flush-dynamo-tables)
@@ -27,7 +27,7 @@
 					{status :status body :body} (update-in (pav-req :get (str "/user/" user_id "/profile") token {}) [:body]
 																				#(ch/parse-string % true))]
 			status => 200
-			(keys body) => [:user_id :first_name :last_name :country_code :public :total_followers :total_following :following]
+      (set (keys body)) => (set [:user_id :first_name :last_name :country_code :state :public :total_followers :total_following :following])
 			body => (contains {:total_followers 1 :total_following 0 :following true} :in-any-order)))
 
 	(fact "Retrieve a users profile without an authentication token, Then verify user is returned."
@@ -39,19 +39,8 @@
 					{status :status body :body} (update-in (pav-req :get (str "/user/" user_id "/profile")) [:body]
 																				#(ch/parse-string % true))]
 			status => 200
-			(keys body) => [:user_id :first_name :last_name :country_code :public :total_followers :total_following :following]
+      (set (keys body)) => (set [:user_id :first_name :last_name :country_code :state :public :total_followers :total_following :following])
 			body => (contains {:total_followers 1 :total_following 0 :following false} :in-any-order)))
-
-  ;;FUTURE TEST CASE ONCE THE PRIVATE PROFILE FUNCTIONALITY IS ENABLED ON THE FRONTEND.
-	(future-fact "Retrieve a user profile, when there profile is private, Then return 401 error"
-		(let [{caller :body} (pav-req :put "/user" test-user)
-					{token :token} (ch/parse-string caller true)
-					{search-user :body} (pav-req :put "/user" searchable-profile)
-					{user_id :user_id private-user-token :token} (ch/parse-string search-user true)
-					;;update the users profile via settings endpoint.  We don't currently support this option on signup.
-					_ (pav-req :post "/user/me/settings" private-user-token {:public false})
-					{status :status } (pav-req :get (str "/user/" user_id "/profile") token {})]
-			status => 401))
 
   (fact "Retrieve a user profile, when the user profile doesn't exist, Then return 401 error"
     (let [{caller :body} (pav-req :put "/user" test-user)
@@ -64,7 +53,7 @@
 					{token :token} (ch/parse-string caller true)
 					{status :status body :body} (update-in (pav-req :get "/user/me/profile" token {}) [:body] #(ch/parse-string % true))]
 			status => 200
-			(keys body) => (contains [:user_id :first_name :last_name :country_code :public :total_followers :total_following] :in-any-order)
+      (keys body) => (contains [:user_id :first_name :last_name :country_code :state :public :total_followers :total_following] :in-any-order)
 			body => (contains {:total_followers 0 :total_following 0} :in-any-order)))
 
 	(fact "Retrieve the current users profile when the users origin is facebook"
@@ -72,7 +61,7 @@
 					{token :token} (ch/parse-string caller true)
 					{status :status body :body} (update-in (pav-req :get "/user/me/profile" token {}) [:body] #(ch/parse-string % true))]
 			status => 200
-			(keys body) => (contains [:user_id :first_name :last_name :country_code :public :total_followers :img_url :total_following] :in-any-order)
+      (keys body) => (contains [:user_id :first_name :last_name :country_code :state :public :total_followers :img_url :total_following] :in-any-order)
 			body => (contains {:total_followers 0 :total_following 0} :in-any-order)))
 
 	(fact "Follow/following another user"

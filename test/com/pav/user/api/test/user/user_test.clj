@@ -67,7 +67,6 @@
 																											{:first_name "First Name is a required field"}
 																											{:last_name "Last Name is a required field"}
 																											{:dob "Date of birth is a required field"}
-																											{:country_code "Country Code is a required field.  Please Specify Country Code"}
 																											{:topics "Please specify a list of topics."}
 																											{:gender "Please specify a valid gender.  Valid values are male, female and they"}
                                                       {:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}) :in-any-order)))
@@ -80,7 +79,6 @@
 																											{:last_name "Last Name is a required field"}
 																											{:img_url "A IMG URL is required for social media registerations and logins"}
 																											{:dob "Date of birth is a required field"}
-																											{:country_code "Country Code is a required field.  Please Specify Country Code"}
 																											{:topics "Please specify a list of topics."}
 																											{:token "A token is required for social media registerations and logins"}
 																											{:gender "Please specify a valid gender.  Valid values are male, female and they"}

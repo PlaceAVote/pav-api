@@ -11,19 +11,14 @@
                                                   account-settings indexable-profile]]
             [com.pav.user.api.graph.graph-parser :as gp]
             [com.pav.user.api.s3.user :as s3]
+            [com.pav.user.api.location.location-service :as loc]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
             [clojure.core.memoize :as memo]
             [taoensso.truss :refer [have]]
-            [environ.core :refer [env]]
-            [taoensso.faraday :as far]
-            [clj-http.client :as http]
-            [cheshire.core :as ch]
-            [clojure.string :as s])
+            [environ.core :refer [env]])
   (:import (java.util Date UUID)
            (java.sql Timestamp)))
-
-(def congress-api-key (:sunlight-congress-apikey env))
 
 (def gather-cached-bills
   "Retrieve cached bills that match previous topic arguments.  For performance purposes."
@@ -150,24 +145,11 @@
   ([payload fn]
      (wrap-validation-errors (fn payload))))
 
-(defn location-by-zip
-  "Retrieve location data from googles api and retrieve congressional district from sunlights congress API."
-  [zip]
-  (let [search-result (-> (http/get (str "https://maps.googleapis.com/maps/api/geocode/json?address=" zip))
-                          :body (ch/parse-string true) :results first)
-        lat-lng (get-in search-result [:geometry :location])
-        district-info (-> (http/get (str "https://congress.api.sunlightfoundation.com/districts/locate?latitude=" (:lat lat-lng) "&longitude=" (:lng lat-lng) "&apikey=" congress-api-key))
-                          :body (ch/parse-string true) :results first)
-        formatted_address (:formatted_address search-result)]
-    (-> {:address formatted_address :country_code (-> (s/split formatted_address #",")
-                                                      last s/trim)}
-        (merge lat-lng district-info))))
-
 (defn validzipcode?
   "Validate a given zipcode is associated with a US State and Congressional District"
   [{:keys [zipcode] :as user}]
   (if zipcode
-    (if-let [location (location-by-zip zipcode)]
+    (if-let [location (loc/location-by-zip zipcode)]
      (and (= (:country_code location) "USA")
        (contains? location :state)
        (contains? location :district))

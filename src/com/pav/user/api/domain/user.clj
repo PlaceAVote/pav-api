@@ -1,7 +1,8 @@
 (ns com.pav.user.api.domain.user
   (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
-            [com.pav.user.api.authentication.authentication :refer [create-auth-token]])
+            [com.pav.user.api.authentication.authentication :refer [create-auth-token]]
+						[com.pav.user.api.location.location-service :refer [location-by-zip]])
   (:import (java.util UUID)
            (java.util Date)))
 
@@ -15,13 +16,13 @@
       (assoc :user_id (.toString (UUID/randomUUID))
              :created_at (.getTime (Date.))
              :confirmation-token (.toString (UUID/randomUUID)))
-      (merge {:public true})))
+      (merge {:public true} (location-by-zip (:zipcode user-profile)))))
 
 (defn hash-password [user-profile]
   (update-in user-profile [:password] h/encrypt))
 
 (defn- extract-profile-info [profile]
-	(select-keys profile [:user_id :first_name :last_name :country_code :public :img_url :city]))
+	(select-keys profile [:user_id :first_name :last_name :country_code :state :public :img_url :city]))
 
 (defprotocol Profiles
   (presentable [profile]
@@ -35,7 +36,7 @@
 	(indexable-profile [profile]
 		"Prepare User profile for indexing to ES"))
 
-(defrecord UserProfile [user_id email password first_name last_name dob country_code
+(defrecord UserProfile [user_id email password first_name last_name dob country_code state address lat lng district
                         created_at public registered token topics confirmation-token]
   Profiles
   (presentable [profile]
@@ -51,7 +52,8 @@
 		(dissoc profile :password :token)))
 
 (defrecord FacebookUserProfile [user_id email facebook_token facebook_id first_name last_name dob country_code
-                                created_at public registered token topics confirmation-token]
+                                state address lat lng district created_at public registered token topics
+                                confirmation-token]
   Profiles
   (presentable [profile]
     (dissoc profile :facebook_token :confirmation-token))
