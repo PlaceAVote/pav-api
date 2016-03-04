@@ -144,8 +144,9 @@
 (defn persist-to-newsfeed [events]
   (when events
     (log/info "Events being persisted to users newsfeed " events)
-    (far/batch-write-item client-opts
-      {dy/userfeed-table-name {:put events}})))
+    (doseq [batch (partition 25 25 nil events)]
+      (far/batch-write-item client-opts
+        {dy/userfeed-table-name {:put batch}}))))
 
 (defn build-follow-profile [profile]
   (when profile
@@ -256,10 +257,9 @@ new ID assigned as issue_id and timestamp stored in table."
                            ;;discovered in development
                            (remove #(= user_id (:user_id %)))
                            (map #(assoc data :user_id (:user_id %))))
-        follower-evts {:put (conj follower-evts author-event)}]
-    (far/batch-write-item client-opts
-      {dy/userfeed-table-name follower-evts
-       dy/timeline-table-name {:put [(assoc author-event :event_id (.toString (UUID/randomUUID)))]}})))
+        follower-and-author-evts (conj follower-evts author-event)]
+    (far/put-item client-opts dy/timeline-table-name (assoc author-event :event_id (.toString (UUID/randomUUID))))
+    (persist-to-newsfeed follower-and-author-evts)))
 
 (declare delete-user-issue-emotional-response)
 (defn- publish-issues-notification
