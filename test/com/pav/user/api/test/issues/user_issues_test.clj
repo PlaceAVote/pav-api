@@ -31,7 +31,7 @@
        ;; on right side, but only left side, so this key is left out
        (keys response) => (contains [:user_id :first_name :last_name
                                      :bill_id :bill_title :comment :article_link :issue_id
-                                     :article_title :article_img :emotional_response
+                                     :short_issue_id :article_title :article_img :emotional_response
                                      :positive_responses :negative_responses :neutral_responses] :in-any-order)
        ;; make sure all keys has values
        (some nil? (vals response)) => nil))
@@ -177,7 +177,7 @@
           response (ch/parse-string body true)]
       status => 201
       (keys response) => (contains [:user_id :first_name :last_name
-                                    :bill_id :bill_title :comment :article_link :issue_id
+                                    :bill_id :bill_title :comment :article_link :issue_id :short_issue_id
                                     :article_title :article_img :emotional_response
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)
       (select-keys response [:article_title :article_img :article_link])
@@ -196,7 +196,7 @@
           response (first (:results (ch/parse-string body true)))]
       status => 200
       (some nil? (vals response)) => nil
-      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
+      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :short_issue_id :author_id
                                     :article_title :type :bill_id :bill_title :comment
                                     :article_link :article_img :emotional_response
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)))
@@ -212,7 +212,7 @@
           response (first (:results (ch/parse-string body true)))]
       status => 200
       (some nil? (vals response)) => nil
-      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
+      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :short_issue_id :author_id
                                     :article_title :type :bill_id :bill_title :comment
                                     :article_link :article_img :emotional_response :event_id
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)))
@@ -244,7 +244,7 @@
           response (first (:results (ch/parse-string body true)))]
       status => 200
       (some nil? (vals response)) => nil
-      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :author_id
+      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :short_issue_id :author_id
                                     :comment :emotional_response :type
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
@@ -290,7 +290,7 @@
       status => 201
       (:comment response) => "Updated comment body"
       (keys response) => (contains [:user_id :first_name :last_name :timestamp
-                                    :bill_id :bill_title :comment :issue_id :emotional_response
+                                    :bill_id :bill_title :comment :issue_id :short_issue_id :emotional_response
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)
       ;; make sure all keys has values
       (some nil? (vals response)) => nil))
@@ -323,7 +323,7 @@
                              :article_img anything
                              :article_title "George W. Bush Counterpunches Donald Trump at Jeb! Rally"})
       (keys response) => (contains [:user_id :first_name :last_name
-                                    :bill_id :bill_title :comment :article_link :issue_id
+                                    :bill_id :bill_title :comment :article_link :issue_id :short_issue_id
                                     :article_title :article_img :emotional_response
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)
       ;; make sure all keys has values
@@ -369,7 +369,23 @@
           {status :status body :body} (pav-req :get (str "/user/issue/" issue_id))
           response (ch/parse-string body true)]
       status => 200
-      (keys response) => (contains [:user_id :first_name :last_name
+      (keys response) => (contains [:user_id :first_name :last_name :short_issue_id
+                                    :bill_id :bill_title :comment :article_link :issue_id
+                                    :article_title :article_img :emotional_response
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)
+      (some nil? (vals response)) => nil))
+
+  (fact "Given a new issue, Then retrieve single issue by short_issue_id"
+    (let [{body :body} (pav-req :put "/user" test-user)
+          {token :token} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user/issue" token
+                         {:bill_id "hr2-114" :comment "Comment Body goes here"
+                          :article_link "http://time.com/3319278/isis-isil-twitter/"})
+          {short_issue_id :short_issue_id} (ch/parse-string body true)
+          {status :status body :body} (pav-req :get (str "/user/issue/" short_issue_id))
+          response (ch/parse-string body true)]
+      status => 200
+      (keys response) => (contains [:user_id :first_name :last_name :short_issue_id
                                     :bill_id :bill_title :comment :article_link :issue_id
                                     :article_title :article_img :emotional_response
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)
@@ -387,7 +403,7 @@
       status => 200
       (:user_id response) => author_id
       (keys response) => (contains [:user_id :first_name :last_name
-                                    :bill_id :bill_title :comment :article_link :issue_id
+                                    :bill_id :bill_title :comment :article_link :issue_id :short_issue_id
                                     :article_title :article_img :emotional_response
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)
       (some nil? (vals response)) => nil))
@@ -406,7 +422,7 @@
       status => 200
       (:user_id response) => author_id
       (keys response) => (contains [:user_id :first_name :last_name
-                                    :bill_id :bill_title :comment :article_link :issue_id
+                                    :bill_id :bill_title :comment :article_link :issue_id :short_issue_id
                                     :article_title :article_img :emotional_response
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)
       (some nil? (vals response)) => nil))

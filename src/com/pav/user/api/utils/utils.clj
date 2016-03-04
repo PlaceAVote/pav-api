@@ -2,8 +2,10 @@
 	(:require [msgpack.core :as msg]
 						[msgpack.clojure-extensions]
 						[cheshire.core :as ch])
-	(:import (java.io ByteArrayInputStream)
-					 (org.apache.commons.codec.binary Base64)))
+  (:import (java.io ByteArrayInputStream)
+           (org.apache.commons.codec.binary Base64)
+           (java.nio ByteBuffer)
+           (java.util UUID)))
 
 (defn record-in-ctx [ctx]
   (get ctx :record))
@@ -66,3 +68,17 @@
   (and (= (sort ks)
           (-> mp keys sort))
        (has-keys? mp ks)))
+
+(defn uuid->base64Str
+  "Converts UUID into 32 Character Base64 String"
+  [uuid]
+  (let [byte-buff (ByteBuffer/wrap (byte-array 16))]
+    (.putLong byte-buff (.getMostSignificantBits uuid))
+    (.putLong byte-buff (.getLeastSignificantBits uuid))
+    (Base64/encodeBase64URLSafeString (.array byte-buff))))
+
+(defn base64->uuidStr
+  "Convert Base64 String to UUID String"
+  [val]
+  (let [byte-buffer (ByteBuffer/wrap (Base64/decodeBase64 val))]
+    (.toString (UUID. (.getLong byte-buffer) (.getLong byte-buffer)))))

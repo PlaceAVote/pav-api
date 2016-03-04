@@ -15,8 +15,7 @@
             [clojure.tools.logging :as log]
             [clojure.core.memoize :as memo]
             [taoensso.truss :refer [have]]
-            [environ.core :refer [env]]
-            [taoensso.faraday :as far])
+            [environ.core :refer [env]])
   (:import (java.util Date UUID)
            (java.sql Timestamp)))
 
@@ -438,7 +437,9 @@ so it can be fed to ':malformed?' handler."
 (defn get-user-issue-feed-item
   "Retrieve Single User Issue in the same format as that displayed in a feed item."
   ([issue_id & [user_id]]
-   (when-let [issue (get-user-issue issue_id)]
+   (when-let [issue (or (get-user-issue issue_id)
+                        ;; To accomdate social sharing we might need to retrieve an issue id by short_issue_id field
+                        (get-user-issue (utils/base64->uuidStr issue_id)))]
      (merge
        issue
        (select-keys (get-user-by-id (:user_id issue)) [:first_name :last_name :img_url])

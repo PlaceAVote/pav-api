@@ -4,7 +4,8 @@
             [clojure.tools.logging :as log]
             [com.pav.user.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.user.api.dynamodb.db :as dy :refer [client-opts]]
-            [com.pav.user.api.notifications.ws-handler :refer [publish-notification]])
+            [com.pav.user.api.notifications.ws-handler :refer [publish-notification]]
+            [com.pav.user.api.utils.utils :refer [uuid->base64Str]])
   (:import [java.util Date UUID]))
 
 (defn get-user-by-id [id]
@@ -219,9 +220,11 @@
   "Create bill issues with details like user_id, bill_id and so on. Returns
 new ID assigned as issue_id and timestamp stored in table."
   [details]
-  (let [id (.toString (UUID/randomUUID))
+  (let [id (UUID/randomUUID)
+        short_id (uuid->base64Str id)
         timestamp (.getTime (Date.))
-        issue-data (merge {:issue_id id
+        issue-data (merge {:issue_id (.toString id)
+                           :short_issue_id short_id
                            :timestamp timestamp
                            :positive_responses 0
                            :neutral_responses 0

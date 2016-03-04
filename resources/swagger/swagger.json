@@ -273,9 +273,9 @@
             "type": "string",
             "format": "string"
           },
-          "country_code": {
+          "zipcode": {
             "type": "string",
-            "format": "USA"
+            "format": "90210"
           },
           "img_url": {
             "type": "string",
@@ -320,9 +320,9 @@
             "type": "string",
             "format": "01/10/1999"
           },
-          "country_code": {
+          "zipcode": {
             "type": "string",
-            "format": "USA"
+            "format": "90210"
           },
           "topics": {
             "type": "array",
@@ -367,6 +367,10 @@
         "country_code": {
           "type": "string",
           "format": "USA"
+        },
+        "state": {
+          "type": "string",
+          "format": "string"
         },
         "city": {
           "type": "string",
@@ -1350,6 +1354,10 @@
                   "type": "string",
                   "format": "string"
                 },
+                "short_issue_id": {
+                  "type": "string",
+                  "format": "string"
+                },
                 "bill_id": {
                   "type": "string",
                   "format": "string"
@@ -1442,6 +1450,10 @@
                   "type": "string",
                   "format": "string"
                 },
+                "short_issue_id": {
+                  "type": "string",
+                  "format": "string"
+                },
                 "bill_id": {
                   "type": "string",
                   "format": "string"
@@ -1508,7 +1520,7 @@
             "description": "Token invalid"
           },
           "404": {
-            "description": "Issue not found"
+            "description": "Issue Not Found"
           }
         }
       },
@@ -1535,6 +1547,10 @@
               "type": "object",
               "properties": {
                 "issue_id": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "short_issue_id": {
                   "type": "string",
                   "format": "string"
                 },
