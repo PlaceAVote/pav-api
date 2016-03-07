@@ -11,6 +11,7 @@
                                                   account-settings indexable-profile]]
             [com.pav.user.api.graph.graph-parser :as gp]
             [com.pav.user.api.s3.user :as s3]
+            [com.pav.user.api.location.location-service :as loc]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
             [clojure.core.memoize :as memo]
@@ -144,8 +145,22 @@
   ([payload fn]
      (wrap-validation-errors (fn payload))))
 
+(defn validzipcode?
+  "Validate a given zipcode is associated with a US State and Congressional District"
+  [{:keys [zipcode] :as user}]
+  (if zipcode
+    (if-let [location (loc/location-by-zip zipcode)]
+     (and (= (:country_code location) "USA")
+       (contains? location :state)
+       (contains? location :district))
+     false)
+    false))
+
 (defn validate-new-user-payload [user origin]
-  (validate-payload user us/validate-new-user-payload origin))
+  (if-let [errors (validate-payload user us/validate-new-user-payload origin)]
+    errors
+    (if-not (validzipcode? user)
+      (wrap-validation-errors {:zipcode "Zipcode is not a valid US Zip+4 code."}))))
 
 (defn validate-user-login-payload [user origin]
   (validate-payload user us/validate-login-payload origin))
