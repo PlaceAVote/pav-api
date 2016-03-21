@@ -35,3 +35,7 @@
 (defn update-user-token [user_id new-token]
   (log/info "Updating user token for " user_id)
   (j/update! db-spec :user_info {:token new-token} ["user_id = ?" user_id]))
+
+(defn update-password [user_id new-pwd]
+  (log/info "Updating password for " user_id)
+  (j/update! db-spec :user_info {:password new-pwd} ["user_id = ?" user_id]))

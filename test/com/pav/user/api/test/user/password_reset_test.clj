@@ -1,6 +1,6 @@
 (ns com.pav.user.api.test.user.password-reset-test
 	(:use midje.sweet)
-	(:require [com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables
+	(:require [com.pav.user.api.test.utils.utils :refer [flush-user-sql-tables
 																											 flush-redis
 																											 flush-es-indexes
 																											 bootstrap-bills
@@ -12,7 +12,7 @@
 
 (against-background [(before :facts (do
 																			(flush-redis)
-																			(flush-dynamo-tables)
+																			(flush-user-sql-tables)
 																			(flush-es-indexes)
 																			(bootstrap-bills)))]
 

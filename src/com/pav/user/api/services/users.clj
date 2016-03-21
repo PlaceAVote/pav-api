@@ -302,9 +302,7 @@
   (not (empty? (redis-dao/retrieve-useremail-by-reset-token reset_token))))
 
 (defn update-user-password [user_id new-password]
-  (let [hashed-pwd (h/encrypt new-password)]
-    (dynamo-dao/update-user-password user_id hashed-pwd)
-    (redis-dao/update-user-password user_id hashed-pwd)))
+  (user-dao/update-password user_id (h/encrypt new-password)))
 
 (defn issue-password-reset-request [email]
   (let [user (get-user-by-email email)
