@@ -2,9 +2,8 @@
   (:use midje.sweet)
   (:require [com.pav.user.api.handler :refer [app]]
             [com.pav.user.api.test.utils.utils :refer [make-request parse-response-body
-																											 flush-dynamo-tables
-                                                       flush-redis
                                                        flush-es-indexes
+                                                       flush-user-sql-tables
                                                        bootstrap-bills
 																											 test-user
 																											 test-fb-user
@@ -15,8 +14,7 @@
             [cheshire.core :as ch]))
 
 (against-background [(before :facts (do
-                                      (flush-dynamo-tables)
-                                      (flush-redis)
+                                      (flush-user-sql-tables)
                                       (flush-es-indexes)
                                       (bootstrap-bills)))]
 
@@ -42,22 +40,22 @@
       status => 400
       response => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
 
-   (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
-         (let [{status :status body :body} (pav-req :put "/user/facebook" test-fb-user)]
-           status => 201
-           (keys (ch/parse-string body true)) => (contains [:user_id :token] :in-any-order)))
+  (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
+    (let [{status :status body :body} (pav-req :put "/user/facebook" test-fb-user)]
+      status => 201
+      (keys (ch/parse-string body true)) => (contains [:user_id :token] :in-any-order)))
 
   (fact "Create a new user, with an existing email, should return 409"
-        (let [_ (pav-req :put "/user" test-user)
-              {status :status body :body} (pav-req :put "/user" test-user)]
-          status => 409
-          body => (ch/generate-string existing-user-error-msg)))
+    (let [_ (pav-req :put "/user" test-user)
+          {status :status body :body} (pav-req :put "/user" test-user)]
+      status => 409
+      body => (ch/generate-string existing-user-error-msg)))
 
   (fact "Create a new facebook user, with an existing email, should return 409"
-        (let [_ (pav-req :put "/user/facebook" test-fb-user)
-              {status :status body :body} (pav-req :put "/user/facebook" test-fb-user)]
-          status => 409
-          body => (ch/generate-string existing-user-error-msg)))
+    (let [_ (pav-req :put "/user/facebook" test-fb-user)
+          {status :status body :body} (pav-req :put "/user/facebook" test-fb-user)]
+      status => 409
+      body => (ch/generate-string existing-user-error-msg)))
 
   (fact "Create a new user, when the payload is empty, return 400 with appropriate error messages"
 		(let [{status :status body :body} (pav-req :put "/user" {})]
@@ -71,7 +69,7 @@
 																											{:gender "Please specify a valid gender.  Valid values are male, female and they"}
                                                       {:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}) :in-any-order)))
 
-	(fact "Create a new facebook user, when the payload is empty, return 400 with appropriate error messages"
+  (fact "Create a new facebook user, when the payload is empty, return 400 with appropriate error messages"
 		(let [{status :status body :body} (pav-req :put "/user/facebook" {})]
 			status => 400
 			body => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}
@@ -117,23 +115,11 @@
           status => 201
           (keys (ch/parse-string body true)) => (contains [:token])))
 
-	(fact "(Migration) When user with facebook id doesn't exist, use email address to reauthenticate the user."
-		(let [_ (pav-req :put "/user/facebook" test-fb-user)
-					{first_login_attempt :status} (pav-req :post "/user/facebook/authenticate" (merge {:id "100101"} (select-keys test-fb-user [:token :email])))
-					{second_login_attempt :status body :body} (pav-req :post "/user/facebook/authenticate" (merge {:id "100101"} (select-keys test-fb-user [:token :email])))]
-			first_login_attempt => 201
-			second_login_attempt => 201
-			(keys (ch/parse-string body true)) => (contains [:token])))
-
   (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
         (let [_ (pav-req :put "/user" test-user)
               {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "invalid"})]
           status => 401
           body => login-error-msg))
-
-  (fact "Given confirmation token, when invalid, then return 401."
-        (let [{status :status} (pav-req :post "/user/confirm/1234")]
-          status => 401))
 
   (fact "Create token for user, when authentication payload doesn't contain an email then returns 400 with suitable error message"
     (let [_ (pav-req :put "/user" test-user)

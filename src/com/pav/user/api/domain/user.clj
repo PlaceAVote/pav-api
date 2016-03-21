@@ -84,7 +84,7 @@
     nil))
 
 (defn convert-to-correct-profile-type [{:keys [origin] :as user-profile}]
-	(case origin
+	(case (keyword origin)
 		:pav (map->UserProfile user-profile)
 		:facebook (map->FacebookUserProfile user-profile)
 		nil))

@@ -73,10 +73,7 @@
   "Create new user profile profile to dynamo and redis."
   (when profile
     (try
-      (dynamo-dao/create-user profile)
       (user-dao/create-user profile)
-      (redis-dao/create-user-profile profile)
-      (assign-default-followers user_id)
       (pre-populate-newsfeed profile)
       (thread ;; Expensive call to mandril.  Execute in seperate thread.
        (index-user (indexable-profile profile))
@@ -105,23 +102,15 @@
   "Retrieve user profile using facebook_id"
   (user-dao/get-user-by-facebook facebook_id))
 
-(defn update-user-token [{:keys [email token id]} origin]
+(defn update-user-token [{:keys [email id]} origin]
   "Take current users email and token and update these values in databases.  Token can only be passed for facebook
   authentications"
-  (let [{:keys [user_id facebook_id] :as current-user} (case origin
-                                                         :facebook (or (get-user-by-facebook-id id)
-                                                                       (get-user-by-email email))
-                                                         :pav (get-user-by-email email))
-        new-token (create-token-for current-user)]
-    (case origin
-      :pav      (do (redis-dao/update-token user_id new-token)
-                    (dynamo-dao/update-user-token user_id new-token))
-      :facebook (do (redis-dao/update-facebook-token user_id token new-token)
-                    (dynamo-dao/update-facebook-user-token user_id token new-token)
-                    (when-not facebook_id
-                      (dynamo-dao/assign-facebook-id user_id id)
-                      (redis-dao/assign-facebook-id user_id id))))
-    new-token))
+  (let [{:keys [user_id] :as current-user} (case origin
+                                             :facebook (get-user-by-facebook-id id)
+                                             :pav (get-user-by-email email))
+        {token :token} (create-token-for current-user)]
+    (user-dao/update-user-token user_id token)
+    {:token token}))
 
 (defn wrap-validation-errors [result]
   "Wrap validation errors or return nil"
@@ -194,7 +183,7 @@
 (defn valid-user? [user origin]
   (let [user (update-in user [:email] clojure.string/lower-case)]
     (case origin
-     :pav (check-pwd (:password user) (:password (dynamo-dao/get-user-by-email (:email user))))
+     :pav (check-pwd (:password user) (:password (get-user-by-email (:email user))))
      :facebook (user-exist? user))))
 
 (defn authenticate-user [user origin]
