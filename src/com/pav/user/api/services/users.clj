@@ -94,28 +94,16 @@
   (redis-dao/delete-user-profile user_profile))
 
 (defn get-user-by-id [user_id]
-  "Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
-  (if-let [user-from-redis (redis-dao/get-user-profile user_id)]
-    user-from-redis
-    (when-let [user-from-dynamodb (dynamo-dao/get-user-by-id user_id)]
-      (redis-dao/create-user-profile user-from-dynamodb)
-      user-from-dynamodb)))
+  "Retrieve user profile by user_id."
+  (user-dao/get-user-by-id user_id))
 
 (defn- get-user-by-email [email]
-  "Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
-  (if-let [user-from-redis (redis-dao/get-user-profile-by-email email)]
-    user-from-redis
-    (when-let [user-from-dynamodb (dynamo-dao/get-user-by-email email)]
-      (redis-dao/create-user-profile user-from-dynamodb)
-      user-from-dynamodb)))
+  "Retrieve user profile using email."
+  (user-dao/get-user-by-email email))
 
 (defn- get-user-by-facebook-id [facebook_id]
-  "Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
-  (if-let [user-from-redis (redis-dao/get-user-profile-by-facebook-id facebook_id)]
-    user-from-redis
-    (when-let [user-from-dynamodb (dynamo-dao/get-user-profile-by-facebook-id facebook_id)]
-      (redis-dao/create-user-profile user-from-dynamodb)
-      user-from-dynamodb)))
+  "Retrieve user profile using facebook_id"
+  (user-dao/get-user-by-facebook facebook_id))
 
 (defn update-user-token [{:keys [email token id]} origin]
   "Take current users email and token and update these values in databases.  Token can only be passed for facebook

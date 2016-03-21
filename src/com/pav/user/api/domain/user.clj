@@ -83,9 +83,9 @@
                                           (assoc :origin "facebook")))
     nil))
 
-(defn convert-to-correct-profile-type [user-profile]
-  (when (seq user-profile)
-    (if (contains? user-profile :facebook_token)
-     (map->FacebookUserProfile (assoc user-profile :origin "facebook"))
-     (map->UserProfile (assoc user-profile :origin "pav")))))
+(defn convert-to-correct-profile-type [{:keys [origin] :as user-profile}]
+	(case origin
+		:pav (map->UserProfile user-profile)
+		:facebook (map->FacebookUserProfile user-profile)
+		nil))
 

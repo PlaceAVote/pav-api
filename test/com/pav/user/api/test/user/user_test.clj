@@ -131,13 +131,12 @@
           status => 401
           body => login-error-msg))
 
-  (fact "Create token for user, when authentication payload doesn't contain an email then returns 400 with suitable error message"
-        (let [_ (pav-req :put "/user" test-user)
-              {status :status body :body} (pav-req :post "/user/authenticate" {:password "stuff2"})]
-          status => 400
-          body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
-
   (fact "Given confirmation token, when invalid, then return 401."
         (let [{status :status} (pav-req :post "/user/confirm/1234")]
           status => 401))
-	)
+
+  (fact "Create token for user, when authentication payload doesn't contain an email then returns 400 with suitable error message"
+    (let [_ (pav-req :put "/user" test-user)
+          {status :status body :body} (pav-req :post "/user/authenticate" {:password "stuff2"})]
+      status => 400
+      body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]}))))

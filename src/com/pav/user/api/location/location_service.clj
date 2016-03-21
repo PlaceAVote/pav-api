@@ -15,6 +15,5 @@
         district-info (-> (http/get (str "https://congress.api.sunlightfoundation.com/districts/locate?latitude=" (:lat lat-lng) "&longitude=" (:lng lat-lng) "&apikey=" congress-api-key))
                         :body (ch/parse-string true) :results first)
         formatted_address (:formatted_address search-result)]
-    (-> {:address formatted_address :country_code (-> (s/split formatted_address #",")
-                                                    last s/trim)}
+    (-> {:address formatted_address :country_code (-> (s/split formatted_address #",") last s/trim)}
       (merge lat-lng district-info))))
