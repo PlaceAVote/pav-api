@@ -26,12 +26,14 @@
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.dynamodb.db :refer [create-all-tables!]]
             [com.pav.user.api.authentication.authentication :refer [token-handler]]
-            [com.pav.user.api.services.questions :refer [bootstrap-wizard-questions]]))
+            [com.pav.user.api.services.questions :refer [bootstrap-wizard-questions]]
+            [com.pav.user.api.migrations.migrations :refer [migrate]]))
 
 
 (defn init []
   (log/info "API is starting")
   (create-all-tables!)
+  (migrate)
   (start-notification-listener)
   (-> "resources/questions.edn"
       slurp

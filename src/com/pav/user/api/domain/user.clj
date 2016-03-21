@@ -73,17 +73,19 @@
 																	user-profile
 															 		assoc-common-attributes
 																	hash-password
-																	assign-new-token))
+																	assign-new-token
+																	(assoc :origin "pav")))
     :facebook (map->FacebookUserProfile (->
 																					user-profile
 																					assoc-common-attributes
 																					(merge {:facebook_token (:token user-profile) :facebook_id (:id user-profile)})
-																					assign-new-token))
+																					assign-new-token
+                                          (assoc :origin "facebook")))
     nil))
 
 (defn convert-to-correct-profile-type [user-profile]
   (when (seq user-profile)
     (if (contains? user-profile :facebook_token)
-     (map->FacebookUserProfile user-profile)
-     (map->UserProfile user-profile))))
+     (map->FacebookUserProfile (assoc user-profile :origin "facebook"))
+     (map->UserProfile (assoc user-profile :origin "pav")))))
 

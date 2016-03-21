@@ -13,6 +13,7 @@ machine:
     version: oraclejdk8
   services:
     - redis
+    - mysql
 deployment:
   development:
     branch: master

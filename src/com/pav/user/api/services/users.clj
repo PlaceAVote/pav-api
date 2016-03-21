@@ -3,6 +3,7 @@
             [com.pav.user.api.schema.user :as us]
             [com.pav.user.api.utils.utils :as utils]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
+            [com.pav.user.api.database.user :as user-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject get-bill-info]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
@@ -73,6 +74,7 @@
   (when profile
     (try
       (dynamo-dao/create-user profile)
+      (user-dao/create-user profile)
       (redis-dao/create-user-profile profile)
       (assign-default-followers user_id)
       (pre-populate-newsfeed profile)

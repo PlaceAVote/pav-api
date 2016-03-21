@@ -36,7 +36,12 @@
                                                                   com.amazonaws/aws-java-sdk-s3
                                                                   com.amazonaws/aws-java-sdk-kms
                                                                   com.amazonaws/aws-java-sdk-core]]
-                 [com.taoensso/encore "2.33.0"]]
+                 [com.taoensso/encore "2.33.0"]
+                 [org.flywaydb/flyway-core "4.0"]
+                 [org.clojure/java.jdbc "0.4.2"]
+                 [mysql/mysql-connector-java "5.1.38"]
+                 [org.clojure/tools.cli "0.3.3"]
+                 [clj-time "0.11.0"]]
   :plugins [[lein-environ "1.0.0"]
 						[lein-release "1.0.5"]
             [lein-essthree "0.2.1"]]
@@ -53,6 +58,9 @@
                  :build-uberjar true}
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
+  :aliases {"migrate"       ["run" "-m" "com.pav.user.api.migrations.migrations/migrate"]
+            "repair"        ["run" "-m" "com.pav.user.api.migrations.migrations/repair"]
+            "migrate-users" ["run" "-m" "com.pav.user.api.migrations.migrations/migrate-users"]}
   :main system
   :profiles
   {
@@ -101,5 +109,8 @@
                             :cdn-url                             "https://cdn.placeavote.com"
                             :s3-region                           "us-west-1"
                             :default-followers                   "wam@stuff.com,wam2@pl.com"
-                            :sunlight-congress-apikey            "4a8d55c9cf12410e95ad2c09615a46a4"}
+                            :sunlight-congress-apikey            "4a8d55c9cf12410e95ad2c09615a46a4"
+                            :mysql-url                           "localhost:3306/circle_test"
+                            :mysql-user                          "ubuntu"
+                            :mysql-pwd                           ""}
              :plugins      [[lein-midje "3.1.3"]]}})

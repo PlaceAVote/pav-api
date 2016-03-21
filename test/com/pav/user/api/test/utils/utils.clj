@@ -14,7 +14,9 @@
            [clojurewerkz.elastisch.rest.bulk :as erb]
            [clojurewerkz.elastisch.common.bulk :as ecb]
            [clojure.edn :as edn]
-           [com.pav.user.api.dynamodb.db :as db]))
+           [com.pav.user.api.dynamodb.db :as db]
+           [com.pav.user.api.database.database :as database]
+           [clojure.java.jdbc :as j]))
 
 (def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
                 :topics ["Defense"] :gender "male" :zipcode "12345"})
@@ -50,9 +52,13 @@
         (car/flushall)
         (car/flushdb)))
 
+(defn flush-user-sql-tables []
+  (j/execute! database/db-spec ["DELETE FROM user_info WHERE email IS NOT NULL"]))
+
 (defn flush-dynamo-tables []
   (db/delete-all-tables! client-opts)
-  (db/create-all-tables! client-opts))
+  (db/create-all-tables! client-opts)
+  (flush-user-sql-tables))
 
 (defn make-request
   ([method url payload]
