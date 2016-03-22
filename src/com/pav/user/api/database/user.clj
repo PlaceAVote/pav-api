@@ -85,6 +85,25 @@ dob-formatter (f/formatter (t/default-time-zone) "MM/dd/yyyy" "MM/dd/yyyy"))
 (defn count-following [user_id]
   (-> (j/query db-spec ["SELECT count(*) AS count FROM user_following_rel WHERE follower_id = ?" user_id]) first :count))
 
+(defn get-followers [user_id]
+  (j/query db-spec
+    ["SELECT user_id, first_name, last_name, img_url
+     FROM user_following_rel
+     INNER JOIN user_info
+     ON user_following_rel.follower_id = user_info.user_id
+     WHERE following_id = ?" user_id]))
+
+(defn get-following [user_id]
+  (j/query db-spec
+    ["SELECT user_id, first_name, last_name, img_url
+     FROM user_following_rel
+     INNER JOIN user_info
+     ON user_following_rel.following_id = user_info.user_id
+     WHERE follower_id = ?" user_id]))
+
+(defn unfollow-user [follower_id following_id]
+  (j/delete! db-spec :user_following_rel ["follower_id = ? AND following_id = ?" follower_id following_id]))
+
 (defn update-userprofile [user_id param-map]
   (log/info "Updating user profile for " user_id)
   (j/update! db-spec :user_info
