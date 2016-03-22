@@ -18,10 +18,10 @@
            [com.pav.user.api.database.database :as database]
            [clojure.java.jdbc :as j]))
 
-(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
+(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "10/05/1984"
                 :topics ["Defense"] :gender "male" :zipcode "12345"})
 
-(def test-fb-user {:email "paul@facebook.com" :first_name "john" :last_name "stuff" :dob "05/10/1984"
+(def test-fb-user {:email "paul@facebook.com" :first_name "john" :last_name "stuff" :dob "10/05/1984"
                    :img_url "http://image.com/image.jpg" :topics ["Defense"] :token "token" :gender "male" :id "818181" :zipcode "12345"})
 
 (def client-opts {:access-key "<AWS_DYNAMODB_ACCESS_KEY>"
@@ -53,6 +53,7 @@
         (car/flushdb)))
 
 (defn flush-user-sql-tables []
+  (j/execute! database/db-spec ["DELETE FROM user_following_rel WHERE follower_id IS NOT NULL"])
   (j/execute! database/db-spec ["DELETE FROM user_info WHERE email IS NOT NULL"]))
 
 (defn flush-dynamo-tables []

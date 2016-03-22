@@ -228,21 +228,21 @@
      (publish-to-timeline follower-event))))
 
 (defn following? [follower following]
-  (dynamo-dao/following? follower following))
+  (user-dao/following? follower following))
 
 (defn follow-user [follower following]
   (if-not (following? follower following)
-    (do (dynamo-dao/follow-user follower following)
+    (do (user-dao/follow-user follower following)
         (publish-following-event follower following))))
 
 (defn unfollow-user [follower following]
   (dynamo-dao/unfollow-user follower following))
 
 (defn count-followers [user_id]
-  (dynamo-dao/count-followers user_id))
+  (user-dao/count-followers user_id))
 
 (defn count-following [user_id]
-  (dynamo-dao/count-following user_id))
+  (user-dao/count-following user_id))
 
 (defn user-followers [user_id]
   (->> (dynamo-dao/user-followers user_id)
@@ -262,10 +262,7 @@
          (assoc :total_following (count-following user_id)))))
   ([current-user user_id]
      (if-let [u (get-user-profile user_id)]
-       (assoc u :following
-                (if current-user
-                  (following? current-user user_id)
-                  false)))))
+       (assoc u :following (if current-user (following? current-user user_id) false)))))
 
 (defn user-profile-exist?
   "Retrieve user profile, option to include current user for extra meta data on the relationship between both users.
@@ -280,6 +277,7 @@
      [false {:error {:error_message "User Profile does not exist"}}])))
 
 (defn- update-user-profile [user_id param-map]
+  (user-dao/update-userprofile user_id param-map)
   (-> (get-user-by-id user_id)
       (merge param-map)
       indexable-profile
@@ -287,8 +285,6 @@
 
 (defn update-account-settings [user_id param-map]
   (when (seq param-map)
-    (dynamo-dao/update-account-settings user_id param-map)
-    (redis-dao/update-account-settings user_id param-map)
     (update-user-profile user_id param-map)))
 
 (defn get-account-settings [user_id]

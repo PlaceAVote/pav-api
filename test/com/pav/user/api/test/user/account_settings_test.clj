@@ -1,7 +1,6 @@
 (ns com.pav.user.api.test.user.account-settings-test
 	(:use midje.sweet)
-    (:require [com.pav.user.api.test.utils.utils :refer [flush-redis
-                                                         flush-dynamo-tables
+    (:require [com.pav.user.api.test.utils.utils :refer [flush-user-sql-tables
                                                          flush-es-indexes
                                                          test-user
                                                          test-fb-user
@@ -10,8 +9,7 @@
               [cheshire.core :as ch]))
 
 (against-background [(before :facts (do
-                                      (flush-dynamo-tables)
-                                      (flush-redis)
+                                      (flush-user-sql-tables)
                                       (flush-es-indexes)
                                       (bootstrap-bills)))]
 	(fact "Retrieve a users account settings"
@@ -20,8 +18,8 @@
               {status :status body :body} (pav-req :get "/user/me/settings" token {})]
 			status => 200
 			(ch/parse-string body true) =>
-				(merge {:user_id user_id :public true :social_login false}
-					(select-keys test-user [:first_name :last_name :dob :gender :email :img_url]))))
+				(merge {:user_id user_id :public true :social_login false :img_url nil}
+					(select-keys test-user [:first_name :last_name :dob :gender :email]))))
 
 	(fact "Retrieve a facebook users account settings"
 		(let [{body :body} (pav-req :put "/user/facebook" test-fb-user)
@@ -35,8 +33,8 @@
 	(fact "Update a users account settings"
 		(let [{body :body} (pav-req :put "/user" test-user)
               {token :token} (ch/parse-string body true)
-              changes {:public false :first_name "Ted" :last_name "Baker" :gender "female" :dob "06/10/1986"
-                       :email "Johnny5@placeavote.com" :city "New York City"}
+              changes {:public false :first_name "Ted" :last_name "Baker" :gender "female" :dob "10/06/1986"
+                       :email "Johnny5@placeavote.com"}
               _ (pav-req :post "/user/me/settings" token changes)
 					{status :status body :body} (pav-req :get "/user/me/settings" token {})]
 			status => 200
@@ -46,7 +44,7 @@
         (let [{body :body} (pav-req :put "/user" test-user)
               {token :token} (ch/parse-string body true)
               changes {:public false :first_name "Ted" :last_name "Baker" :gender "f" :dob "06/10/1986"
-                       :email "Johnny5@placeavote.com" :city "New York City"}
+                       :email "Johnny5@placeavote.com"}
               {status :status body :body} (pav-req :post "/user/me/settings" token changes)]
           (println body)
           status => 400
@@ -56,7 +54,7 @@
         (let [{body :body} (pav-req :put "/user" test-user)
               {token :token} (ch/parse-string body true)
               changes {:public false :first_name "Ted" :last_name "Baker" :gender "female" :dob "06/10/1986"
-                       :email "Johnny5@placeavote.com" :city "New York City"}
+                       :email "Johnny5@placeavote.com"}
               _ (pav-req :post "/user/me/settings" token changes)
               {status :status body :body} (pav-req :get "/user/me/settings" token {})]
           status => 200
@@ -89,15 +87,5 @@
 					{status :status body :body} (pav-req :get "/user/me/settings" token {})]
 			status => 200
 			(ch/parse-string body true) =>
-			(merge {:user_id user_id :public true :social_login false}
-				(select-keys test-user [:first_name :last_name :dob :gender :email :img_url]))))
-
-	(future-fact "Upload image."
-		(let [{body :body} (pav-req :put "/user" test-user)
-					{token :token user_id :user_id} (ch/parse-string body true)
-					_ (pav-req :post "/user/me/profile/image" token {:file (slurp "test-resources/base64.jpeg")})
-					{status :status body :body} (pav-req :get "/user/me/settings" token {})]
-			status => 200
-			(ch/parse-string body true) =>
-			(merge {:user_id user_id :public true :social_login false}
-						 (select-keys test-user [:first_name :last_name :dob :gender :email :img_url])))))
+			(merge {:user_id user_id :public true :social_login false :img_url nil}
+				(select-keys test-user [:first_name :last_name :dob :gender :email])))))
