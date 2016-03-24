@@ -15,18 +15,6 @@
         convert-to-correct-profile-type)
     (catch Exception e (log/info (str "Error occured retrieving user by id " e)))))
 
-(defn get-user-by-email [email]
-  (try
-    (-> (first (far/query client-opts dy/user-table-name {:email [:eq email]} {:index "user-email-idx"}))
-        convert-to-correct-profile-type)
-    (catch Exception e (log/info (str "Error occured retrieving user by email " e)))))
-
-(defn get-user-profile-by-facebook-id [facebook_id]
-  (try
-    (-> (first (far/query client-opts dy/user-table-name {:facebook_id [:eq facebook_id]} {:index "fbid-idx"}))
-        convert-to-correct-profile-type)
-    (catch Exception e (log/info (str "Error occured retrieving user by email " e)))))
-
 (defn create-confirmation-record [user_id token]
   (far/put-item client-opts dy/user-confirm-table-name {:user_id user_id
                                                      :confirmation-token token}))
@@ -95,8 +83,7 @@
                {:limit 10 :span-reqs {:max 1} :order :desc}
                (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
     (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/timeline-table-name)
-        (update-in [:results] (fn [results]
-                                (mapv #(event-meta-data % user_id) results))))))
+        (update-in [:results] (fn [results] (mapv #(event-meta-data % user_id) results))))))
 
 (defn add-bill-comment-count [{:keys [bill_id] :as feed-event}]
   "Count Bill comments associated with feed event."
@@ -163,17 +150,6 @@
   (-> (far/get-item client-opts dy/user-table-name {:user_id (:follower follower-info)})
       build-follow-profile))
 
-(defn follow-user [follower following]
-  (let [created_at (.getTime (Date.))
-        following-record {:user_id follower :following following :timestamp created_at}
-        follower-record {:user_id following :follower follower :timestamp created_at}]
-    (far/put-item client-opts dy/following-table-name following-record)
-    (far/put-item client-opts dy/follower-table-name follower-record)))
-
-(defn unfollow-user [follower following]
-  (far/delete-item client-opts dy/following-table-name {:user_id follower :following following})
-  (far/delete-item client-opts dy/follower-table-name {:user_id following :follower follower}))
-
 (defn user-following [user_id]
   (->> (far/query client-opts dy/following-table-name {:user_id [:eq user_id]})
        (map #(retrieve-following-profile %))
@@ -189,26 +165,9 @@
     false
     true))
 
-(defn count-followers [user_id]
-  (count (far/query client-opts dy/follower-table-name {:user_id [:eq user_id]})))
-
-(defn count-following [user_id]
-  (count (far/query client-opts dy/following-table-name {:user_id [:eq user_id]})))
-
 (defn update-user-password [user_id password]
   (far/update-item client-opts dy/user-table-name {:user_id user_id}
     {:update-map {:password [:put password]}}))
-
-(defn update-account-settings [user_id param-map]
-  (far/update-item client-opts dy/user-table-name {:user_id user_id}
-    {:update-map
-     (into {}
-       (for [[k v] param-map]
-         [k [:put v]]))}))
-
-(defn assign-facebook-id [user_id facebook_id]
-  (far/update-item client-opts dy/user-table-name {:user_id user_id}
-    {:update-map {:facebook_id [:put facebook_id]}}))
 
 (defn bootstrap-wizard-questions [questions]
   (far/batch-write-item client-opts

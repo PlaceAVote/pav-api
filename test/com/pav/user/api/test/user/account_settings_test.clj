@@ -1,6 +1,6 @@
 (ns com.pav.user.api.test.user.account-settings-test
 	(:use midje.sweet)
-    (:require [com.pav.user.api.test.utils.utils :refer [flush-user-sql-tables
+    (:require [com.pav.user.api.test.utils.utils :refer [flush-sql-tables
                                                          flush-es-indexes
                                                          test-user
                                                          test-fb-user
@@ -9,7 +9,7 @@
               [cheshire.core :as ch]))
 
 (against-background [(before :facts (do
-                                      (flush-user-sql-tables)
+                                      (flush-sql-tables)
                                       (flush-es-indexes)
                                       (bootstrap-bills)))]
 	(fact "Retrieve a users account settings"

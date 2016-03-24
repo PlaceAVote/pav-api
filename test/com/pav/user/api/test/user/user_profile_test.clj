@@ -1,6 +1,6 @@
 (ns com.pav.user.api.test.user.user-profile-test
 	(:use midje.sweet)
-	(:require [com.pav.user.api.test.utils.utils :refer [flush-user-sql-tables
+	(:require [com.pav.user.api.test.utils.utils :refer [flush-sql-tables
 																											 flush-es-indexes
 																											 bootstrap-bills
 																											 test-user
@@ -13,7 +13,7 @@
                          :topics ["Defense"] :gender "male" :zipcode "12345"})
 
 (against-background [(before :facts (do
-                                      (flush-user-sql-tables)
+                                      (flush-sql-tables)
 																			(flush-es-indexes)
 																			(bootstrap-bills)))]
 	(fact "Retrieve a users profile in relation to current user"

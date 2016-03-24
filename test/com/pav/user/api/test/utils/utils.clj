@@ -52,14 +52,16 @@
         (car/flushall)
         (car/flushdb)))
 
-(defn flush-user-sql-tables []
+(defn flush-sql-tables []
   (j/execute! database/db-spec ["DELETE FROM user_following_rel WHERE follower_id IS NOT NULL"])
-  (j/execute! database/db-spec ["DELETE FROM user_info WHERE email IS NOT NULL"]))
+  (j/execute! database/db-spec ["DELETE FROM user_info WHERE email IS NOT NULL"])
+  (j/execute! database/db-spec ["DELETE FROM user_issue_responses WHERE issue_id IS NOT NULL"])
+  (j/execute! database/db-spec ["DELETE FROM user_issues WHERE issue_id IS NOT NULL"]))
 
 (defn flush-dynamo-tables []
   (db/delete-all-tables! client-opts)
   (db/create-all-tables! client-opts)
-  (flush-user-sql-tables))
+  (flush-sql-tables))
 
 (defn make-request
   ([method url payload]

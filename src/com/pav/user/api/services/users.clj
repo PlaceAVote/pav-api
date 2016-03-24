@@ -4,6 +4,7 @@
             [com.pav.user.api.utils.utils :as utils]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.database.user :as user-dao]
+            [com.pav.user.api.database.issues :as issues-dao]
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject get-bill-info]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
@@ -365,7 +366,7 @@
   [user_id details]
   (when-let [user (get-user-by-id user_id)]
     (let [details (merge {:user_id user_id} (merge-open-graph details) (retrieve-bill-title (:bill_id details)))
-          new-issue (dynamo-dao/create-bill-issue details)
+          new-issue (issues-dao/create-user-issue details)
           to-populate (construct-issue-feed-object user new-issue)]
       ;; populate followers table as the last action
       (dynamo-dao/populate-user-and-followers-feed-table user_id to-populate)

@@ -28,3 +28,29 @@ CREATE TABLE user_following_rel (
     FOREIGN KEY (follower_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
     FOREIGN KEY (following_id) REFERENCES user_info(user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE user_issues (
+    issue_id CHAR(36) NOT NULL UNIQUE PRIMARY KEY,
+    short_issue_id CHAR(32) NOT NULL,
+    user_id CHAR(36) NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
+    negative_responses INT NOT NULL DEFAULT 0,
+    neutral_responses INT NOT NULL DEFAULT 0,
+    positive_responses INT NOT NULL DEFAULT 0,
+    comment TEXT,
+    bill_id VARCHAR(10),
+    bill_title TEXT,
+    article_img VARCHAR(255),
+    article_link VARCHAR(255),
+    article_title VARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES user_info(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE user_issue_responses (
+    issue_id CHAR(36) NOT NULL,
+    user_id CHAR(36) NOT NULL,
+    emotional_response VARCHAR(20),
+    FOREIGN KEY (issue_id) REFERENCES user_issues(issue_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
+    PRIMARY KEY (issue_id, user_id)
+);

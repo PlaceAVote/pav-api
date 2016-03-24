@@ -3,7 +3,7 @@
   (:require [com.pav.user.api.handler :refer [app]]
             [com.pav.user.api.test.utils.utils :refer [make-request parse-response-body
                                                        flush-es-indexes
-                                                       flush-user-sql-tables
+                                                       flush-sql-tables
                                                        bootstrap-bills
 																											 test-user
 																											 test-fb-user
@@ -14,7 +14,7 @@
             [cheshire.core :as ch]))
 
 (against-background [(before :facts (do
-                                      (flush-user-sql-tables)
+                                      (flush-sql-tables)
                                       (flush-es-indexes)
                                       (bootstrap-bills)))]
 
