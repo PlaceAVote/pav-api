@@ -70,10 +70,10 @@ default-followers (:default-followers env))
     (try
       (dynamo-dao/create-user profile)
       (redis-dao/create-user-profile profile)
-      (pre-populate-newsfeed profile)
       (thread ;; Expensive call to mandril.  Execute in seperate thread.
-       (index-user (indexable-profile profile))
-       (send-confirmation-email profile))
+        (index-user (indexable-profile profile))
+        (send-confirmation-email profile))
+      (pre-populate-newsfeed profile)
       (catch Exception e
         (log/errorf e "Error occured persisting user profile for '%s'" user_id)))
     profile))
