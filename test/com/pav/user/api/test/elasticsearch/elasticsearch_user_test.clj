@@ -3,13 +3,13 @@
   (:require [com.pav.user.api.elasticsearch.user :as eu :refer [index-user
 																																gather-latest-bills-by-subject]]
             [com.pav.user.api.test.utils.utils :refer [flush-es-indexes
-                                                       bootstrap-bills]]
+                                                       bootstrap-bills-and-metadata]]
 						[clojurewerkz.elastisch.query :as q]
 						[clojurewerkz.elastisch.rest :refer [connect]]))
 
 
 (against-background [(before :facts (do (flush-es-indexes)
-																				(bootstrap-bills)))]
+																				(bootstrap-bills-and-metadata)))]
 	(fact "Given a user profile, index user profile"
 		(let [user-profile {:user_id "user1" :email "john@pl.com" :first_name "John" :last_name "Rambo"
 												:dob     "05/10/1984" :img_url "http://img.com"}

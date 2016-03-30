@@ -20,6 +20,9 @@
   (:import (java.util Date UUID)
            (java.sql Timestamp)))
 
+(def ^{:doc "List of default followers to retrieve Issue related data from"}
+default-followers (:default-followers env))
+
 (def gather-cached-bills
   "Retrieve cached bills that match previous topic arguments.  For performance purposes."
   (memo/ttl gather-latest-bills-by-subject :ttl/threshold 86400))
@@ -31,16 +34,9 @@
       (map get-user-by-email)
       (remove nil?))))
 
-(def default-followers
+(def cached-followers
   "Retrieve cached default followers for all new users."
   (memo/ttl get-default-followers :ttl/threshold 86400000))
-
-(defn- assign-default-followers [user_id]
-  "For intial users, lets assign them some automatic followers and have the default followers follow them."
-  (doseq [f (default-followers (:default-followers env))]
-    (log/info (str "Assigning default follower " (:user_id f) " to " user_id))
-    (follow-user user_id (:user_id f))
-    (follow-user (:user_id f) user_id)))
 
 (defn get-default-issues
   "Retrieve top 2 issue events per user"
@@ -62,7 +58,7 @@
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."
   [{:keys [user_id topics] :as profile}]
   (let [cached-bills (map add-timestamp (gather-cached-bills topics))
-        issues       (cached-issues (default-followers (:default-followers env)))
+        issues       (cached-issues (cached-followers default-followers))
         feed-items (into cached-bills issues)]
     (if (seq feed-items)
       (dynamo-dao/persist-to-newsfeed
@@ -74,7 +70,6 @@
     (try
       (dynamo-dao/create-user profile)
       (redis-dao/create-user-profile profile)
-      (assign-default-followers user_id)
       (pre-populate-newsfeed profile)
       (thread ;; Expensive call to mandril.  Execute in seperate thread.
        (index-user (indexable-profile profile))

@@ -5,7 +5,7 @@
                                                          flush-es-indexes
                                                          test-user
                                                          test-fb-user
-                                                         bootstrap-bills
+                                                         bootstrap-bills-and-metadata
                                                          pav-req]]
               [cheshire.core :as ch]))
 
@@ -13,7 +13,7 @@
                                       (flush-dynamo-tables)
                                       (flush-redis)
                                       (flush-es-indexes)
-                                      (bootstrap-bills)))]
+                                      (bootstrap-bills-and-metadata)))]
 	(fact "Retrieve a users account settings"
 		(let [{body :body} (pav-req :put "/user" test-user)
               {token :token user_id :user_id} (ch/parse-string body true)

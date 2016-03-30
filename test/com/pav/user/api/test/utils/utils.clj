@@ -36,9 +36,16 @@
                  (ch/parse-string (slurp "test-resources/bills/hr4269-114.json") true)
                  (ch/parse-string (slurp "test-resources/bills/s25-114.json") true)])
 
-(defn bootstrap-bills []
+(def bill-metadata [{:featured_img_link "https://upload.wikimedia.org/wikipedia/commons/c/cf/LAPD_Arrest_North_Hills.jpg"
+                     :govtrack_link "govtrack link" :_id "hr2-114" :bill_id "hr2-114" :featured_bill_summary "hr2 summary"
+                     :featured_bill_title "hr2 bill title" :pav_topic "Healthcare"
+                     :points_against "Point against" :points_infavor "point infavour"
+                     :congress "114" :pav_tags ["Healthcare"]}])
+
+(defn bootstrap-bills-and-metadata []
   (erb/bulk-with-index-and-type es-connection "congress" "bill"
-    (ecb/bulk-index (map #(assoc % :_id (:bill_id %)) test-bills)) {:refresh true}))
+    (ecb/bulk-index (map #(assoc % :_id (:bill_id %)) test-bills)) {:refresh true})
+  (erb/bulk-with-index-and-type es-connection "congress" "billmeta" (ecb/bulk-index bill-metadata) {:refresh true}))
 
 (def wizard-questions (edn/read-string (slurp "resources/questions.edn")))
 

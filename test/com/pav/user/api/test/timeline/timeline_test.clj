@@ -6,7 +6,7 @@
 																											 flush-redis
 																											 persist-timeline-event
 																											 flush-es-indexes
-																											 bootstrap-bills
+																											 bootstrap-bills-and-metadata
 																											 test-user
 																											 pav-req]]))
 
@@ -14,7 +14,7 @@
 																			(flush-redis)
 																			(flush-dynamo-tables)
 																			(flush-es-indexes)
-																			(bootstrap-bills)))]
+																			(bootstrap-bills-and-metadata)))]
 	(fact "Try Retrieving users profile timeline with invalid token"
 		(let [{status :status} (pav-req :get "/user/me/timeline" "rubbish token" {})]
 			status => 401))

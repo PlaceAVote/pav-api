@@ -3,7 +3,7 @@
 	(:require [com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables
 																											 flush-redis
 																											 flush-es-indexes
-																											 bootstrap-bills
+																											 bootstrap-bills-and-metadata
 																											 test-user
 																											 test-fb-user
 																											 pav-req]]
@@ -14,7 +14,7 @@
 																			(flush-redis)
 																			(flush-dynamo-tables)
 																			(flush-es-indexes)
-																			(bootstrap-bills)))]
+																			(bootstrap-bills-and-metadata)))]
 
 	(fact "Reset existing user password"
 		(let [_ (pav-req :put "/user" test-user)

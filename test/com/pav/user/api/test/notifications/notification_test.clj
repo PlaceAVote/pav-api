@@ -6,14 +6,14 @@
 																											 flush-redis
 																											 flush-es-indexes
 																											 test-user
-																											 bootstrap-bills]]
+																											 bootstrap-bills-and-metadata]]
 						[cheshire.core :as ch]))
 
 (against-background [(before :facts (do
 																			(flush-redis)
 																			(flush-dynamo-tables)
 																			(flush-es-indexes)
-																			(bootstrap-bills)))]
+																			(bootstrap-bills-and-metadata)))]
 	(fact "Make a websocket connection to the websocket notification endpoint")
 
 	(fact "Retrieve users notifications"

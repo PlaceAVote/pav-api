@@ -2,7 +2,7 @@
   (:use midje.sweet)
   (:require [cheshire.core :refer [parse-string]]
             [com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables flush-redis
-                                                       flush-es-indexes bootstrap-bills
+                                                       flush-es-indexes bootstrap-bills-and-metadata
                                                        bootstrap-questions wizard-questions
                                                        pav-req]]))
 
@@ -17,7 +17,7 @@
                                       (flush-dynamo-tables)
                                       (flush-redis)
                                       (flush-es-indexes)
-                                      (bootstrap-bills)
+                                      (bootstrap-bills-and-metadata)
                                       (bootstrap-questions)))]
 	(fact "Given a user token, Then retrieve questions associated with that users topic selection"
 		(let [{body :body} (pav-req :put "/user" test-user)

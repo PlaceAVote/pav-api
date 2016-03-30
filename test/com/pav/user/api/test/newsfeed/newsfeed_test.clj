@@ -5,7 +5,7 @@
                                                        flush-redis
                                                        create-comment
                                                        flush-es-indexes
-                                                       bootstrap-bills
+                                                       bootstrap-bills-and-metadata
                                                        test-user
                                                        pav-req]]))
 
@@ -13,7 +13,7 @@
                                       (flush-redis)
                                       (flush-dynamo-tables)
                                       (flush-es-indexes)
-                                      (bootstrap-bills)))]
+                                      (bootstrap-bills-and-metadata)))]
   (fact "Retrieve current users feed"
       (let [{body :body} (pav-req :put "/user" (assoc test-user :topics ["Defense" "Politics"]))
             {token :token} (ch/parse-string body true)
@@ -22,6 +22,7 @@
         status => 200
         last_timestamp => (get-in (last results) [:timestamp])
         (count results) => 2))
+
   (fact "Retrieve current user feed, When from parameter is equal to the first items timestamp, Then return second item only"
     (let [{body :body} (pav-req :put "/user" (assoc test-user :topics ["Defense" "Politics"]))
           {token :token} (ch/parse-string body true)

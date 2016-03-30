@@ -5,7 +5,7 @@
 																											 flush-dynamo-tables
                                                        flush-redis
                                                        flush-es-indexes
-                                                       bootstrap-bills
+                                                       bootstrap-bills-and-metadata
 																											 test-user
 																											 test-fb-user
 																											 pav-req]]
@@ -18,7 +18,7 @@
                                       (flush-dynamo-tables)
                                       (flush-redis)
                                       (flush-es-indexes)
-                                      (bootstrap-bills)))]
+                                      (bootstrap-bills-and-metadata)))]
 
    (fact "Create a new user, will return 201 status and newly created token"
          (let [{status :status body :body} (pav-req :put "/user" test-user)]

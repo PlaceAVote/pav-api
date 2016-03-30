@@ -3,7 +3,7 @@
   (:require [com.pav.user.api.test.utils.utils :refer [flush-redis
                                                        flush-dynamo-tables
                                                        flush-es-indexes
-                                                       bootstrap-bills
+                                                       bootstrap-bills-and-metadata
                                                        test-user
                                                        pav-req
                                                        test-fb-user]]
@@ -16,7 +16,7 @@
                                       (flush-dynamo-tables)
                                       (flush-redis)
                                       (flush-es-indexes)
-                                      (bootstrap-bills)))]
+                                      (bootstrap-bills-and-metadata)))]
 
    (fact "Add new issue"
      (let [{body :body} (pav-req :put "/user" test-user)

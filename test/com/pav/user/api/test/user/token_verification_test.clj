@@ -4,7 +4,7 @@
 						[com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables
 																											 flush-redis
 																											 flush-es-indexes
-																											 bootstrap-bills
+																											 bootstrap-bills-and-metadata
 																											 test-user
 																											 pav-req]]))
 
@@ -12,7 +12,7 @@
 																			(flush-redis)
 																			(flush-dynamo-tables)
 																			(flush-es-indexes)
-																			(bootstrap-bills)))]
+																			(bootstrap-bills-and-metadata)))]
 	(fact "Verify the JWT Token"
 		(let [{follower :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string follower true)
