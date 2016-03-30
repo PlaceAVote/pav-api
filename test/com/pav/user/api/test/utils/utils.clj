@@ -40,7 +40,12 @@
                      :govtrack_link "govtrack link" :_id "hr2-114" :bill_id "hr2-114" :featured_bill_summary "hr2 summary"
                      :featured_bill_title "hr2 bill title" :pav_topic "Healthcare"
                      :points_against "Point against" :points_infavor "point infavour"
-                     :congress "114" :pav_tags ["Healthcare"]}])
+                     :congress "114" :pav_tags ["Healthcare"]}
+                    {:featured_img_link "https://upload.wikimedia.org/wikipedia/commons/c/cf/LAPD_Arrest_North_Hills.jpg"
+                     :govtrack_link "govtrack link" :_id "s25-114" :bill_id "s25-114" :featured_bill_summary "s25 summary"
+                     :featured_bill_title "s25 bill title" :pav_topic "Economics"
+                     :points_against "Point against" :points_infavor "point infavour"
+                     :congress "114" :pav_tags ["Economics"]}])
 
 (defn bootstrap-bills-and-metadata []
   (erb/bulk-with-index-and-type es-connection "congress" "bill"

@@ -15,16 +15,16 @@
                                       (flush-es-indexes)
                                       (bootstrap-bills-and-metadata)))]
   (fact "Retrieve current users feed"
-      (let [{body :body} (pav-req :put "/user" (assoc test-user :topics ["Defense" "Politics"]))
+      (let [{body :body} (pav-req :put "/user" (assoc test-user :topics ["Healthcare"]))
             {token :token} (ch/parse-string body true)
             {status :status body :body} (pav-req :get "/user/feed" token {})
             {last_timestamp :last_timestamp results :results} (ch/parse-string body true)]
         status => 200
         last_timestamp => (get-in (last results) [:timestamp])
-        (count results) => 2))
+        (count results) => 1))
 
   (fact "Retrieve current user feed, When from parameter is equal to the first items timestamp, Then return second item only"
-    (let [{body :body} (pav-req :put "/user" (assoc test-user :topics ["Defense" "Politics"]))
+    (let [{body :body} (pav-req :put "/user" (assoc test-user :topics ["Healthcare" "Economics"]))
           {token :token} (ch/parse-string body true)
           {body :body} (pav-req :get "/user/feed" token {})
           {results :results} (ch/parse-string body true)

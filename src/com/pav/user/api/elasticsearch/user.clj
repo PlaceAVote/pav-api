@@ -12,37 +12,28 @@
 (defn index-user [user]
   (esd/put connection "pav" "users" (:user_id user) user))
 
-(defn merge-type-and-fields [hit]
-	(merge {:type (:_type hit)} (:_source hit)))
-
 (defn get-bill-info [bill_id]
   (have string? bill_id)
   (:_source (esd/get connection "congress" "bill" bill_id)))
 
-(defn search-for-term [terms]
-  (try
-    (when terms
-     (->> (esrsp/hits-from
-            (esd/search connection "congress" "bill"
-              :query (q/terms :keywords terms)
-              :_source [:subject :bill_id :official_title :short_title :popular_title :summary]
-              :sort {:updated_at "desc"}))
-       (mapv merge-type-and-fields)
-       (filterv (fn [{summary :summary}]
-                  (not (= summary "No Summary Present..."))))))
-    (catch Exception e (log/error (str "Error occured search for bills by term " e)))))
+(defn retrieve-bill-metadata-for-topics [topics]
+  (when topics
+    (->>
+      (esrsp/hits-from
+        (esd/search connection "congress" "billmeta"
+          :query (q/terms :pav_topic (map clojure.string/lower-case topics))))
+      (map :_source))))
 
-(defn to-govtrack-subjects [topic]
-	(case topic
-		"Religion" "religion"
-		"Drugs" "drug"
-		"Defense" "defense"
-		"Politics" "politics"
-		"Gun Rights" "firearms"
-		"Technology" "technology"
-		"Economics" "Economics"
-		"Social Interest" "Social welfare"
-		topic))
+(defn search-for-topic
+  "Match a users topic selections against pav_topic field on billmeta type"
+  [topics]
+  (try
+    (map (fn [{:keys [bill_id] :as meta}]
+           (merge meta {:type "bill"}
+             (select-keys (get-bill-info bill_id)
+               [:subject :bill_id :official_title :short_title :popular_title :summary])))
+      (retrieve-bill-metadata-for-topics topics))
+    (catch Exception e (log/error "Error retrieving bills when populating users feed " e))))
 
 (defn to-pav-subjects [subject]
 	(case subject
@@ -58,8 +49,7 @@
 
 (defn gather-latest-bills-by-subject [topics]
 	(when topics
-		(let [topics (map to-govtrack-subjects topics)
-					bills (->> (search-for-term topics)
-									flatten
+		(let [bills (->>
+                  (search-for-topic topics)
 									(mapv #(update-in % [:subject] to-pav-subjects)))]
 			bills)))
