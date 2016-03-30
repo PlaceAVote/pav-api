@@ -143,13 +143,12 @@
 
 (defn persist-to-newsfeed [events]
   (when events
-    (doseq [batch (partition 25 25 nil events)]
-      (log/info "Events being persisted to users newsfeed "
-        (map #(select-keys % [:event_id :user_id :timestamp :bill_id :issue_id]) batch))
+    (doseq [event events]
+      (log/info "Event being persisted to users newsfeed "
+        (select-keys event [:event_id :user_id :timestamp :bill_id :issue_id]))
       (try
-        (far/batch-write-item client-opts
-         {dy/userfeed-table-name {:put batch}})
-        (catch Exception e (log/error (str "Problem occurred persisting events to new users feed with batch: " batch) e))))))
+        (far/put-item client-opts dy/userfeed-table-name event)
+        (catch Exception e (log/error (str "Problem occurred persisting event to new users feed: " event) e))))))
 
 (defn build-follow-profile [profile]
   (when profile
