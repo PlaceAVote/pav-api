@@ -56,13 +56,12 @@ default-followers (:default-followers env))
 
 (defn- pre-populate-newsfeed
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."
-  [{:keys [user_id topics] :as profile}]
+  [{:keys [user_id topics]}]
   (let [cached-bills (map add-timestamp (gather-cached-bills topics))
-        issues       (cached-issues (cached-followers default-followers))
-        feed-items (into cached-bills issues)]
+        issues       (map add-timestamp (cached-issues (cached-followers default-followers)))
+        feed-items   (mapv #(assoc % :event_id (.toString (UUID/randomUUID)) :user_id user_id) (into cached-bills issues))]
     (if (seq feed-items)
-      (dynamo-dao/persist-to-newsfeed
-        (mapv #(assoc % :event_id (.toString (UUID/randomUUID)) :user_id user_id) feed-items)))))
+      (dynamo-dao/persist-to-newsfeed feed-items))))
 
 (defn- persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
