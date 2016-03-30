@@ -143,7 +143,8 @@
 
 (defn persist-to-newsfeed [events]
   (when events
-    (log/info "Events being persisted to users newsfeed " (map :event_id events))
+    (log/info "Events being persisted to users newsfeed " (map #(select-keys % [:event_id :timestamp
+                                                                                :bill_id :issue_id]) events))
     (doseq [batch (partition 25 25 nil events)]
       (far/batch-write-item client-opts
         {dy/userfeed-table-name {:put batch}}))))
