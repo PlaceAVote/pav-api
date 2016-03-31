@@ -12,6 +12,7 @@
   [{:keys [user_id topics]}]
   (let [cached-bills (map user-service/add-timestamp (user-service/gather-cached-bills topics))
         feed-items   (mapv #(assoc % :event_id (.toString (UUID/randomUUID)) :user_id user_id) cached-bills)]
+    (log/info (str "Populating feed for " user_id " with " (count feed-items) " items."))
     (if (seq feed-items)
       (dynamo-dao/persist-to-newsfeed feed-items))))
 
