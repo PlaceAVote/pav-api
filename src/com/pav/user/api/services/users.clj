@@ -49,7 +49,7 @@ default-followers (:default-followers env))
   "Retrieve cached issues from followers"
   (memo/ttl get-default-issues :ttl/threshold 86400000))
 
-(defn- add-timestamp [payload]
+(defn add-timestamp [payload]
   (have map? payload)
   (Thread/sleep 1) ;; This is a hack but its the only way i can gurantee the timestamps are unique
   (assoc payload :timestamp (.getTime (Timestamp. (System/currentTimeMillis)))))
