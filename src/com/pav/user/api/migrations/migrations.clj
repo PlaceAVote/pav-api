@@ -18,7 +18,7 @@
   "This is a temporary function, only meant to be run once."
   []
   (log/info "Retrieving all user records by scanning user table")
-  (loop [user-records (far/scan db/client-optsclient-opts db/user-table-name)
+  (loop [user-records (far/scan db/client-opts db/user-table-name)
          acc []]
     (if (:last-prim-kvs (meta user-records))
       (recur (far/scan db/client-opts db/user-table-name {:last-prim-kvs (:last-prim-kvs (meta user-records))})
