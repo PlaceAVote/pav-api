@@ -1,4 +1,5 @@
 (ns com.pav.user.api.migrations.migrations
+  (:gen-class)
   (:require [com.pav.user.api.dynamodb.db :as db]
             [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.services.users :as user-service]
