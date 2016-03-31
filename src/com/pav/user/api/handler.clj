@@ -21,7 +21,7 @@
                                                      user-profile validate-token reset-password confirm-password-reset
                                                      user-settings change-password questions upload-profile-image
                                                      create-user-issue get-user-issue user-issue-emotional-response
-                                                     update-user-issue feed]]
+                                                     update-user-issue feed contact-form]]
             [com.pav.user.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.user.api.resources.docs :refer [swagger-docs]]
             [com.pav.user.api.dynamodb.db :refer [create-all-tables!]]
@@ -79,6 +79,7 @@
   (POST "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (GET "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (DELETE "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
+  (POST "/user/contact" _ contact-form)
   (route/resources "/")
   (route/not-found "Not Found"))
 

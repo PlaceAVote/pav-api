@@ -6,7 +6,7 @@
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject get-bill-info]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
-            [com.pav.user.api.mandril.mandril :refer [send-confirmation-email send-password-reset-email]]
+            [com.pav.user.api.mandril.mandril :as mandril :refer [send-confirmation-email send-password-reset-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
                                                   account-settings indexable-profile]]
             [com.pav.user.api.graph.graph-parser :as gp]
@@ -457,3 +457,9 @@ so it can be fed to ':malformed?' handler."
        (if user_id
          (select-keys (dynamo-dao/get-user-issue-emotional-response issue_id user_id) [:emotional_response])
          {:emotional_response "none"})))))
+
+(defn contact-form-email-malformed? [body]
+  (us/validate-contact-form body))
+
+(defn send-contact-form-email [body]
+  (mandril/send-contact-form-email body))

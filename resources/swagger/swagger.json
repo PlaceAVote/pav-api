@@ -14,6 +14,28 @@
     "multipart/form-data"
   ],
   "parameters": {
+    "ContactFormParam": {
+      "name": "ContactFormRequest",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "format": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "string"
+          },
+          "body": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      }
+    },
     "NewUserIssueParam": {
       "name": "NewUserIssue",
       "in": "body",
@@ -1618,6 +1640,27 @@
           },
           "401": {
             "description": "Token invalid"
+          }
+        }
+      }
+    },
+    "/user/contact": {
+      "post": {
+        "description": "Submit Contact Form Email",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ContactFormParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad Request"
           }
         }
       }

@@ -89,6 +89,11 @@
 	{:new_password pwd-schema
 	 :reset_token str-schema})
 
+(def ContactFormEmail
+  {:name  str-schema
+   :email email-schema
+   :body  str-schema})
+
 (defn validate-new-user-payload [user origin]
   (case origin
     :pav (s/check User user)
@@ -108,6 +113,9 @@
 (defn validate-confirm-reset-password-payload [payload]
 	(s/check ResetPasswordConfirm payload))
 
+(defn validate-contact-form [payload]
+  (s/check ContactFormEmail payload))
+
 (defn validate-new-issue-payload [{:keys [bill_id] :as payload}]
   (if bill_id
     (s/check NewIssuesWithBill payload)
@@ -115,6 +123,8 @@
 
 (defn find-suitable-error [[k _]]
   (cond (= :email k) {k "A valid email address is a required"}
+        (= :name k)  {k "A valid name is a required"}
+        (= :body k)  {k "A valid text body is a required"}
         (= :current_password k) {k "Current Password is a required field"}
         (= :new_password k) {k "New Password is a required field"}
         (= :reset_token k) {k "A valid reset token is required"}

@@ -215,6 +215,12 @@
                     (service/update-user-issue (retrieve-token-user-id ctx) issue_id (retrieve-body ctx))})
   :handle-created ::user-issue-response)
 
+(defresource contact-form
+  :allowed-methods [:post]
+  :available-media-types ["application/json"]
+  :malformed? (fn [ctx] (service/contact-form-email-malformed? (retrieve-body ctx)))
+  :post! (fn [ctx] (service/send-contact-form-email (retrieve-body ctx))))
+
 (defresource user-issue-emotional-response [issue_id]
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get :post :delete]
