@@ -21,6 +21,7 @@
   (log/info "Retrieving all user records by scanning user table")
   (loop [user-records (far/scan db/client-opts db/user-table-name)
          acc []]
+    (log/info (str "Retrieved " (count user-records) " user records from " db/user-table-name))
     (if (:last-prim-kvs (meta user-records))
       (recur (far/scan db/client-opts db/user-table-name {:last-prim-kvs (:last-prim-kvs (meta user-records))})
              (into acc user-records))
