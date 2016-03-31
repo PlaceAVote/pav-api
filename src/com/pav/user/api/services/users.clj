@@ -6,7 +6,7 @@
             [com.pav.user.api.redis.redis :as redis-dao]
             [com.pav.user.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject get-bill-info]]
             [com.pav.user.api.authentication.authentication :refer [token-valid? create-auth-token]]
-            [com.pav.user.api.mandril.mandril :as mandril :refer [send-confirmation-email send-password-reset-email]]
+            [com.pav.user.api.mandril.mandril :as mandril :refer [send-password-reset-email]]
             [com.pav.user.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
                                                   account-settings indexable-profile]]
             [com.pav.user.api.graph.graph-parser :as gp]
@@ -69,9 +69,7 @@ default-followers (:default-followers env))
     (try
       (dynamo-dao/create-user profile)
       (redis-dao/create-user-profile profile)
-      (thread ;; Expensive call to mandril.  Execute in seperate thread.
-        (index-user (indexable-profile profile))
-        (send-confirmation-email profile))
+      (index-user (indexable-profile profile))
       (pre-populate-newsfeed profile)
       (catch Exception e
         (log/errorf e "Error occured persisting user profile for '%s'" user_id)))

@@ -26,7 +26,6 @@
                  [clojure-msgpack "1.1.2"]
                  [clojurewerkz/elastisch "2.2.0-beta4"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [clojurewerkz/mailer "1.2.0"]
                  [clj-http "2.0.0"]
                  [org.clojure/core.memoize "0.5.8"]
 								 [amazonica "0.3.48"]
@@ -90,11 +89,6 @@
                             :redis-notification-pubsub           "redis::notifications::pubsub"
                             :es-url                              "http://localhost:9200"
                             :timeline-queue                      "redismq::queue_name::user-timelineevent-queue"
-                            :email-host                          "smtp.mandrillapp.com"
-                            :email-user                          "team@placeavote.com"
-                            :email-pass                          "password"
-                            :email-mode                          "test"
-                            :email-port                          "587"
                             :mandril-api-key                     "key"
                             :mandril-pwd-reset-template          "password-reset-template-dev"
                             :cdn-bucket-name                     "placeavote-cdn"
