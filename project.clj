@@ -53,11 +53,10 @@
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
   :main system
-  :aliases {"add-feed-content" ["run" "-m" "com.pav.user.api.migrations.migrations/add-feed-content"]}
   :profiles
   {
    :uberjar {:jvm-opts     ^:replace ["-Xms256m" "-Xmx512m" "-Xss512k" "-XX:MaxMetaspaceSize=150m"]
-             :aot          [system]
+             :aot          [system com.pav.user.api.migrations.migrations]
              :env          {:auth-pub-key "resources/pav_auth_pubkey.pem"}
              :uberjar-name "pav-user-api.jar"}
    :production

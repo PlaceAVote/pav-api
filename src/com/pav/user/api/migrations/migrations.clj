@@ -26,7 +26,7 @@
              (into acc user-records))
       acc)))
 
-(defn add-feed-content
+(defn -main
   "Scan user records and add new bill content that matches there topic selections"
   []
   (log/info "Starting to populate existing user feeds with new content")
