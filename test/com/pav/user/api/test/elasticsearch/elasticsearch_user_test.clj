@@ -23,7 +23,7 @@
 													 {:type       "bill"
                             :bill_id    "hr2-114"
                             :short_title "Medicare Access and CHIP Reauthorization Act of 2015"
-                            :subject    "Health"})))
+                            :subject    "Healthcare"})))
 
   (fact "Given a collection of topics containing the term Gun Rights, When the only bill has no summary, Then return no results"
     (let [_ (Thread/sleep 3000)

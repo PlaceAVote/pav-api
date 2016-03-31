@@ -51,5 +51,8 @@
 	(when topics
 		(let [bills (->>
                   (search-for-topic topics)
-									(mapv #(update-in % [:subject] to-pav-subjects)))]
+                  (mapv (fn [{:keys [pav_topic] :as bill}]
+                          (if pav_topic
+                            (assoc bill :subject pav_topic)
+                            (update-in bill [:subject] to-pav-subjects)))))]
 			bills)))
