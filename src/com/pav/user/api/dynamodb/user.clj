@@ -326,3 +326,13 @@ new ID assigned as issue_id and timestamp stored in table."
 (defn get-issues-by-user [user_id limit]
   (far/query client-opts dy/user-issues-table-name {:user_id [:eq user_id]}
     {:index "user-issues-idx" :limit limit :span-reqs {:max 1}}))
+
+(defn retrieve-all-user-records
+  "Performs full table scan and retrieves all user records"
+  []
+  (loop [user-records (far/scan client-opts dy/user-table-name)
+         acc []]
+    (if (:last-prim-kvs (meta user-records))
+      (recur (far/scan client-opts dy/user-table-name {:last-prim-kvs (:last-prim-kvs (meta user-records))})
+        (into acc user-records))
+      (into acc user-records))))
