@@ -1,11 +1,16 @@
 (ns com.pav.user.api.migrations.migrations
   (:gen-class)
   (:require [com.pav.user.api.dynamodb.db :as db]
-            [com.pav.user.api.dynamodb.user :as dynamo-dao]
             [com.pav.user.api.services.users :as user-service]
             [taoensso.faraday :as far]
             [clojure.tools.logging :as log])
   (:import (java.util UUID)))
+
+(defn- persist-to-newsfeed [events]
+  (when events
+    (try
+      (far/batch-write-item db/client-opts {db/userfeed-table-name {:put events}})
+      (catch Exception e (log/error (str "Problem occurred persisting event to new users feed: " events) e)))))
 
 (defn- pre-populate-newsfeed
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."
@@ -15,7 +20,7 @@
         feed-items   (mapv #(assoc % :event_id (.toString (UUID/randomUUID)) :user_id user_id) cached-bills)]
     (log/info (str "Populating feed for " user_id " with " (count feed-items) " items."))
     (if (seq feed-items)
-      (dynamo-dao/persist-to-newsfeed feed-items))))
+      (persist-to-newsfeed feed-items))))
 
 (defn retrieve-all-user-records
   "This is a temporary function, only meant to be run once."
