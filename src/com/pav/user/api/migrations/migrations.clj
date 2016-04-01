@@ -10,6 +10,7 @@
 (defn- persist-to-newsfeed [events]
   (when events
     (try
+      (log/info "Writing Events to Feed " (map #(select-keys % [:event_id :user_id :timestamp :bill_id]) events))
       (far/batch-write-item db/client-opts {db/userfeed-table-name {:put events}})
       (catch Exception e (log/error (str "Problem occurred persisting event to new users feed: " events) e)))))
 
