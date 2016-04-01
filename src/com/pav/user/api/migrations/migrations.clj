@@ -10,6 +10,7 @@
 (defn- pre-populate-newsfeed
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."
   [{:keys [user_id topics]}]
+  (log/info "Populating feed for " user_id " with bills for topics " topics)
   (let [cached-bills (map user-service/add-timestamp (user-service/gather-cached-bills topics))
         feed-items   (mapv #(assoc % :event_id (.toString (UUID/randomUUID)) :user_id user_id) cached-bills)]
     (log/info (str "Populating feed for " user_id " with " (count feed-items) " items."))
@@ -25,12 +26,13 @@
     (log/info (str "Retrieved " (count user-records) " user records from " db/user-table-name))
     (if (:last-prim-kvs (meta user-records))
       (recur (far/scan db/client-opts db/user-table-name {:last-prim-kvs (:last-prim-kvs (meta user-records))})
-             (into acc user-records))
+        (into acc user-records))
       (into acc user-records))))
 
 (defn -main
   "Scan user records and add new bill content that matches there topic selections"
   []
   (log/info "Starting to populate existing user feeds with new content")
-  (map pre-populate-newsfeed (retrieve-all-user-records))
+  (doseq [user-record (retrieve-all-user-records)]
+    (pre-populate-newsfeed user-record))
   (log/info "Finished populating existing user feeds with new content"))
