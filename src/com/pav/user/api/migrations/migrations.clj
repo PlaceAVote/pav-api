@@ -26,7 +26,7 @@
     (if (:last-prim-kvs (meta user-records))
       (recur (far/scan db/client-opts db/user-table-name {:last-prim-kvs (:last-prim-kvs (meta user-records))})
              (into acc user-records))
-      acc)))
+      (into acc user-records))))
 
 (defn -main
   "Scan user records and add new bill content that matches there topic selections"
