@@ -9,10 +9,11 @@
 
 (defn- persist-to-newsfeed [events]
   (when events
-    (try
-      (log/info "Writing Events to Feed " (map #(select-keys % [:event_id :user_id :timestamp :bill_id]) events))
-      (far/batch-write-item db/client-opts {db/userfeed-table-name {:put events}})
-      (catch Exception e (log/error (str "Problem occurred persisting event to new users feed: " events) e)))))
+      (doseq [event events]
+        (try
+          (log/info "Writing Events to Feed " (select-keys event [:event_id :user_id :timestamp :bill_id]))
+          (far/put-item db/client-opts db/userfeed-table-name event)
+        (catch Exception e (log/error (str "Problem occurred persisting event to new users feed: " event) e))))))
 
 (defn- pre-populate-newsfeed
   "Pre-populate user feed with bills related to chosen subjects and last two issues for each default follower."

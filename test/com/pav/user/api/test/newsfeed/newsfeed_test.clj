@@ -1,6 +1,7 @@
 (ns com.pav.user.api.test.newsfeed.newsfeed-test
   (:use midje.sweet)
   (:require [cheshire.core :as ch]
+            [com.pav.user.api.migrations.migrations :as m]
             [com.pav.user.api.test.utils.utils :refer [flush-dynamo-tables
                                                        flush-redis
                                                        create-comment
@@ -33,4 +34,8 @@
           {last_timestamp :last_timestamp results :results} (ch/parse-string body true)]
       status => 200
       (count results) => 1
-      last_timestamp => (get-in (last results) [:timestamp]))))
+      last_timestamp => (get-in (last results) [:timestamp])))
+
+  (fact "test"
+    (pav-req :put "/user" (assoc test-user :topics ["Healthcare" "Economics"]))
+    (m/-main)))
