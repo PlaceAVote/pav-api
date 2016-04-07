@@ -14,6 +14,31 @@
     "multipart/form-data"
   ],
   "parameters": {
+    "VoteRecordParam": {
+      "name": "vote record",
+      "in": "body",
+      "description": "Vote Record",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/NewVoteRecord"
+      }
+    },
+    "BillIDQueryParam": {
+      "name": "bill-id",
+      "in": "query",
+      "description": "Bill ID",
+      "required": true,
+      "type": "string",
+      "format": "hr2-114"
+    },
+    "BillIDPathParam": {
+      "name": "bill_id",
+      "in": "path",
+      "description": "Bill ID",
+      "required": true,
+      "type": "string",
+      "format": "hr2-114"
+    },
     "ContactFormParam": {
       "name": "ContactFormRequest",
       "in": "body",
@@ -608,6 +633,56 @@
           "format": "number"
         },
         "read": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "VoteRecord": {
+      "type": "object",
+      "properties": {
+        "bill_id": {
+          "type": "string",
+          "format": "hr2-114"
+        },
+        "vote": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "VoteRecords": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/VoteRecord"
+      }
+    },
+    "VoteCount": {
+      "type": "object",
+      "properties": {
+        "bill_id": {
+          "type": "string"
+        },
+        "yes-count": {
+          "type": "number"
+        },
+        "no-count": {
+          "type": "number"
+        }
+      }
+    },
+    "NewVoteRecord": {
+      "type": "object",
+      "properties": {
+        "bill_id": {
+          "type": "string",
+          "format": "fr2-114"
+        },
+        "vote": {
           "type": "boolean",
           "format": "boolean"
         }
@@ -1687,6 +1762,93 @@
         "responses": {
           "200": {
             "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/vote/bill/{bill_id}": {
+      "get": {
+        "description": "Get vote records for a bill",
+        "parameters": [
+          {
+            "$ref": "#/parameters/BillIDPathParam"
+          },
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          }
+        ],
+        "tags": [
+          "Votes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/VoteRecords"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/vote/count": {
+      "get": {
+        "description": "Get vote count for a bill.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/BillIDQueryParam"
+          },
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          }
+        ],
+        "tags": [
+          "Votes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/VoteCount"
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/vote": {
+      "put": {
+        "description": "Create user vote record",
+        "parameters": [
+          {
+            "$ref": "#/parameters/VoteRecordParam"
+          },
+          {
+            "$ref": "#/parameters/TokenParam"
+          }
+        ],
+        "tags": [
+          "Votes"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid vote record, check payload"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          },
+          "409": {
+            "description": "Vote Record already associated with this user and bill"
           }
         }
       }
