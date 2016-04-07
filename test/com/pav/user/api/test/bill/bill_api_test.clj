@@ -9,7 +9,6 @@
                                         (u/flush-redis)))]
 
   (facts "Bill API Test Cases"
-
     (fact "Retrieve bill by id"
       (let [expected (dissoc (merge (first test-bills) (first bill-metadata) {:voted_for false :voted_against false}) :_id)
             {body :body} (pav-req :put "/user" u/test-user)

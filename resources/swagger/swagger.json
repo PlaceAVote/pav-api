@@ -14,6 +14,14 @@
     "multipart/form-data"
   ],
   "parameters": {
+    "BillIDParam": {
+      "name": "bill_id",
+      "in": "path",
+      "description": "Bill ID",
+      "required": true,
+      "type": "string",
+      "format": "hr2-114"
+    },
     "LegislatorIDParam": {
       "name": "id",
       "in": "path",
@@ -835,6 +843,57 @@
             }
           }
         }
+      }
+    },
+    "TrendingBillRecord": {
+      "type": "object",
+      "properties": {
+        "bill_id": {
+          "title": "bill_id",
+          "type": "string",
+          "format": "string"
+        },
+        "official_title": {
+          "title": "official_title",
+          "type": "string",
+          "format": "string"
+        },
+        "short_title": {
+          "title": "short_title",
+          "type": "string",
+          "format": "string"
+        },
+        "popular_title": {
+          "title": "popular_title",
+          "type": "string",
+          "format": "string"
+        },
+        "summary": {
+          "title": "summary",
+          "type": "string",
+          "format": "string"
+        },
+        "comment_count": {
+          "title": "comment_count",
+          "type": "number",
+          "format": "number"
+        },
+        "yes_count": {
+          "title": "yes_count",
+          "type": "number",
+          "format": "number"
+        },
+        "no_count": {
+          "title": "no_count",
+          "type": "number",
+          "format": "number"
+        }
+      }
+    },
+    "TrendingBillRecords": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TrendingBillRecord"
       }
     }
   },
@@ -2021,6 +2080,58 @@
             "description": "Successful response",
             "schema": {
               "$ref": "#/definitions/LegislatorRecord"
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/bills/trending": {
+      "get": {
+        "description": "Retrieve a list of trending bills",
+        "parameters": [
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/TrendingBillRecords"
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/bills/{bill_id}": {
+      "get": {
+        "description": "Get a `Bill` object by bill id e.g. hr2-114.  A bill ID is made up of a type, number and congress session\n",
+        "parameters": [
+          {
+            "$ref": "#/parameters/BillIDParam"
+          },
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "Bill",
+              "type": "object"
             }
           },
           "401": {
