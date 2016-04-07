@@ -15,6 +15,7 @@
             [clojure.tools.logging :as log]
             [clojure.edn :as edn]
             [clojure.string :refer [lower-case]]
+            [com.pav.user.api.resources.legislator :refer [get-legislator]]
             [com.pav.user.api.resources.search :refer [search-term]]
             [com.pav.user.api.resources.vote :refer [cast-vote get-vote-count get-vote-records]]
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
@@ -86,6 +87,7 @@
   (PUT "/vote" _ cast-vote)
   (GET "/vote/count" [bill-id] (get-vote-count bill-id))
   (GET "/vote/bill/:bill-id" [bill-id] (get-vote-records bill-id))
+  (GET "/legislators/:thomas" [thomas] (get-legislator thomas))
   (route/resources "/")
   (route/not-found "Not Found"))
 

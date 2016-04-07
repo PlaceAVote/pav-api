@@ -80,3 +80,7 @@
                             (assoc bill :subject pav_topic)
                             (update-in bill [:subject] to-pav-subjects)))))]
 			bills)))
+
+(defn get-legislator [thomas]
+  (-> (esd/get connection "congress" "legislator" thomas)
+    (get-in [:_source])))

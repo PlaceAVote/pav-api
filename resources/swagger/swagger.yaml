@@ -10,6 +10,13 @@ produces:
   - application/json
   - multipart/form-data
 parameters:
+  LegislatorIDParam:
+    name: id
+    in: path
+    description: Legislator ID
+    required: true
+    type: string
+    format: string
   VoteRecordParam:
     name: vote record
     in: body
@@ -503,7 +510,112 @@ definitions:
         format: fr2-114
       vote:
         type: boolean
-        format: boolean      
+        format: boolean
+  LegislatorRecord:
+    type: object
+    properties:
+      thomas:
+        title: thomas
+        type: string
+        format: string
+      first_name:
+        title: first_name
+        type: string
+        format: string
+      last_name:
+        title: last_name
+        type: string
+        format: string
+      birthday:
+        title: birthday
+        type: string
+        format: string
+      govtrack:
+        title: govtrack
+        type: string
+        format: string
+      bioguide:
+        title: bioguide
+        type: string
+        format: string
+      gender:
+        title: gender
+        type: string
+        format: string
+      social:
+        title: social
+        type: object
+        properties:
+          twitter:
+            type: string
+            format: string
+          facebook:
+            type: string
+            format: string
+          youtube:
+            type: string
+            format: string
+          facebook_id:
+            type: string
+            format: string
+          youtube_id:
+            type: string
+            format: string
+      current_term:
+        title: current_term
+        type: object
+        properties:
+          party:
+            type: string
+            format: string
+          address:
+            type: string
+            format: string
+          fax:
+            type: string
+            format: string
+          phone:
+            type: string
+            format: string
+          start:
+            type: string
+            format: string
+          end:
+            type: string
+            format: string
+          type:
+            type: string
+            format: string
+          state:
+            type: string
+            format: string
+          office:
+            type: string
+            format: string
+          rss_url:
+            type: string
+            format: string
+          url:
+            type: string
+            format: string
+          district:
+            type: number
+            format: number
+          contact_form:
+            type: string
+            format: string
+      img_urls:
+        type: object
+        properties:
+          200px:
+            type: string
+            format: string
+          100px:
+            type: string
+            format: string
+          50px:
+            type: string
+            format: string
 paths:
   /user/feed:
     get:
@@ -1202,12 +1314,20 @@ paths:
         '401':
           description: Not Authorized (Check Authentication Token)
         '409':
-          description: Vote Record already associated with this user and bill        
-  
-  
-      
-    
-    
-    
-    
-    
+          description: Vote Record already associated with this user and bill     
+          
+  /legislators/{id}:
+    get:
+      description: Get Legislator by thomas id
+      parameters:
+        - $ref: "#/parameters/LegislatorIDParam"
+        - $ref: "#/parameters/OptionalTokenParam"
+      tags:
+        - Legislators
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: "#/definitions/LegislatorRecord"
+        '401':
+          description: Not Authorized (Check Authentication Token)
