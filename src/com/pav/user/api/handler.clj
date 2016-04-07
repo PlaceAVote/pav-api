@@ -16,6 +16,7 @@
             [clojure.edn :as edn]
             [clojure.string :refer [lower-case]]
             [com.pav.user.api.resources.search :refer [search-term]]
+            [com.pav.user.api.resources.vote :refer [cast-vote get-vote-count get-vote-records]]
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
@@ -82,6 +83,9 @@
   (DELETE "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (POST "/user/contact" _ contact-form)
   (GET "/search" [term] (search-term term))
+  (PUT "/vote" _ cast-vote)
+  (GET "/vote/count" [bill-id] (get-vote-count bill-id))
+  (GET "/vote/bill/:bill-id" [bill-id] (get-vote-records bill-id))
   (route/resources "/")
   (route/not-found "Not Found"))
 
