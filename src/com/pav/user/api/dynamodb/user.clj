@@ -264,8 +264,12 @@ new ID assigned as issue_id and timestamp stored in table."
     (persist-to-newsfeed follower-and-author-evts)))
 
 (defn add-event-to-usertimeline [event]
-  (log/info "Event published to timeline " event)
+  (log/info "Event published to user timeline " event)
   (far/put-item client-opts dy/timeline-table-name event))
+
+(defn add-event-to-user-notifications [event]
+  (log/info "Event published to user notification " event)
+  (far/put-item client-opts dy/notification-table-name event))
 
 (declare delete-user-issue-emotional-response)
 (defn- publish-issues-notification
