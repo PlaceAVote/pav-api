@@ -200,6 +200,13 @@ parameters:
     required: false
     type: number
     format: number
+  TermParam:
+    name: term
+    description: Search Term
+    in: query
+    required: true
+    type: string
+    format: string
   NewFacebookUserProfileBodyParam:
     name: NewUser
     in: body
@@ -1082,6 +1089,18 @@ paths:
           description: Successful response
         '400':
           description: Bad Request
+  /search:
+    get:
+      description: Search For Bills and Public Users using a term.
+      parameters:
+        - $ref: "#/parameters/TermParam"
+      tags:
+        - Search
+      responses:
+        '200':
+          description: Successful response
+  
+  
       
     
     
