@@ -263,6 +263,10 @@ new ID assigned as issue_id and timestamp stored in table."
     (far/put-item client-opts dy/timeline-table-name (assoc author-event :event_id (.toString (UUID/randomUUID))))
     (persist-to-newsfeed follower-and-author-evts)))
 
+(defn add-event-to-usertimeline [event]
+  (log/info "Event published to timeline " event)
+  (far/put-item client-opts dy/timeline-table-name event))
+
 (declare delete-user-issue-emotional-response)
 (defn- publish-issues-notification
   "Publish Notification to author of issue that someone has responsed to there issue."

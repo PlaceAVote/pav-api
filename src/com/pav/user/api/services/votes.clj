@@ -1,5 +1,8 @@
 (ns com.pav.user.api.services.votes
-  (:require [com.pav.user.api.dynamodb.votes :as dv]))
+  (:require [com.pav.user.api.dynamodb.votes :as dv]
+            [com.pav.user.api.dynamodb.user :as du]
+            [com.pav.user.api.elasticsearch.user :refer [get-bill-info]])
+  (:import (java.util UUID)))
 
 (defn new-vote-count-record [{:keys [vote bill_id]}]
   (let [votes (if (true? vote)
@@ -18,14 +21,15 @@
   (dv/update-vote-count bill_id vote))
 
 (defn create-user-vote-record [{:keys [vote bill_id] :as record}]
-  (let [vote-evt (assoc record :type "vote")
+  (let [vote-evt (merge
+                   (assoc record :type "vote" :event_id (.toString (UUID/randomUUID)))
+                   (select-keys (get-bill-info bill_id) [:bill_title]))
         current-count (dv/get-vote-count bill_id)]
     (dv/create-user-vote record)
-    ;; TODO: Publish vote-evt onto redis pub/sub
-    ;(put! event-channel vote-evt (fn [_] (log/info (str "Event published " vote-evt))))
     (if current-count
       (update-vote-count bill_id vote)
-      (create-vote-count (new-vote-count-record record)))))
+      (create-vote-count (new-vote-count-record record)))
+    (du/add-event-to-usertimeline vote-evt)))
 
 (defn get-user-vote
   "Retrieve user vote record using vote-id"
