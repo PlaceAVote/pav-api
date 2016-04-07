@@ -36,6 +36,9 @@
 (def ^{:doc "Comment details."}
   comment-details-table-name (:dynamo-comment-details-table-name env))
 
+(def ^{:doc "User Votes table"}
+  user-votes-table-name (:dynamo-user-votes-table env))
+
 (def ^{:doc "Vote counters."}
   vote-count-table-name (:dynamo-vote-count-table env))
 
@@ -69,74 +72,85 @@ It will NOT handle exceptions."
      (log/debug "Creating all dynamo tables...")
      (try
        (safe-create-table opts user-table-name [:user_id :s]
-                          {:gsindexes [{:name "user-email-idx"
-                                        :hash-keydef [:email :s]
-                                        :throughput {:read 5 :write 10}}
-                                       {:name "fbid-idx"
-                                        :hash-keydef [:facebook_id :s]
-                                        :throughput {:read 5 :write 10}}]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:gsindexes [{:name "user-email-idx"
+                       :hash-keydef [:email :s]
+                       :throughput {:read 5 :write 10}}
+                      {:name "fbid-idx"
+                       :hash-keydef [:facebook_id :s]
+                       :throughput {:read 5 :write 10}}]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts user-confirm-table-name [:confirmation-token :s]
-                          {:throughput {:read 5 :write 10}
-                           :block? true})
+         {:throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts notification-table-name [:user_id :s]
-                          {:gsindexes [{:name "notification_id-idx"
-                                        :hash-keydef [:notification_id :s]
-                                        :throughput {:read 5 :write 10}}]
-                           :range-keydef [:timestamp :n]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:gsindexes [{:name "notification_id-idx"
+                       :hash-keydef [:notification_id :s]
+                       :throughput {:read 5 :write 10}}]
+          :range-keydef [:timestamp :n]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts timeline-table-name [:user_id :s]
-                          {:range-keydef [:timestamp :n]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:range-keydef [:timestamp :n]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts userfeed-table-name [:user_id :s]
-                          {:range-keydef [:timestamp :n]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:range-keydef [:timestamp :n]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts following-table-name [:user_id :s]
-                          {:range-keydef [:following :s]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:range-keydef [:following :s]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts follower-table-name [:user_id :s]
-                          {:range-keydef [:follower :s]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:range-keydef [:follower :s]
+          :throughput {:read 5 :write 10}
+          :block? true})
+       (safe-create-table opts user-votes-table-name [:vote-id :s]
+         {:gsindexes [{:name "user-bill-idx"
+                       :hash-keydef [:user_id :s]
+                       :range-keydef [:bill_id :s]
+                       :throughput {:read 5 :write 5}}
+                      {:name "bill-user-idx"
+                       :hash-keydef [:bill_id :s]
+                       :range-keydef [:user_id :s]
+                       :throughput {:read 5 :write 5}}]
+          :throughput {:read 5 :write 5}
+          :block? true})
        (safe-create-table opts vote-count-table-name [:bill_id :s]
-                          {:throughput {:read 5 :write 10}
-                           :block? true})
+         {:throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts comment-details-table-name [:comment_id :s]
-                          {:gsindexes [{:name "bill-comment-idx"
-                                        :hash-keydef [:bill_id :s]
-                                        :range-keydef [:comment_id :s]
-                                        :throughput {:read 5 :write 10}}]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:gsindexes [{:name "bill-comment-idx"
+                       :hash-keydef [:bill_id :s]
+                       :range-keydef [:comment_id :s]
+                       :throughput {:read 5 :write 10}}]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts question-table-name [:topic :s]
-                          {:range-keydef [:question_id :s]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:range-keydef [:question_id :s]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts user-question-answers-table-name [:user_id :s]
-                          {:range-keydef [:question_id :s]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:range-keydef [:question_id :s]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts user-issues-table-name [:issue_id :s]
-                          {:range-keydef [:user_id :s]
-                           :gsindexes [{:name "user-issues-idx"
-                                        :hash-keydef [:user_id :s]
-                                        :range-keydef [:issue_id :s]
-                                        :throughput {:read 5 :write 10}}
-                                       {:name "bill-issues-idx"
-                                        :hash-keydef [:bill_id :s]
-                                        :range-keydef [:issue_id :s]
-                                        :throughput {:read 5 :write 10}}]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:range-keydef [:user_id :s]
+          :gsindexes [{:name "user-issues-idx"
+                       :hash-keydef [:user_id :s]
+                       :range-keydef [:issue_id :s]
+                       :throughput {:read 5 :write 10}}
+                      {:name "bill-issues-idx"
+                       :hash-keydef [:bill_id :s]
+                       :range-keydef [:issue_id :s]
+                       :throughput {:read 5 :write 10}}]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (safe-create-table opts user-issue-responses-table-name [:issue_id :s]
-                          {:range-keydef [:user_id :s]
-                           :throughput {:read 5 :write 10}
-                           :block? true})
+         {:range-keydef [:user_id :s]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (log/debug "Creating tables done")
        (catch Exception e 
          (log/error e (str "Failed with creating one of the tables with: " opts)))))
@@ -169,6 +183,7 @@ It will handle exceptions, so it can be safely called inside 'delete-all-tables!
      (safe-delete-table opts following-table-name)
      (safe-delete-table opts userfeed-table-name)
      (safe-delete-table opts vote-count-table-name)
+     (safe-delete-table opts user-votes-table-name)
      (safe-delete-table opts comment-details-table-name)
      (safe-delete-table opts question-table-name)
      (safe-delete-table opts user-question-answers-table-name)

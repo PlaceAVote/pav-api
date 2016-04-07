@@ -81,6 +81,7 @@
                             :dynamo-follower-table-name          "userfollowers"
                             :dynamo-following-table-name         "userfollowing"
                             :dynamo-comment-details-table-name	 "comment-details"
+                            :dynamo-user-votes-table             "user-votes"
                             :dynamo-vote-count-table             "vote-counts"
                             :dynamo-questions-table              "questions"
                             :dynamo-user-question-answers-table	 "user-question-answers"
