@@ -15,6 +15,7 @@
             [clojure.tools.logging :as log]
             [clojure.edn :as edn]
             [clojure.string :refer [lower-case]]
+            [com.pav.user.api.resources.search :refer [search-term]]
             [com.pav.user.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications mark-notification timeline feed
                                                      follow following followers unfollow
@@ -80,6 +81,7 @@
   (GET "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (DELETE "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (POST "/user/contact" _ contact-form)
+  (GET "/search" [term] (search-term term))
   (route/resources "/")
   (route/not-found "Not Found"))
 
