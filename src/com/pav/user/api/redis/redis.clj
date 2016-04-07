@@ -5,6 +5,7 @@
             [msgpack.core :as msg]
             [msgpack.clojure-extensions]
             [cheshire.core :as ch]
+            [clj-time.core :as t]
             [com.pav.user.api.domain.user :refer [convert-to-correct-profile-type]]))
 
 (def redis-conn {:spec {:uri (:redis-url env)}})
@@ -91,3 +92,29 @@
 	(wcar redis-conn
 		(car/hmset* (upk user_id) {:facebook_id facebook_id})
 		(car/set (ufbidk facebook_id) user_id)))
+
+
+(defn create-bill-meta-data [{:keys [bill_id] :as meta-data}]
+  (let [key (str "bill:" bill_id ":meta")]
+    (wcar redis-conn
+      (car/hmset* key meta-data)
+      (car/expire key (* 24 3600)))))
+
+(defn- pageview-bill-key-24hr []
+  (str "top-pageviews:bills:" (.toString (.toLocalDate (t/now)))))
+
+(defn- increment-bill-pageview-24hr [key]
+  (wcar redis-conn
+    (car/zincrby (pageview-bill-key-24hr) 1 key)
+    (car/expire key (* 24 3600))))
+
+(defn increment-bill-pageview [{:keys [bill_id] :as bill-meta}]
+  (create-bill-meta-data bill-meta)
+  (increment-bill-pageview-24hr (str "bill:" bill_id ":meta")))
+
+(defn- retrieve-bill-meta [key]
+  (wcar redis-conn (car/parse-map (car/hgetall key) :keywordize)))
+
+(defn retrieve-top-trending-bills-24hr [limit]
+  (->> (wcar redis-conn (car/zrevrange (pageview-bill-key-24hr) 0 limit))
+       (mapv retrieve-bill-meta)))

@@ -84,3 +84,16 @@
 (defn get-legislator [thomas]
   (-> (esd/get connection "congress" "legislator" thomas)
     (get-in [:_source])))
+
+(defn get-bill [bill_id]
+  (->>
+    (esd/multi-get connection "congress" [{:_type "bill" :_id bill_id} {:_type "billmeta" :_id bill_id}])
+    (map :_source) (reduce merge)))
+
+(defn get-bills-metadata
+  "Retrieve metadata for a collection of bills."
+  [bills]
+  (->>
+    (map #(assoc {} :_id (:bill_id %)) bills)
+    (esd/multi-get connection "congress" "billmeta")
+    (map :_source)))

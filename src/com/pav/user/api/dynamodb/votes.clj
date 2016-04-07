@@ -17,8 +17,11 @@
                      false {:update-expr "ADD #a :n" :expr-attr-names {"#a" "no-count"} :expr-attr-vals {":n" 1}})]
     (far/update-item dy/client-opts dy/vote-count-table-name {:bill_id bill_id} update-stm)))
 
-(defn get-user-vote [vote-id]
-  (far/get-item dy/client-opts dy/user-votes-table-name {:vote-id vote-id}))
+(defn get-user-vote
+  ([vote-id] (far/get-item dy/client-opts dy/user-votes-table-name {:vote-id vote-id}))
+  ([bill_id user_id]
+   (first (far/query dy/client-opts dy/user-votes-table-name {:user_id [:eq user_id] :bill_id [:eq bill_id]}
+            {:return ["vote"] :index "user-bill-idx"}))))
 
 (defn get-user-bill-vote [user_id bill_id]
   (first (far/query dy/client-opts dy/user-votes-table-name {:user_id [:eq user_id] :bill_id [:eq bill_id]}
