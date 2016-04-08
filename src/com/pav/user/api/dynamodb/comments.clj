@@ -156,3 +156,4 @@
     (far/update-item dy/client-opts dy/bill-comment-table-name {:id parent-comment-key :comment_id comment_id} op)
     (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id} op)
     (far/delete-item dy/client-opts dy/comment-user-scoring-table {:comment_id comment_id :user_id user_id})))
+
