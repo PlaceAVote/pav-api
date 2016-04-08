@@ -17,6 +17,34 @@ parameters:
     required: true
     type: string
     format: hr2-114
+  CommentIDParam:
+    name: comment_id
+    in: path
+    description: Comment ID
+    required: true
+    type: string
+    format: string
+  ScoreBodyParam:
+    name: Likebody
+    in: body
+    description: Like Body
+    required: true
+    schema:
+      $ref: "#/definitions/NewScoreRecord"
+  NewCommentParam:
+    name: Comment
+    in: body
+    description: New Comment
+    required: true
+    schema:
+      $ref: "#/definitions/NewCommentRecord"
+  BillIDParam:
+    name: bill_id
+    in: path
+    description: Bill ID
+    required: true
+    type: string
+    format: hr2-114
   LegislatorIDParam:
     name: id
     in: path
@@ -662,6 +690,93 @@ definitions:
     type: array
     items:
       $ref: "#/definitions/TrendingBillRecord"
+  BillCommentRecords:
+    type: object
+    properties:
+      last_comment_id:
+        type: string
+        format: string
+      total:
+        type: number
+        format: number
+      comments:
+        type: array
+        items:
+          $ref: "#/definitions/BillCommentRecord"
+  BillCommentRecord:
+    type: object
+    properties:
+      comment_id:
+        title: comment_id
+        type: string
+        format: string
+      author:
+        title: author
+        type: string
+        format: string
+      author_first_name:
+        title: authors first name
+        type: string
+        format: string
+      author_last_name:
+        title: authors last name
+        type: string
+        format: string
+      author_img_url:
+        title: author_img_url
+        type: string
+        format: string
+      body:
+        title: body
+        type: string
+        format: string
+      score:
+        title: score
+        type: number
+        format: number
+      timestamp:
+        title: timestamp
+        type: number
+        format: number
+      parent_id:
+        title: parent_id
+        type: string
+        format: string
+      has_children:
+        title: has_children
+        type: boolean
+        format: boolean
+#      replies:
+#        title: replies
+#        type: array
+#        items:
+#          $ref: "#/definitions/BillCommentRecord"
+      liked:
+        title: User Liked Comment?
+        type: boolean
+        format: boolean
+      disliked:
+        title: User Disliked Comment?
+        type: boolean
+        format: boolean
+  NewCommentRecord:
+    type: object
+    properties:
+      bill_id:
+        title: bill_id
+        type: string
+        format: string
+      body:
+        title: body
+        type: string
+        format: string
+  NewScoreRecord:
+    type: object
+    properties:
+      bill_id:
+        title: bill_id
+        type: string
+        format: string      
 paths:
   /user/feed:
     get:
@@ -1408,3 +1523,147 @@ paths:
             type: object
         '401':
           description: Not Authorized (Check Authentication Token)
+  /bills/{bill_id}/comments:
+    get:
+      description:
+        Get all comments for a 'Bill.  This is a nested datastructure
+      parameters:
+        - $ref: "#/parameters/BillIDParam"
+        - $ref: "#/parameters/OptionalTokenParam"
+        - name: sort-by
+          in: query
+          description: Parameter used sorting.  Specify 'latest' or 'highest-score'.  If you omit this parameter it will sort comments by highest score
+          required: false
+          type: string
+          format: string
+          enum:
+            - latest
+            - highest-score
+        - name: last_comment_id
+          in: query
+          description: "Include the last comment_id specified in the response payload for pagination support"
+          required: false
+          type: string
+          format: string
+      tags:
+        - Bills
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: "#/definitions/BillCommentRecords"
+        '401':
+          description: Not Authorized (Check Authentication Token)
+  /bills/{bill_id}/topcomments:
+    get:
+      description:
+        Get the top comment for and against a bill.  Comments will only be returned if comments exist for users who voted for and against the bill.
+      parameters:
+        - $ref: "#/parameters/BillIDParam"
+        - $ref: "#/parameters/OptionalTokenParam"
+      tags:
+        - Bills
+      responses:
+        '401':
+          description: Not Authorized (Check Authentication Token)
+        '200':
+          description: Successful response
+          schema:
+            type: object
+            properties:
+              total:
+                type: number
+                format: number
+              for-comment:
+                $ref: "#/definitions/BillCommentRecord"
+              against-comment:
+                $ref: "#/definitions/BillCommentRecord"
+  /bills/comments:
+    put:
+      description: Create a new comment for a given bill
+      parameters:
+        - $ref: "#/parameters/NewCommentParam"
+        - $ref: "#/parameters/TokenParam"
+      tags:
+        - Bills
+      responses:
+        '401':
+          description: Not Authorized (Check Authentication Token)
+        '400':
+          description: Bad Request (check body of request)
+        '201':
+          description: Successful Response
+          schema:
+            $ref: "#/definitions/BillCommentRecord"      
+  /comments/{comment_id}/like:
+    post:
+      description: Like a comment
+      parameters:
+        - $ref: "#/parameters/ScoreBodyParam"
+        - $ref: "#/parameters/TokenParam"
+        - $ref: "#/parameters/CommentIDParam"
+      tags:
+        - Bills
+      responses:
+        '401':
+          description: Not Authorized (Check Authentication Token)
+        '201':
+          description: Successful response
+    delete:
+      description: Revoke a Liked comment
+      parameters:
+        - $ref: "#/parameters/ScoreBodyParam"
+        - $ref: "#/parameters/TokenParam"
+        - $ref: "#/parameters/CommentIDParam"
+      tags:
+        - Bills
+      responses:
+        '401':
+          description: Not Authorized (Check Authentication Token)
+        '204':
+          description: Successful response
+  /comments/{comment_id}/dislike:
+    post:
+      description: Dislike a comment
+      parameters:
+        - $ref: "#/parameters/ScoreBodyParam"
+        - $ref: "#/parameters/TokenParam"
+        - $ref: "#/parameters/CommentIDParam"
+      tags:
+        - Bills
+      responses:
+        '401':
+          description: Not Authorized (Check Authentication Token)
+        '201':
+          description: Successful response
+    delete:
+      description: Revoke a disliked comment
+      parameters:
+        - $ref: "#/parameters/ScoreBodyParam"
+        - $ref: "#/parameters/TokenParam"
+        - $ref: "#/parameters/CommentIDParam"
+      tags:
+        - Bills
+      responses:
+        '401':
+          description: Not Authorized (Check Authentication Token)
+        '204':
+          description: Successful response
+  /comments/{comment_id}/reply:
+    put:
+      description: Reply to an existing comment id
+      parameters:
+        - $ref: "#/parameters/CommentIDParam"
+        - $ref: "#/parameters/NewCommentParam"
+        - $ref: "#/parameters/TokenParam"
+      tags:
+        - Bills
+      responses:
+        '401':
+          description: Not Authorized (Check Authentication Token)
+        '400':
+          description: Bad request (Check body of request)
+        '201':
+          description: Successful response
+          schema:
+            $ref: "#/definitions/BillCommentRecord"
