@@ -59,7 +59,7 @@
   ([bill_id] (dv/get-votes-for-bill bill_id))
   ([bill_id user_id] (dv/get-user-vote bill_id user_id)))
 
-(defn add-bill-vote-count [{:keys [bill_id] :as event}]
+(defn assoc-bill-vote-count [{:keys [bill_id] :as event}]
   (let [vcount (select-keys (get-vote-count bill_id) [:yes-count :no-count])]
     (if vcount
       (merge event vcount)

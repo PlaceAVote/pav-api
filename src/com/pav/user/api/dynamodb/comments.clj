@@ -6,7 +6,7 @@
 (defn create-bill-comment-thread-list-key [bill-id]
   (str "thread:" bill-id))
 
-(defn add-bill-comment-count
+(defn assoc-bill-comment-count
   "Associate a count of comments to the payload"
   [{:keys [bill_id] :as event}]
   (let [ccount (count (far/query dy/client-opts dy/comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"}))]
@@ -100,6 +100,9 @@
                    (mapv #(retrieve-replies % sort-by limit user_id)))]
     {:total (count comments) :comments comments :last_comment_id (:comment_id (last comments))}))
 
+(defn get-comment [comment_id]
+  (far/get-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}))
+
 (defn get-scoring-operation [operation]
   (case operation
     :like    {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" 1}}
@@ -138,3 +141,18 @@
       {:for-comment     (first comments-for)
        :against-comment (first comments-against)})))
 
+(defn remove-liked-comment [user_id comment_id]
+  (let [parent-comment-key (-> (far/query dy/client-opts dy/bill-comment-table-name {:comment_id [:eq comment_id]}
+                                 {:index "comment-idx" :limit 1 :span-reqs {:max 1}}) first :id)
+        op {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" -1}}]
+    (far/update-item dy/client-opts dy/bill-comment-table-name {:id parent-comment-key :comment_id comment_id} op)
+    (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id} op)
+    (far/delete-item dy/client-opts dy/comment-user-scoring-table {:comment_id comment_id :user_id user_id})))
+
+(defn remove-disliked-comment [user_id comment_id]
+  (let [parent-comment-key (-> (far/query dy/client-opts dy/bill-comment-table-name {:comment_id [:eq comment_id]}
+                                 {:index "comment-idx" :limit 1 :span-reqs {:max 1}}) first :id)
+        op {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" 1}}]
+    (far/update-item dy/client-opts dy/bill-comment-table-name {:id parent-comment-key :comment_id comment_id} op)
+    (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id} op)
+    (far/delete-item dy/client-opts dy/comment-user-scoring-table {:comment_id comment_id :user_id user_id})))
