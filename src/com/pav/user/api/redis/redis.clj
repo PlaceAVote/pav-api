@@ -13,11 +13,11 @@
 (def notification-queue (:notification-queue env))
 (def email-notification-queue (:email-notification-queue env))
 
+(defn queue-event [queue event]
+  (wcar redis-conn (car-mq/enqueue queue (-> event ch/generate-string msg/pack))))
+
 (defn publish-to-timeline [event]
   (wcar redis-conn (car-mq/enqueue timeline-queue (-> (ch/generate-string event) msg/pack))))
-
-(defn queue-event [queue event]
-  (wcar* (car-mq/enqueue queue (-> event ch/generate-string msg/pack))))
 
 (defn publish-bill-comment [comment]
   (queue-event timeline-queue (assoc comment :type "comment")))
