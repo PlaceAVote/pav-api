@@ -34,7 +34,7 @@
     (mapv #(associate-user-vote % user_id))
     (mapv #(associate-user-img %))
     (sort-by sort-key >)))
-
+;;{:cc-units nil, :last-prim-kvs {:id hr2-114, :comment_id comment:1, :timestamp 1458147015000N}, :count 1}
 (defn get-comments
   "Retrieve Parent level comments for bill-comment-idx"
   [bill_id sorted-by limit & {:keys [user_id last_comment_id]}]
@@ -55,19 +55,19 @@
                    :highest-score {:last-prim-kvs (select-keys last_comment [:id :score :comment_id])}
                    :latest {:last-prim-kvs (select-keys last_comment [:id :timestamp :comment_id])}
                    {:last-prim-kvs (select-keys last_comment [:id :score :comment_id])})))
-        comment_ids (->> (far/query dy/client-opts dy/bill-comment-table-name {:id [:eq bill_id]} opts)
-                      (mapv #(get-in % [:comment_id])))]
+        parent-comments (far/query dy/client-opts dy/bill-comment-table-name {:id [:eq bill_id]} opts)
+        comment_ids (->> parent-comments (mapv #(get-in % [:comment_id])))]
     (if-not (empty? comment_ids)
-      (batch-get-comments comment_ids (second index) user_id)
-      [])))
+      {:comments (batch-get-comments comment_ids (second index) user_id)
+       :last_comment_id (get-in (meta parent-comments) [:last-prim-kvs :comment_id])}
+      {:comments [] :last_comment_id nil})))
 
 (defn retrieve-replies
   "If comment has children, then retrieve replies."
   [{:keys [has_children comment_id] :as comment} sort-by limit & [user_id]]
   (if has_children
     (assoc comment :replies (mapv #(retrieve-replies % sort-by limit user_id)
-                              (get-comments
-                                (create-bill-comment-thread-list-key comment_id) sort-by limit :user_id user_id)))
+                              (:comments (get-comments (create-bill-comment-thread-list-key comment_id) sort-by limit :user_id user_id))))
     (assoc comment :replies [])))
 
 (defn create-reply [{:keys [parent_id comment_id timestamp score] :as comment}]
@@ -96,9 +96,9 @@
 (defn get-bill-comments
   "Retrieve comments for bill, if user_id is specified gather additional meta data."
   [id & {:keys [user_id sort-by limit last_comment_id] :or {sort-by :highest-score limit 10}}]
-  (let [comments (->> (get-comments id sort-by limit :user_id user_id :last_comment_id last_comment_id)
-                   (mapv #(retrieve-replies % sort-by limit user_id)))]
-    {:total (count comments) :comments comments :last_comment_id (:comment_id (last comments))}))
+  (let [{:keys [comments last_comment_id]} (get-comments id sort-by limit :user_id user_id :last_comment_id last_comment_id)
+        comments (mapv #(retrieve-replies % sort-by limit user_id) comments)]
+    {:total (count comments) :comments comments :last_comment_id last_comment_id}))
 
 (defn get-bill-comment [comment_id]
   (far/get-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}))
@@ -131,7 +131,7 @@
                                   (mapv :user_id)))
         users-against (into #{} (->> (filterv #(false? (:vote %)) bill-votes)
                                   (mapv :user_id)))
-        parent-comments  (get-comments bill-id :score 10 :user_id user_id)
+        parent-comments (:comments (get-comments bill-id :score 10 :user_id user_id))
         comments-for     (filterv #(contains? users-for (:author %)) parent-comments)
         comments-against (filterv #(contains? users-against (:author %)) parent-comments)]
 

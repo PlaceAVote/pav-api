@@ -266,7 +266,8 @@
                            :body "comment 2 body goes here!!!"}
             _ (dc/create-comment lowest-scored)
             _ (dc/create-comment higher-scored)
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :highest-score :last_comment_id "comment:1")]
+            {last_comment_id :last_comment_id} (dc/get-bill-comments "hr2-114" :user_id "user1" :highest-score :latest :limit 1)
+            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :highest-score :last_comment_id last_comment_id)]
         (:total persisted-comment) => 1
         (:comments persisted-comment) => [(assoc lowest-scored :replies [] :liked false :disliked false)]))
 
@@ -284,7 +285,8 @@
                           :body "comment 2 body goes here!!!"}
             _ (dc/create-comment least-recent)
             _ (dc/create-comment most_recent)
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :latest :last_comment_id "comment:1")]
+            {last_comment_id :last_comment_id} (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :latest :limit 1)
+            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :latest :last_comment_id last_comment_id)]
         (:total persisted-comment) => 1
         (:comments persisted-comment) => [(assoc least-recent :replies [] :liked false :disliked false)]))))
 
