@@ -1,7 +1,6 @@
 
-## PlaceAVote User API
-This API is to register new users with the site.  The API will be used register, authenticate and retrieve information
-on the user.
+## PlaceAVote API
+This is our core API which is response for managing our users, bills, comments and voting.
 
 ## Prerequisites
 
