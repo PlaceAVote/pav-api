@@ -2,7 +2,7 @@
   (:require [com.pav.user.api.dynamodb.votes :as dv]
             [com.pav.user.api.dynamodb.user :as du]
             [com.pav.user.api.notifications.ws-handler :as ws]
-            [com.pav.user.api.elasticsearch.user :refer [get-bill-info]])
+            [com.pav.user.api.elasticsearch.user :refer [get-bill-info get-bill]])
   (:import (java.util UUID)))
 
 (defn new-vote-count-record [{:keys [vote bill_id]}]
@@ -29,7 +29,7 @@
   "Create new user vote relationship between a bill and user.  Also publish event on user timeline and notification feed."
   [{:keys [vote bill_id] :as record}]
   (let [vote-evt (merge (assoc record :type "vote" :event_id (.toString (UUID/randomUUID)))
-                   (select-keys (get-bill-info bill_id) [:bill_title]))
+                   (select-keys (get-bill bill_id) [:official_title :short_title :featured_bill_title]))
         notification-evt (assoc record :type "vote" :read false :notification_id (.toString (UUID/randomUUID)))
         current-count (dv/get-vote-count bill_id)]
     (dv/create-user-vote record)
