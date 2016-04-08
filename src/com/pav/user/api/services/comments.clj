@@ -50,11 +50,11 @@
 (defn get-bill-comments
   [user_id bill-id & {:keys [sort-by last_comment_id]
                       :or {sort-by :highest-score last_comment_id nil}}]
-  (dc/get-comments bill-id :user_id user_id :sort-by sort-by :last_comment_id last_comment_id))
+  (dc/get-bill-comments bill-id :user_id user_id :sort-by sort-by :last_comment_id last_comment_id))
 
 (defn score-bill-comment [user_id comment-id operation]
   (dc/score-comment comment-id user_id operation)
-  (redis/publish-scoring-comment-evt (dc/get-comment comment-id) user_id operation))
+  (redis/publish-scoring-comment-evt (dc/get-bill-comment comment-id) user_id operation))
 
 (defn revoke-liked-comment [user_id comment_id]
   (dc/remove-liked-comment user_id comment_id))

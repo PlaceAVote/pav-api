@@ -35,7 +35,7 @@
     (mapv #(associate-user-img %))
     (sort-by sort-key >)))
 
-(defn get-bill-comments-ids
+(defn get-comments
   "Retrieve Parent level comments for bill-comment-idx"
   [bill_id sorted-by limit & {:keys [user_id last_comment_id]}]
   (t/have [:or keyword? nil?] sorted-by)
@@ -66,7 +66,7 @@
   [{:keys [has_children comment_id] :as comment} sort-by limit & [user_id]]
   (if has_children
     (assoc comment :replies (mapv #(retrieve-replies % sort-by limit user_id)
-                              (get-bill-comments-ids
+                              (get-comments
                                 (create-bill-comment-thread-list-key comment_id) sort-by limit :user_id user_id)))
     (assoc comment :replies [])))
 
@@ -93,14 +93,14 @@
       (far/put-item dy/client-opts dy/comment-details-table-name comment))
     (create-reply comment)))
 
-(defn get-comments
+(defn get-bill-comments
   "Retrieve comments for bill, if user_id is specified gather additional meta data."
   [id & {:keys [user_id sort-by limit last_comment_id] :or {sort-by :highest-score limit 10}}]
-  (let [comments (->> (get-bill-comments-ids id sort-by limit :user_id user_id :last_comment_id last_comment_id)
+  (let [comments (->> (get-comments id sort-by limit :user_id user_id :last_comment_id last_comment_id)
                    (mapv #(retrieve-replies % sort-by limit user_id)))]
     {:total (count comments) :comments comments :last_comment_id (:comment_id (last comments))}))
 
-(defn get-comment [comment_id]
+(defn get-bill-comment [comment_id]
   (far/get-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}))
 
 (defn get-scoring-operation [operation]
@@ -131,7 +131,7 @@
                                   (mapv :user_id)))
         users-against (into #{} (->> (filterv #(false? (:vote %)) bill-votes)
                                   (mapv :user_id)))
-        parent-comments  (get-bill-comments-ids bill-id :score 10 :user_id user_id)
+        parent-comments  (get-comments bill-id :score 10 :user_id user_id)
         comments-for     (filterv #(contains? users-for (:author %)) parent-comments)
         comments-against (filterv #(contains? users-against (:author %)) parent-comments)]
 
