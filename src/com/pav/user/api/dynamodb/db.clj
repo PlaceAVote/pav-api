@@ -33,8 +33,14 @@
 (def ^{:doc "Types user is following."}
   following-table-name (:dynamo-following-table-name env))
 
+(def ^{:doc "Table used to keep track of Parent Comments and There Threads"}
+  bill-comment-table-name (:dynamo-bill-comments-table-name env))
+
 (def ^{:doc "Comment details."}
   comment-details-table-name (:dynamo-comment-details-table-name env))
+
+(def ^{:doc "Record users scoring per comment."}
+  comment-user-scoring-table (:dynamo-comment-user-scoring-table env))
 
 (def ^{:doc "User Votes table"}
   user-votes-table-name (:dynamo-user-votes-table env))
@@ -120,11 +126,30 @@ It will NOT handle exceptions."
        (safe-create-table opts vote-count-table-name [:bill_id :s]
          {:throughput {:read 5 :write 10}
           :block? true})
+       (safe-create-table opts bill-comment-table-name [:id :s]
+         {:range-keydef [:comment_id :s]
+          :throughput {:read 5 :write 10}
+          :gsindexes [{:name "comment-idx"
+                       :hash-keydef [:comment_id :s]
+                       :throughput {:read 5 :write 5}}
+                      {:name "bill-score-idx"
+                       :hash-keydef [:id :s]
+                       :range-keydef [:score :n]
+                       :throughput {:read 5 :write 10}}
+                      {:name "bill-timestamp-idx"
+                       :hash-keydef [:id :s]
+                       :range-keydef [:timestamp :n]
+                       :throughput {:read 5 :write 10}}]
+          :block? true})
        (safe-create-table opts comment-details-table-name [:comment_id :s]
          {:gsindexes [{:name "bill-comment-idx"
                        :hash-keydef [:bill_id :s]
                        :range-keydef [:comment_id :s]
                        :throughput {:read 5 :write 10}}]
+          :throughput {:read 5 :write 10}
+          :block? true})
+       (safe-create-table opts comment-user-scoring-table [:comment_id :s]
+         {:range-keydef [:user_id :s]
           :throughput {:read 5 :write 10}
           :block? true})
        (safe-create-table opts question-table-name [:topic :s]
@@ -184,7 +209,9 @@ It will handle exceptions, so it can be safely called inside 'delete-all-tables!
      (safe-delete-table opts userfeed-table-name)
      (safe-delete-table opts vote-count-table-name)
      (safe-delete-table opts user-votes-table-name)
+     (safe-delete-table opts bill-comment-table-name)
      (safe-delete-table opts comment-details-table-name)
+     (safe-delete-table opts comment-user-scoring-table)
      (safe-delete-table opts question-table-name)
      (safe-delete-table opts user-question-answers-table-name)
      (safe-delete-table opts user-issues-table-name)
