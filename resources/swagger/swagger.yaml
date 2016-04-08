@@ -1,8 +1,8 @@
 swagger: '2.0'
 info:
   version: 0.0.0
-  title: 'PlaceAVote user api'
-  description: 'PlaceAVote user api for registering and authenticating existing users'
+  title: 'PlaceAVote API'
+  description: 'PlaceAVote API'
 consumes:
   - application/json
   - multipart/form-data
