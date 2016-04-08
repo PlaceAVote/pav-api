@@ -14,6 +14,73 @@
     "multipart/form-data"
   ],
   "parameters": {
+    "BillIDParam": {
+      "name": "bill_id",
+      "in": "path",
+      "description": "Bill ID",
+      "required": true,
+      "type": "string",
+      "format": "hr2-114"
+    },
+    "CommentIDParam": {
+      "name": "comment_id",
+      "in": "path",
+      "description": "Comment ID",
+      "required": true,
+      "type": "string",
+      "format": "string"
+    },
+    "ScoreBodyParam": {
+      "name": "Likebody",
+      "in": "body",
+      "description": "Like Body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/NewScoreRecord"
+      }
+    },
+    "NewCommentParam": {
+      "name": "Comment",
+      "in": "body",
+      "description": "New Comment",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/NewCommentRecord"
+      }
+    },
+    "LegislatorIDParam": {
+      "name": "id",
+      "in": "path",
+      "description": "Legislator ID",
+      "required": true,
+      "type": "string",
+      "format": "string"
+    },
+    "VoteRecordParam": {
+      "name": "vote record",
+      "in": "body",
+      "description": "Vote Record",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/NewVoteRecord"
+      }
+    },
+    "BillIDQueryParam": {
+      "name": "bill-id",
+      "in": "query",
+      "description": "Bill ID",
+      "required": true,
+      "type": "string",
+      "format": "hr2-114"
+    },
+    "BillIDPathParam": {
+      "name": "bill_id",
+      "in": "path",
+      "description": "Bill ID",
+      "required": true,
+      "type": "string",
+      "format": "hr2-114"
+    },
     "ContactFormParam": {
       "name": "ContactFormRequest",
       "in": "body",
@@ -262,6 +329,14 @@
       "required": false,
       "type": "number",
       "format": "number"
+    },
+    "TermParam": {
+      "name": "term",
+      "description": "Search Term",
+      "in": "query",
+      "required": true,
+      "type": "string",
+      "format": "string"
     },
     "NewFacebookUserProfileBodyParam": {
       "name": "NewUser",
@@ -602,6 +677,357 @@
         "read": {
           "type": "boolean",
           "format": "boolean"
+        }
+      }
+    },
+    "VoteRecord": {
+      "type": "object",
+      "properties": {
+        "bill_id": {
+          "type": "string",
+          "format": "hr2-114"
+        },
+        "vote": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "VoteRecords": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/VoteRecord"
+      }
+    },
+    "VoteCount": {
+      "type": "object",
+      "properties": {
+        "bill_id": {
+          "type": "string"
+        },
+        "yes-count": {
+          "type": "number"
+        },
+        "no-count": {
+          "type": "number"
+        }
+      }
+    },
+    "NewVoteRecord": {
+      "type": "object",
+      "properties": {
+        "bill_id": {
+          "type": "string",
+          "format": "fr2-114"
+        },
+        "vote": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "LegislatorRecord": {
+      "type": "object",
+      "properties": {
+        "thomas": {
+          "title": "thomas",
+          "type": "string",
+          "format": "string"
+        },
+        "first_name": {
+          "title": "first_name",
+          "type": "string",
+          "format": "string"
+        },
+        "last_name": {
+          "title": "last_name",
+          "type": "string",
+          "format": "string"
+        },
+        "birthday": {
+          "title": "birthday",
+          "type": "string",
+          "format": "string"
+        },
+        "govtrack": {
+          "title": "govtrack",
+          "type": "string",
+          "format": "string"
+        },
+        "bioguide": {
+          "title": "bioguide",
+          "type": "string",
+          "format": "string"
+        },
+        "gender": {
+          "title": "gender",
+          "type": "string",
+          "format": "string"
+        },
+        "social": {
+          "title": "social",
+          "type": "object",
+          "properties": {
+            "twitter": {
+              "type": "string",
+              "format": "string"
+            },
+            "facebook": {
+              "type": "string",
+              "format": "string"
+            },
+            "youtube": {
+              "type": "string",
+              "format": "string"
+            },
+            "facebook_id": {
+              "type": "string",
+              "format": "string"
+            },
+            "youtube_id": {
+              "type": "string",
+              "format": "string"
+            }
+          }
+        },
+        "current_term": {
+          "title": "current_term",
+          "type": "object",
+          "properties": {
+            "party": {
+              "type": "string",
+              "format": "string"
+            },
+            "address": {
+              "type": "string",
+              "format": "string"
+            },
+            "fax": {
+              "type": "string",
+              "format": "string"
+            },
+            "phone": {
+              "type": "string",
+              "format": "string"
+            },
+            "start": {
+              "type": "string",
+              "format": "string"
+            },
+            "end": {
+              "type": "string",
+              "format": "string"
+            },
+            "type": {
+              "type": "string",
+              "format": "string"
+            },
+            "state": {
+              "type": "string",
+              "format": "string"
+            },
+            "office": {
+              "type": "string",
+              "format": "string"
+            },
+            "rss_url": {
+              "type": "string",
+              "format": "string"
+            },
+            "url": {
+              "type": "string",
+              "format": "string"
+            },
+            "district": {
+              "type": "number",
+              "format": "number"
+            },
+            "contact_form": {
+              "type": "string",
+              "format": "string"
+            }
+          }
+        },
+        "img_urls": {
+          "type": "object",
+          "properties": {
+            "200px": {
+              "type": "string",
+              "format": "string"
+            },
+            "100px": {
+              "type": "string",
+              "format": "string"
+            },
+            "50px": {
+              "type": "string",
+              "format": "string"
+            }
+          }
+        }
+      }
+    },
+    "TrendingBillRecord": {
+      "type": "object",
+      "properties": {
+        "bill_id": {
+          "title": "bill_id",
+          "type": "string",
+          "format": "string"
+        },
+        "official_title": {
+          "title": "official_title",
+          "type": "string",
+          "format": "string"
+        },
+        "short_title": {
+          "title": "short_title",
+          "type": "string",
+          "format": "string"
+        },
+        "popular_title": {
+          "title": "popular_title",
+          "type": "string",
+          "format": "string"
+        },
+        "summary": {
+          "title": "summary",
+          "type": "string",
+          "format": "string"
+        },
+        "comment_count": {
+          "title": "comment_count",
+          "type": "number",
+          "format": "number"
+        },
+        "yes_count": {
+          "title": "yes_count",
+          "type": "number",
+          "format": "number"
+        },
+        "no_count": {
+          "title": "no_count",
+          "type": "number",
+          "format": "number"
+        }
+      }
+    },
+    "TrendingBillRecords": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/TrendingBillRecord"
+      }
+    },
+    "BillCommentRecords": {
+      "type": "object",
+      "properties": {
+        "last_comment_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "total": {
+          "type": "number",
+          "format": "number"
+        },
+        "comments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BillCommentRecord"
+          }
+        }
+      }
+    },
+    "BillCommentRecord": {
+      "type": "object",
+      "properties": {
+        "comment_id": {
+          "title": "comment_id",
+          "type": "string",
+          "format": "string"
+        },
+        "author": {
+          "title": "author",
+          "type": "string",
+          "format": "string"
+        },
+        "author_first_name": {
+          "title": "authors first name",
+          "type": "string",
+          "format": "string"
+        },
+        "author_last_name": {
+          "title": "authors last name",
+          "type": "string",
+          "format": "string"
+        },
+        "author_img_url": {
+          "title": "author_img_url",
+          "type": "string",
+          "format": "string"
+        },
+        "body": {
+          "title": "body",
+          "type": "string",
+          "format": "string"
+        },
+        "score": {
+          "title": "score",
+          "type": "number",
+          "format": "number"
+        },
+        "timestamp": {
+          "title": "timestamp",
+          "type": "number",
+          "format": "number"
+        },
+        "parent_id": {
+          "title": "parent_id",
+          "type": "string",
+          "format": "string"
+        },
+        "has_children": {
+          "title": "has_children",
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "liked": {
+          "title": "User Liked Comment?",
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "disliked": {
+          "title": "User Disliked Comment?",
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "NewCommentRecord": {
+      "type": "object",
+      "properties": {
+        "bill_id": {
+          "title": "bill_id",
+          "type": "string",
+          "format": "string"
+        },
+        "body": {
+          "title": "body",
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "NewScoreRecord": {
+      "type": "object",
+      "properties": {
+        "bill_id": {
+          "title": "bill_id",
+          "type": "string",
+          "format": "string"
         }
       }
     }
@@ -1661,6 +2087,443 @@
           },
           "400": {
             "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "description": "Search For Bills and Public Users using a term.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TermParam"
+          }
+        ],
+        "tags": [
+          "Search"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/vote/bill/{bill_id}": {
+      "get": {
+        "description": "Get vote records for a bill",
+        "parameters": [
+          {
+            "$ref": "#/parameters/BillIDPathParam"
+          },
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          }
+        ],
+        "tags": [
+          "Votes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/VoteRecords"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/vote/count": {
+      "get": {
+        "description": "Get vote count for a bill.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/BillIDQueryParam"
+          },
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          }
+        ],
+        "tags": [
+          "Votes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/VoteCount"
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/vote": {
+      "put": {
+        "description": "Create user vote record",
+        "parameters": [
+          {
+            "$ref": "#/parameters/VoteRecordParam"
+          },
+          {
+            "$ref": "#/parameters/TokenParam"
+          }
+        ],
+        "tags": [
+          "Votes"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid vote record, check payload"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          },
+          "409": {
+            "description": "Vote Record already associated with this user and bill"
+          }
+        }
+      }
+    },
+    "/legislators/{id}": {
+      "get": {
+        "description": "Get Legislator by thomas id",
+        "parameters": [
+          {
+            "$ref": "#/parameters/LegislatorIDParam"
+          },
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          }
+        ],
+        "tags": [
+          "Legislators"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/LegislatorRecord"
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/bills/trending": {
+      "get": {
+        "description": "Retrieve a list of trending bills",
+        "parameters": [
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/TrendingBillRecords"
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/bills/{bill_id}": {
+      "get": {
+        "description": "Get a `Bill` object by bill id e.g. hr2-114.  A bill ID is made up of a type, number and congress session\n",
+        "parameters": [
+          {
+            "$ref": "#/parameters/BillIDParam"
+          },
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "Bill",
+              "type": "object"
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/bills/{bill_id}/comments": {
+      "get": {
+        "description": "Get all comments for a 'Bill.  This is a nested datastructure",
+        "parameters": [
+          {
+            "$ref": "#/parameters/BillIDParam"
+          },
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          },
+          {
+            "name": "sort-by",
+            "in": "query",
+            "description": "Parameter used sorting.  Specify 'latest' or 'highest-score'.  If you omit this parameter it will sort comments by highest score",
+            "required": false,
+            "type": "string",
+            "format": "string",
+            "enum": [
+              "latest",
+              "highest-score"
+            ]
+          },
+          {
+            "name": "last_comment_id",
+            "in": "query",
+            "description": "Include the last comment_id specified in the response payload for pagination support",
+            "required": false,
+            "type": "string",
+            "format": "string"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/BillCommentRecords"
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/bills/{bill_id}/topcomments": {
+      "get": {
+        "description": "Get the top comment for and against a bill.  Comments will only be returned if comments exist for users who voted for and against the bill.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/BillIDParam"
+          },
+          {
+            "$ref": "#/parameters/OptionalTokenParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number",
+                  "format": "number"
+                },
+                "for-comment": {
+                  "$ref": "#/definitions/BillCommentRecord"
+                },
+                "against-comment": {
+                  "$ref": "#/definitions/BillCommentRecord"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/bills/comments": {
+      "put": {
+        "description": "Create a new comment for a given bill",
+        "parameters": [
+          {
+            "$ref": "#/parameters/NewCommentParam"
+          },
+          {
+            "$ref": "#/parameters/TokenParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "schema": {
+              "$ref": "#/definitions/BillCommentRecord"
+            }
+          },
+          "400": {
+            "description": "Bad Request (check body of request)"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/comments/{comment_id}/like": {
+      "post": {
+        "description": "Like a comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ScoreBodyParam"
+          },
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      },
+      "delete": {
+        "description": "Revoke a Liked comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ScoreBodyParam"
+          },
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/comments/{comment_id}/dislike": {
+      "post": {
+        "description": "Dislike a comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ScoreBodyParam"
+          },
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      },
+      "delete": {
+        "description": "Revoke a disliked comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/ScoreBodyParam"
+          },
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/comments/{comment_id}/reply": {
+      "put": {
+        "description": "Reply to an existing comment id",
+        "parameters": [
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          },
+          {
+            "$ref": "#/parameters/NewCommentParam"
+          },
+          {
+            "$ref": "#/parameters/TokenParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/BillCommentRecord"
+            }
+          },
+          "400": {
+            "description": "Bad request (Check body of request)"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
           }
         }
       }

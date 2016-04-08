@@ -1,0 +1,31 @@
+{
+  "thomas": "01751",
+  "first_name": "Michael",
+  "social": {
+    "twitter": "MichaelCBurgess",
+    "facebook": "michaelcburgess",
+    "youtube": "michaelcburgessmd",
+    "facebook_id": "6916472567",
+    "youtube_id": "UCvvO8lo-Nkc31cEEElqQvQw"
+  },
+  "birthday": "1950-12-23",
+  "govtrack": 400052,
+  "last_name": "Burgess",
+  "bioguide": "B001248",
+  "gender": "M",
+  "current_term": {
+    "contact_form": "http://burgess.house.gov/contact/356345.htm",
+    "party": "Republican",
+    "address": "2336 Rayburn HOB; Washington DC 20515-4326",
+    "fax": "202-225-2919",
+    "phone": "202-225-7772",
+    "start": "2015-01-06",
+    "type": "rep",
+    "state": "TX",
+    "office": "2336 Rayburn House Office Building",
+    "rss_url": "http://burgess.house.gov/news/rss.aspx",
+    "url": "http://burgess.house.gov",
+    "end": "2017-01-03",
+    "district": 26
+  }
+}

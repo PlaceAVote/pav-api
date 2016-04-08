@@ -5,13 +5,33 @@
             [msgpack.core :as msg]
             [msgpack.clojure-extensions]
             [cheshire.core :as ch]
+            [clj-time.core :as t]
             [com.pav.user.api.domain.user :refer [convert-to-correct-profile-type]]))
 
 (def redis-conn {:spec {:uri (:redis-url env)}})
 (def timeline-queue (:timeline-queue env))
+(def notification-queue (:notification-queue env))
+(def email-notification-queue (:email-notification-queue env))
+
+(defn queue-event [queue event]
+  (wcar redis-conn (car-mq/enqueue queue (-> event ch/generate-string msg/pack))))
 
 (defn publish-to-timeline [event]
   (wcar redis-conn (car-mq/enqueue timeline-queue (-> (ch/generate-string event) msg/pack))))
+
+(defn publish-bill-comment [comment]
+  (queue-event timeline-queue (assoc comment :type "comment")))
+
+(defn publish-bill-comment-reply [comment]
+  (queue-event notification-queue (assoc comment :type "commentreply")))
+
+(defn publish-bill-comment-email-reply [comment]
+  (queue-event email-notification-queue (assoc comment :type "commentreply")))
+
+(defn publish-scoring-comment-evt [comment user_id operation]
+  (case operation
+    :like (queue-event timeline-queue (assoc comment :type "likecomment" :user_id user_id))
+    :dislike (queue-event timeline-queue (assoc comment :type "dislikecomment" :user_id user_id))))
 
 (defn upk [user_id]
 	"Create user profile key"
@@ -91,3 +111,29 @@
 	(wcar redis-conn
 		(car/hmset* (upk user_id) {:facebook_id facebook_id})
 		(car/set (ufbidk facebook_id) user_id)))
+
+
+(defn create-bill-meta-data [{:keys [bill_id] :as meta-data}]
+  (let [key (str "bill:" bill_id ":meta")]
+    (wcar redis-conn
+      (car/hmset* key meta-data)
+      (car/expire key (* 24 3600)))))
+
+(defn- pageview-bill-key-24hr []
+  (str "top-pageviews:bills:" (.toString (.toLocalDate (t/now)))))
+
+(defn- increment-bill-pageview-24hr [key]
+  (wcar redis-conn
+    (car/zincrby (pageview-bill-key-24hr) 1 key)
+    (car/expire key (* 24 3600))))
+
+(defn increment-bill-pageview [{:keys [bill_id] :as bill-meta}]
+  (create-bill-meta-data bill-meta)
+  (increment-bill-pageview-24hr (str "bill:" bill_id ":meta")))
+
+(defn- retrieve-bill-meta [key]
+  (wcar redis-conn (car/parse-map (car/hgetall key) :keywordize)))
+
+(defn retrieve-top-trending-bills-24hr [limit]
+  (->> (wcar redis-conn (car/zrevrange (pageview-bill-key-24hr) 0 limit))
+       (mapv retrieve-bill-meta)))

@@ -52,6 +52,11 @@
     (ecb/bulk-index (map #(assoc % :_id (:bill_id %)) test-bills)) {:refresh true})
   (erb/bulk-with-index-and-type es-connection "congress" "billmeta" (ecb/bulk-index bill-metadata) {:refresh true}))
 
+(def test-legislator (ch/parse-string (slurp "test-resources/legislators/data.json") true))
+
+(defn bootstrap-legislators []
+  (esd/put es-connection "congress" "legislator" (:thomas test-legislator) test-legislator {:refresh true}))
+
 (def wizard-questions (edn/read-string (slurp "resources/questions.edn")))
 
 (defn bootstrap-questions []

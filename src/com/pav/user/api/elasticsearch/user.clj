@@ -10,7 +10,27 @@
 (def connection (connect (:es-url env)))
 
 (defn index-user [user]
-  (esd/put connection "pav" "users" (:user_id user) user))
+  (esd/put connection "pav" "users" (:user_id user) user {:refresh true}))
+
+(defn merge-type-and-fields [hit]
+  (merge {:type (:_type hit)} (:_source hit)))
+
+(defn to-pav-subjects [subject]
+  (case subject
+    "Arts, culture, religion" "Religion"
+    "Crime and law Enforcement" "Drugs"
+    "Armed forces and national security" "Defense"
+    "Government operations and politics" "Politics"
+    "Crime and law enforcement" "Gun Rights"
+    "Science, technology, communications" "Technology"
+    "Economics and public finance" "Economics"
+    "Social welfare" "Social Interest"
+    subject))
+
+(defn assign-pav-subject [{:keys [type subject] :as hit}]
+  (if (= type :bill)
+    (update-in hit [subject] to-pav-subjects)
+    hit))
 
 (defn get-bill-info [bill_id]
   (have string? bill_id)
@@ -35,17 +55,21 @@
       (retrieve-bill-metadata-for-topics topics))
     (catch Exception e (log/error "Error retrieving bills when populating users feed " e))))
 
-(defn to-pav-subjects [subject]
-	(case subject
-		"Arts, culture, religion" "Religion"
-		"Crime and law Enforcement" "Drugs"
-		"Armed forces and national security" "Defense"
-		"Government operations and politics" "Politics"
-		"Crime and law enforcement" "Gun Rights"
-		"Science, technology, communications" "Technology"
-		"Economics and public finance" "Economics"
-		"Social welfare" "Social Interest"
-		subject))
+(defn search-for-term [term]
+  "Search for term across bills and placeavote users."
+  (->> (esrsp/hits-from (esd/search connection ["congress" "pav"] ["users" "bill"]
+                          :query {:multi_match {:query term
+                                                :type "best_fields"
+                                                :fields ["first_name^2" "last_name^2"
+                                                         "keywords" "official_title" "short_title" "popular_title"
+                                                         "bill_id" "summary"]
+                                                :minimum_should_match "80%"}}
+                          :from 0 :size 10
+                          :filter {:not {:term {:public false}}}
+                          :_source [:first_name :last_name :user_id :img_url
+                                    :bill_id :official_title :short_title :popular_title :subject]))
+    (mapv merge-type-and-fields)
+    (mapv assign-pav-subject)))
 
 (defn gather-latest-bills-by-subject [topics]
 	(when topics
@@ -56,3 +80,20 @@
                             (assoc bill :subject pav_topic)
                             (update-in bill [:subject] to-pav-subjects)))))]
 			bills)))
+
+(defn get-legislator [thomas]
+  (-> (esd/get connection "congress" "legislator" thomas)
+    (get-in [:_source])))
+
+(defn get-bill [bill_id]
+  (->>
+    (esd/multi-get connection "congress" [{:_type "bill" :_id bill_id} {:_type "billmeta" :_id bill_id}])
+    (map :_source) (reduce merge)))
+
+(defn get-bills-metadata
+  "Retrieve metadata for a collection of bills."
+  [bills]
+  (->>
+    (map #(assoc {} :_id (:bill_id %)) bills)
+    (esd/multi-get connection "congress" "billmeta")
+    (map :_source)))
