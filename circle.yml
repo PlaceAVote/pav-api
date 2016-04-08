@@ -21,6 +21,13 @@ deployment:
       - convox login $CONVOX_GRID_HOST --password $CONVOX_API_KEY
       - convox switch development
       - convox deploy
+  apimerge:
+    branch: enhancement/mergeapis
+    commands:
+      - lein uberjar
+      - convox login $CONVOX_GRID_HOST --password $CONVOX_API_KEY
+      - convox switch development
+      - convox deploy -app pav-api
   release:
     tag: /v[0-9]+(\.[0-9]+)*/
     commands:
