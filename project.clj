@@ -92,6 +92,8 @@
                             :redis-notification-pubsub           "redis::notifications::pubsub"
                             :es-url                              "http://localhost:9200"
                             :timeline-queue                      "redismq::queue_name::user-timelineevent-queue"
+                            :notification-queue                  "redismq::queue_name::user-notification-queue"
+                            :email-notification-queue		         "redismq::queue_name::email-notification-queue"
                             :email-mode                          "test"
                             :mandril-api-key                     "key"
                             :mandril-pwd-reset-template          "password-reset-template-dev"

@@ -10,9 +10,28 @@
 
 (def redis-conn {:spec {:uri (:redis-url env)}})
 (def timeline-queue (:timeline-queue env))
+(def notification-queue (:notification-queue env))
+(def email-notification-queue (:email-notification-queue env))
 
 (defn publish-to-timeline [event]
   (wcar redis-conn (car-mq/enqueue timeline-queue (-> (ch/generate-string event) msg/pack))))
+
+(defn queue-event [queue event]
+  (wcar* (car-mq/enqueue queue (-> event ch/generate-string msg/pack))))
+
+(defn publish-bill-comment [comment]
+  (queue-event timeline-queue (assoc comment :type "comment")))
+
+(defn publish-bill-comment-reply [comment]
+  (queue-event notification-queue (assoc comment :type "commentreply")))
+
+(defn publish-bill-comment-email-reply [comment]
+  (queue-event email-notification-queue (assoc comment :type "commentreply")))
+
+(defn publish-scoring-comment-evt [comment user_id operation]
+  (case operation
+    :like (queue-event timeline-queue (assoc comment :type "likecomment" :user_id user_id))
+    :dislike (queue-event timeline-queue (assoc comment :type "dislikecomment" :user_id user_id))))
 
 (defn upk [user_id]
 	"Create user profile key"
