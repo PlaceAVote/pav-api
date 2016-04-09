@@ -25,11 +25,19 @@
   (du/add-event-to-user-notifications evt)
   (ws/publish-notification evt))
 
+(defn- get-priority-bill-title [bill-info]
+  (let [{:keys [official_title short_title featured_bill_title]} bill-info]
+    (cond
+      featured_bill_title featured_bill_title
+      short_title short_title
+      official_title official_title)))
+
 (defn create-user-vote-record
   "Create new user vote relationship between a bill and user.  Also publish event on user timeline and notification feed."
   [{:keys [vote bill_id] :as record}]
-  (let [vote-evt (merge (assoc record :type "vote" :event_id (.toString (UUID/randomUUID)))
-                   (select-keys (get-bill bill_id) [:official_title :short_title :featured_bill_title]))
+  (let [bill-info (get-bill bill_id)
+        vote-evt (merge (assoc record :type "vote" :event_id (.toString (UUID/randomUUID)))
+                   :bill_title (get-priority-bill-title bill-info))
         notification-evt (assoc record :type "vote" :read false :notification_id (.toString (UUID/randomUUID)))
         current-count (dv/get-vote-count bill_id)]
     (dv/create-user-vote record)
