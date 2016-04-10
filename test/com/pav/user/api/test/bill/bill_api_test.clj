@@ -10,7 +10,7 @@
 
   (facts "Bill API Test Cases"
     (fact "Retrieve bill by id"
-      (let [expected (dissoc (merge (first test-bills) (first bill-metadata) {:voted_for false :voted_against false}) :_id)
+      (let [expected (dissoc (merge (first test-bills) (first bill-metadata) {:user_voted false}) :_id)
             {body :body} (pav-req :put "/user" u/test-user)
             {token :token} (ch/parse-string body true)
             response (pav-req :get "/bills/hr2-114" token {})]

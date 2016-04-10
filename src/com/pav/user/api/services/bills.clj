@@ -20,11 +20,9 @@
   (select-keys bill [:bill_id :official_title :short_title :popular_title :summary :subject]))
 
 (defn construct-user-bill-vote [bill_id user_id]
-  (let [{vote :vote} (vs/get-votes-for-bill bill_id user_id)]
-    (case vote
-      true {:voted_for true :voted_against false}
-      false {:voted_for false :voted_against true}
-      nil {:voted_for false :voted_against false})))
+  (if-let [{vote :vote} (vs/get-votes-for-bill bill_id user_id)]
+    {:user_voted vote}
+    {:user_voted false}))
 
 (defn get-bill [bill_id user_id]
   (let [bill (->> (es/get-bill bill_id) assoc-bill-text)]
