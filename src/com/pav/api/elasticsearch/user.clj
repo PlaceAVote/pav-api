@@ -5,7 +5,8 @@
             [clojurewerkz.elastisch.query :as q]
             [environ.core :refer [env]]
             [taoensso.truss :refer [have]]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [taoensso.truss :as t]))
 
 (def connection (connect (:es-url env)))
 
@@ -31,6 +32,17 @@
   (if (= type :bill)
     (update-in hit [subject] to-pav-subjects)
     hit))
+
+(defn get-bills-metadata
+  "Retrieve metadata for a collection of bills."
+  [bills]
+  (->>
+    (map #(assoc {} :_id (:bill_id %)) bills)
+    (esd/multi-get connection "congress" "billmeta")
+    (map :_source)))
+
+(defn get-bill-metadata [bill_id]
+  (:_source (esd/get connection "congress" "billmeta" bill_id)))
 
 (defn get-bill-info [bill_id]
   (have string? bill_id)
@@ -69,7 +81,11 @@
                           :_source [:first_name :last_name :user_id :img_url
                                     :bill_id :official_title :short_title :popular_title :subject]))
     (mapv merge-type-and-fields)
-    (mapv assign-pav-subject)))
+    (mapv assign-pav-subject)
+    (mapv (fn [{:keys [type bill_id] :as record}]
+            (case type
+              "bill" (merge record (-> (get-bill-metadata bill_id) (select-keys [:featured_bill_title])))
+              record)))))
 
 (defn gather-latest-bills-by-subject [topics]
 	(when topics
@@ -89,11 +105,3 @@
   (->>
     (esd/multi-get connection "congress" [{:_type "bill" :_id bill_id} {:_type "billmeta" :_id bill_id}])
     (map :_source) (reduce merge)))
-
-(defn get-bills-metadata
-  "Retrieve metadata for a collection of bills."
-  [bills]
-  (->>
-    (map #(assoc {} :_id (:bill_id %)) bills)
-    (esd/multi-get connection "congress" "billmeta")
-    (map :_source)))

@@ -74,9 +74,9 @@
         (count body) => 1
         (first body) => (contains {:bill_id "hr2-114" :type "bill"})))
 
-    (fact "Given terms, When those terms match part of the summary field, Then return that bill."
+    (fact "Given terms, When those terms match part of the summary field, Then return that bill with the featured bill title."
       (let [{:keys [status body]} (pav-req :get "/search?term=Medicare%20Payment%20Advisory%20Commission")
             body (c/parse-string body true)]
         status => 200
         (count body) => 1
-        (first body) => (contains {:bill_id "hr2-114" :type "bill"})))))
+        (first body) => (contains {:bill_id "hr2-114" :type "bill" :featured_bill_title "hr2 bill title"})))))
