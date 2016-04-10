@@ -1,6 +1,6 @@
 (ns com.pav.api.test.bill.bill-api-test
   (:use midje.sweet)
-  (:require [com.pav.api.test.utils.utils :as u :refer [pav-req test-bills bill-metadata]]
+  (:require [com.pav.api.test.utils.utils :as u :refer [pav-req test-bills test-user bill-metadata]]
             [cheshire.core :as ch]))
 
 (against-background [(before :facts (do (u/flush-es-indexes)
@@ -13,6 +13,15 @@
       (let [expected (dissoc (merge (first test-bills) (first bill-metadata) {:user_voted false}) :_id)
             {body :body} (pav-req :put "/user" u/test-user)
             {token :token} (ch/parse-string body true)
+            response (pav-req :get "/bills/hr2-114" token {})]
+        (:status response) => 200
+        (ch/parse-string (:body response) true) => (contains expected)))
+
+    (fact "Retrieve bill by id, When user has voted against a bill, Then return user_voted = true."
+      (let [expected (dissoc (merge (first test-bills) (first bill-metadata) {:user_voted true}) :_id)
+            {body :body} (pav-req :put "/user" u/test-user)
+            {token :token} (ch/parse-string body true)
+            _ (pav-req :put "/vote" token {:bill_id "hr2-114" :vote true})
             response (pav-req :get "/bills/hr2-114" token {})]
         (:status response) => 200
         (ch/parse-string (:body response) true) => (contains expected)))
