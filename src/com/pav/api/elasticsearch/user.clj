@@ -5,8 +5,7 @@
             [clojurewerkz.elastisch.query :as q]
             [environ.core :refer [env]]
             [taoensso.truss :refer [have]]
-            [clojure.tools.logging :as log]
-            [taoensso.truss :as t]))
+            [clojure.tools.logging :as log]))
 
 (def connection (connect (:es-url env)))
 
