@@ -5,8 +5,10 @@
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.dynamodb.db :as dy :refer [client-opts]]
             [com.pav.api.notifications.ws-handler :refer [publish-notification]]
+            [com.pav.api.s3.user :as s3]
             [com.pav.api.utils.utils :refer [uuid->base64Str
-                                                  base64->uuidStr]])
+                                                  base64->uuidStr]]
+            [clj-http.client :as http])
   (:import [java.util Date UUID]))
 
 (defn get-user-by-id [id]
@@ -223,6 +225,17 @@
   (far/batch-write-item client-opts
                         {dy/user-question-answers-table-name {:put answers}}))
 
+(defn- upload-issue-image [key img_url]
+  (let [{stream :body headers :headers} (http/get img_url {:insecure? true :as :stream})]
+    (s3/upload-issue-img (:cdn-bucket-name env) key stream (headers "Content-Type"))))
+
+(defn assoc-and-upload-issue-image
+  "Upload issue image to s3 bucket and associate address with issue payload."
+  [{:keys [article_img issue_id] :as issue}]
+  (let [key (str "users/issues/images/" issue_id "/main.jpg")]
+    (upload-issue-image key article_img)
+    (assoc issue :article_img (str (:cdn-url env) "/" key))))
+
 (defn create-bill-issue
   "Create bill issues with details like user_id, bill_id and so on. Returns
 new ID assigned as issue_id and timestamp stored in table."
@@ -230,13 +243,11 @@ new ID assigned as issue_id and timestamp stored in table."
   (let [id (UUID/randomUUID)
         short_id (uuid->base64Str id)
         timestamp (.getTime (Date.))
-        issue-data (merge {:issue_id (.toString id)
-                           :short_issue_id short_id
-                           :timestamp timestamp
-                           :positive_responses 0
-                           :neutral_responses 0
-                           :negative_responses 0}
-                     details)]
+        issue-data (cond-> details
+                     true (merge
+                            {:issue_id (.toString id) :short_issue_id short_id :timestamp timestamp
+                             :positive_responses 0 :neutral_responses 0 :negative_responses 0})
+                     (:article_img details) assoc-and-upload-issue-image)]
     (far/put-item client-opts dy/user-issues-table-name issue-data)
     issue-data))
 

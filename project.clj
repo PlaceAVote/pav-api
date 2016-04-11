@@ -95,6 +95,7 @@
                             :notification-queue                  "redismq::queue_name::user-notification-queue"
                             :email-notification-queue		         "redismq::queue_name::email-notification-queue"
                             :email-mode                          "test"
+                            :s3-upload-allowed                   "false"
                             :mandril-api-key                     "key"
                             :mandril-pwd-reset-template          "password-reset-template-dev"
                             :mandril-welcome-email-template      "welcome-email-dev"

@@ -356,7 +356,7 @@ default-followers (:default-followers env))
         new-img_url {:img_url (str (:cdn-url env) (str "/" new-image-key))}]
     (when user
       (try
-        (s3/upload-image (:cdn-bucket-name env) new-image-key file)
+        (s3/upload-user-profile-image (:cdn-bucket-name env) new-image-key file)
         (update-account-settings user_id new-img_url)
         new-img_url
         (catch Exception e (log/error "Error uploading Profile image. " e))))))
