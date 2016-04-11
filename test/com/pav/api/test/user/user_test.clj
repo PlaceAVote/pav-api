@@ -127,15 +127,17 @@
 
   (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
         (let [_ (pav-req :put "/user" test-user)
-              {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "invalid"})]
+              {status :status body :body} (pav-req :post "/user/authenticate" {:email "john@stuff.com" :password "invalid"})
+              body (ch/parse-string body true)]
           status => 401
-          body => login-error-msg))
+          body => {:error "Invalid Login credientials"}))
 
   (fact "Create token for user, when authentication payload doesn't contain an email then returns 400 with suitable error message"
         (let [_ (pav-req :put "/user" test-user)
-              {status :status body :body} (pav-req :post "/user/authenticate" {:password "stuff2"})]
+              {status :status body :body} (pav-req :post "/user/authenticate" {:password "stuff2"})
+              body (ch/parse-string body true)]
           status => 400
-          body => (ch/generate-string {:errors [{:email "A valid email address is a required"}]})))
+          body => {:errors [{:email "A valid email address is a required"}]}))
 
   (fact "Given confirmation token, when invalid, then return 401."
         (let [{status :status} (pav-req :post "/user/confirm/1234")]

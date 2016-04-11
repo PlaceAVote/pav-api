@@ -23,6 +23,7 @@
     (assoc :user_id user_id)))
 
 (defresource cast-vote
+  :service-available? {:representation {:media-type "application/json"}}
   :available-media-types ["application/json"]
   :allowed-methods [:put]
   :authorized? (fn [ctx] (us/is-authenticated? (utils/retrieve-user-details ctx)))
@@ -30,16 +31,18 @@
   :conflict? (fn [ctx] (vs/has-user-voted? (utils/retrieve-token-user-id ctx) (get-in ctx [:request :body :bill_id])))
   :put! (fn [ctx] (-> (new-vote-record (get-in ctx [:request :body]) (utils/retrieve-token-user-id ctx))
                       vs/create-user-vote-record))
-  :handle-malformed (map->json {:error "Check payload is valid"})
-  :handle-conflict (map->json {:error "User has already voted on this issue"})
-  :handle-created (map->json {:message "Vote created successfully"}))
+  :handle-malformed {:error "Check payload is valid"}
+  :handle-conflict  {:error "User has already voted on this issue"}
+  :handle-created   {:message "Vote created successfully"})
 
 (defresource get-vote-count [bill-id]
+  :service-available? {:representation {:media-type "application/json"}}
   :available-media-types ["application/json"]
   :allowed-methods [:get]
   :handle-ok (fn [_] (vs/get-vote-count bill-id)))
 
 (defresource get-vote-records [bill-id]
+  :service-available? {:representation {:media-type "application/json"}}
   :available-media-types ["application/json"]
   :allowed-methods [:get]
   :handle-ok (fn [_] (vs/get-votes-for-bill bill-id)))

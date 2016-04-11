@@ -10,7 +10,7 @@
                  [ring-cors "0.1.7" :exclusions [ring/ring-core]]
                  [prismatic/schema "0.4.3"]
                  [cheshire "5.5.0"]
-                 [liberator "0.13"]
+                 [liberator "0.14.1"]
                  [environ "1.0.0"]
                  [buddy "0.6.1" :exclusions [clout
                                              clj-time

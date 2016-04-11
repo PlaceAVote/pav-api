@@ -7,13 +7,13 @@
 																								 retrieve-body-param retrieve-user-details
 																								 retrieve-token-user-id retrieve-request-param]]
 					 [com.pav.api.utils.utils :refer [decodeBase64ImageString]]
-           [cheshire.core :as ch]
-           [clojure.tools.logging :as log]))
+           [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
-(def login-error-msg "Invalid Login credientials")
+(def login-error-msg {:error "Invalid Login credientials"})
 
 (defresource create
+  :service-available? {:representation {:media-type "application/json"}}
   :allowed-methods [:put]
   :available-media-types ["application/json"]
   :malformed? (fn [ctx] (service/validate-new-user-payload (retrieve-body ctx) :pav))
@@ -24,6 +24,7 @@
   :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
 (defresource create-facebook
+  :service-available? {:representation {:media-type "application/json"}}
   :allowed-methods [:put]
   :available-media-types ["application/json"]
   :malformed? (fn [ctx] (service/validate-new-user-payload (retrieve-body ctx) :facebook))
@@ -31,9 +32,10 @@
   :put! (fn [ctx] (service/create-user-profile (retrieve-body ctx) :facebook))
   :handle-created :record
   :handle-conflict existing-user-error-msg
-  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
+  :handle-malformed (fn [ctx] (get-in ctx [:errors])))
 
 (defresource authenticate [origin]
+  :service-available? {:representation {:media-type "application/json"}}
   :allowed-methods [:post]
   :malformed? (fn [ctx] (service/validate-user-login-payload (retrieve-body ctx) origin))
   :authorized? (fn [ctx] (service/valid-user? (retrieve-body ctx) origin))
@@ -41,9 +43,10 @@
   :post! (fn [ctx] (service/authenticate-user (retrieve-body ctx) origin))
   :handle-created :record
   :handle-unauthorized login-error-msg
-  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
+  :handle-malformed (fn [ctx] (get-in ctx [:errors])))
 
 (defresource user
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:delete]
   :available-media-types ["application/json"]
@@ -51,15 +54,17 @@
   :handle-ok record-in-ctx)
 
 (defresource user-settings
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :malformed? (fn [ctx] (service/validate-settings-update-payload (retrieve-body ctx)))
   :allowed-methods [:post :get]
   :available-media-types ["application/json"]
   :post! (fn [ctx] (service/update-account-settings (retrieve-token-user-id ctx) (retrieve-body ctx)))
-  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors])))
+  :handle-malformed (fn [ctx] (get-in ctx [:errors]))
   :handle-ok (fn [ctx] (service/get-account-settings (retrieve-token-user-id ctx))))
 
 (defresource upload-profile-image
+  :service-available? {:representation {:media-type "application/json"}}
 	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
 	:malformed? (fn [ctx] (let [f (decodeBase64ImageString (retrieve-body-param ctx :file))]
 													(if (service/valid-image? f) [false {:image f}] true)))
@@ -69,6 +74,7 @@
  	:handle-created :record)
 
 (defresource change-password
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))
                               (service/password-matches?
                                (retrieve-token-user-id ctx)
@@ -79,6 +85,7 @@
   :post! (fn [ctx] (service/change-password (retrieve-token-user-id ctx) (retrieve-body-param ctx :new_password))))
 
 (defresource user-profile
+  :service-available? {:representation {:media-type "application/json"}}
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :exists? (fn [ctx]
@@ -88,39 +95,45 @@
   :handle-ok :record)
 
 (defresource confirm-user [token]
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [_] (service/confirm-token-valid? token))
   :allowed-methods [:post]
   :available-media-types ["application/json"]
   :post! (service/update-registration token))
 
 (defresource notifications [from]
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :handle-ok (fn [ctx] (service/get-notifications (retrieve-token-user-id ctx) from)))
 
 (defresource mark-notification [id]
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:post]
   :available-media-types ["application/json"]
   :post! (service/mark-notification id))
 
 (defresource reset-password [email]
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (service/allowed-to-reset-password? email)
   :allowed-methods [:post]
   :available-media-types ["application/json"]
   :post! (service/issue-password-reset-request email))
 
 (defresource confirm-password-reset
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/valid-reset-token? (:reset_token (retrieve-body ctx))))
   :allowed-methods [:post]
   :available-media-types ["application/json"]
   :malformed? (fn [ctx] (service/validate-password-reset-confirmation-payload (retrieve-body ctx)))
-  :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors])))
+  :handle-malformed (fn [ctx] (get-in ctx [:errors]))
   :post! (fn [ctx] (let [{token :reset_token password :new_password} (retrieve-body ctx)]
                      (service/confirm-password-reset token password))))
 
 (defresource timeline [from]
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
@@ -130,12 +143,14 @@
                  (service/get-timeline (retrieve-token-user-id ctx) from))))
 
 (defresource feed [from]
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :handle-ok (fn [ctx] (service/get-feed (retrieve-token-user-id ctx) from)))
 
 (defresource questions
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get :post]
   :available-media-types ["application/json"]
@@ -143,6 +158,7 @@
   :handle-ok (fn [ctx] (q-service/retrieve-questions (retrieve-token-user-id ctx))))
 
 (defresource follow
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :malformed? (fn [ctx]
                 (if (= (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))
@@ -152,12 +168,14 @@
   :put! (fn [ctx] (service/follow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))))
 
 (defresource unfollow
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:delete]
   :available-media-types ["application/json"]
   :delete! (fn [ctx] (service/unfollow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))))
 
 (defresource following
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
@@ -168,6 +186,7 @@
                   (retrieve-token-user-id ctx)))))
 
 (defresource followers
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
@@ -178,12 +197,14 @@
                   (retrieve-token-user-id ctx)))))
 
 (defresource validate-token
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/validate-token (retrieve-request-param ctx :token)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :handle-ok {:message "Token is valid"})
 
 (defresource create-user-issue
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
@@ -198,6 +219,7 @@
   :handle-created ::user-issue-response)
 
 (defresource get-user-issue [issue_id]
+  :service-available? {:representation {:media-type "application/json"}}
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :exists? (fn [ctx] (if-let [issue (service/get-user-issue-feed-item issue_id (retrieve-token-user-id ctx))]
@@ -207,6 +229,7 @@
   :handle-not-found :error)
 
 (defresource update-user-issue [issue_id]
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))
                            (not (nil? (service/get-user-issue (retrieve-token-user-id ctx) issue_id)))))
   :allowed-methods [:post]
@@ -216,12 +239,14 @@
   :handle-created ::user-issue-response)
 
 (defresource contact-form
+  :service-available? {:representation {:media-type "application/json"}}
   :allowed-methods [:post]
   :available-media-types ["application/json"]
   :malformed? (fn [ctx] (service/contact-form-email-malformed? (retrieve-body ctx)))
   :post! (fn [ctx] (service/send-contact-form-email (retrieve-body ctx))))
 
 (defresource user-issue-emotional-response [issue_id]
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get :post :delete]
   :available-media-types ["application/json"]
