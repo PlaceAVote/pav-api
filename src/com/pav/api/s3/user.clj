@@ -1,5 +1,5 @@
 (ns com.pav.api.s3.user
-	(:use [amazonica.aws.s3]
+	(:use [amazonica.aws.s3 :refer [put-object]]
 				[clojure.tools.logging :as log]
 				[environ.core :refer [env]]
         [clojure.core.async :as async]))
