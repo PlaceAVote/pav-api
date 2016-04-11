@@ -149,7 +149,8 @@ default-followers (:default-followers env))
      false)
     false))
 
-(defn validate-new-user-payload [user origin]
+(defn validate-new-user-payload [{:keys [email] :as user} origin]
+  (log/info (str "Validating user " email " from the " origin " signup process, payload => " user))
   (if-let [errors (validate-payload user us/validate-new-user-payload origin)]
     errors
     (if-not (validzipcode? user)
