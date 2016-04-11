@@ -277,8 +277,11 @@ new ID assigned as issue_id and timestamp stored in table."
 ;    (persist-to-newsfeed follower-and-author-evts)))
 
 
-(defn publish-batch-to-feed [batch]
-  (far/batch-write-item client-opts {dy/userfeed-table-name {:put batch}}))
+(defn publish-batch-to-feed
+  "Batch up items and persist to dynamodb in batches of 25 items."
+  [batch]
+  (doseq [b (partition 25 25 nil batch)]
+    (far/batch-write-item client-opts {dy/userfeed-table-name {:put b}})))
 
 (defn publish-as-global-feed-item
   "Publish new issues to all users feeds.  This process is executed in seperate thread."
