@@ -148,4 +148,8 @@
   (fact "Given confirmation token, when invalid, then return 401."
         (let [{status :status} (pav-req :post "/user/confirm/1234")]
           status => 401))
+
+  (fact "Create a new user, When password contains numbers and special characters, Then accept password and return 201"
+    (let [{status :status} (pav-req :put "/user" (assoc test-user :password "password123!@#$^*"))]
+      status => 201))
 	)
