@@ -63,7 +63,7 @@
 		(let [{status :status body :body} (pav-req :put "/user" {})]
 			status => 400
 			body => (contains (ch/generate-string {:errors [{:email "A valid email address is a required"}
-																											{:password "Password is a required field"}
+																											{:password "Password must be a minimum of 6 characters in length."}
 																											{:first_name "First Name is a required field"}
 																											{:last_name "Last Name is a required field"}
 																											{:dob "Date of birth is a required field"}
@@ -103,7 +103,13 @@
   (fact "Create a new user, when the password is invalid, return 400 with appropriate error message"
       (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :password ""))]
         status => 400
-        body => (contains (ch/generate-string {:errors [{:password "Password is a required field"}]}) :in-any-order)))
+        body => (contains (ch/generate-string {:errors [{:password "Password must be a minimum of 6 characters in length."}]}) :in-any-order)))
+
+  (fact "Create a new user, When password is less than 6 characters, Then return 400 with appropriate error message"
+    (let [{status :status body :body} (pav-req :put "/user" (assoc test-user :password "passw"))
+          body (ch/parse-string body true)]
+      status => 400
+      body => (contains {:errors [{:password "Password must be a minimum of 6 characters in length."}]} :in-any-order)))
 
   (fact "Create token for user when logging on"
         (let [_ (pav-req :put "/user" test-user)

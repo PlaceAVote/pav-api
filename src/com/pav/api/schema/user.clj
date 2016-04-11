@@ -8,7 +8,7 @@
       (.getISO3Country)))
 
 (def iso3-codes (into #{} (map retrieve-iso3-country-code (Locale/getISOCountries))))
-(def pwd-schema (s/both (s/pred (complement empty?)) s/Str))
+(def pwd-schema (s/both (s/pred (complement empty?)) s/Str #"^[a-zA-Z0-9]{6,}$"))
 (def email-schema (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+"))
 (def dob-schema #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$")
 (def county-code-schema (s/both s/Str (s/pred (complement empty?)) (s/pred #(contains? iso3-codes %))))
@@ -128,7 +128,7 @@
         (= :current_password k) {k "Current Password is a required field"}
         (= :new_password k) {k "New Password is a required field"}
         (= :reset_token k) {k "A valid reset token is required"}
-        (= :password k) {k "Password is a required field"}
+        (= :password k) {k "Password must be a minimum of 6 characters in length."}
         (= :country_code k) {k "Country Code is a required field.  Please Specify Country Code"}
         (= :city k) {k "Please specify a valid city"}
         (= :first_name k) {k "First Name is a required field"}
