@@ -8,7 +8,8 @@
             [com.pav.api.s3.user :as s3]
             [com.pav.api.utils.utils :refer [uuid->base64Str
                                                   base64->uuidStr]]
-            [clj-http.client :as http])
+            [clj-http.client :as http]
+            [clojure.core.async :refer [thread]])
   (:import [java.util Date UUID]))
 
 (defn get-user-by-id [id]
@@ -261,18 +262,37 @@ new ID assigned as issue_id and timestamp stored in table."
          [k [:put v]]))
      :return :all-new}))
 
-(defn populate-user-and-followers-feed-table
-  "Populate given user and that users followers feed when user an publishes issue."
-  [user_id data]
-  (let [author-event  (assoc data :user_id user_id)
-        follower-evts (->> (user-followers user_id)
-                           ;; Remove any followers with the same user_id.  Temporary fix to avoid the same issue we
-                           ;;discovered in development
-                           (remove #(= user_id (:user_id %)))
-                           (map #(assoc data :user_id (:user_id %))))
-        follower-and-author-evts (conj follower-evts author-event)]
-    (far/put-item client-opts dy/timeline-table-name (assoc author-event :event_id (.toString (UUID/randomUUID))))
-    (persist-to-newsfeed follower-and-author-evts)))
+;;Temporarily disabled.
+;(defn populate-user-and-followers-feed-table
+;  "Populate given user and that users followers feed when user an publishes issue."
+;  [user_id data]
+;  (let [author-event  (assoc data :user_id user_id)
+;        follower-evts (->> (user-followers user_id)
+;                           ;; Remove any followers with the same user_id.  Temporary fix to avoid the same issue we
+;                           ;;discovered in development
+;                           (remove #(= user_id (:user_id %)))
+;                           (map #(assoc data :user_id (:user_id %))))
+;        follower-and-author-evts (conj follower-evts author-event)]
+;    (far/put-item client-opts dy/timeline-table-name (assoc author-event :event_id (.toString (UUID/randomUUID))))
+;    (persist-to-newsfeed follower-and-author-evts)))
+
+
+(defn publish-batch-to-feed [batch]
+  (far/batch-write-item client-opts {dy/userfeed-table-name {:put batch}}))
+
+(defn publish-as-global-feed-item
+  "Publish new issues to all users feeds.  This process is executed in seperate thread."
+  [issue]
+  (thread
+    (loop [users (far/scan client-opts dy/user-table-name)]
+      (-> (map #(assoc issue :user_id (:user_id %) :event_id (.toString (UUID/randomUUID))) users)
+          publish-batch-to-feed)
+      (log/info (str "New issue " (:issue_id issue) " has been published to " (:count (meta users)) " users feed"))
+     (if (:last-prim-kvs (meta users))
+       (recur (far/scan client-opts dy/user-table-name {:last-prim-kvs (:last-prim-kvs (meta users))}))))))
+
+(defn publish-to-timeline [user_id data]
+  (far/put-item client-opts dy/timeline-table-name (assoc data :user_id user_id :event_id (.toString (UUID/randomUUID)))))
 
 (defn add-event-to-usertimeline [event]
   (log/info "Event published to user timeline " event)

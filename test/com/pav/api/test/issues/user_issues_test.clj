@@ -198,7 +198,7 @@
       (some nil? (vals response)) => nil
       (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :short_issue_id :author_id
                                     :article_title :type :bill_id :bill_title :comment
-                                    :article_link :article_img :emotional_response
+                                    :article_link :article_img :emotional_response :event_id
                                     :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
   (fact "Given new issue, Then new issue should be in the users activity timeline."
@@ -229,24 +229,6 @@
       (some nil? (vals response)) => nil
       (keys response) => (contains [:emotional_response] :in-any-order)
       (:neutral_responses response) => 1))
-
-  (fact "Given a new issue, When user has followers, Then verify the issue appears in the followers feed."
-    (let [{body :body} (pav-req :put "/user" follower)
-          {follower_token :token} (ch/parse-string body true)
-          {body :body} (pav-req :put "/user" test-user)
-          {token :token user_id :user_id} (ch/parse-string body true)
-          ;;follow user
-          _ (pav-req :put (str "/user/follow") follower_token {:user_id user_id})
-          ;;publish issue
-          _(pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
-          ;;retrieve followers feed
-          {status :status body :body} (pav-req :get "/user/feed" follower_token {})
-          response (first (:results (ch/parse-string body true)))]
-      status => 200
-      (some nil? (vals response)) => nil
-      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :short_issue_id :author_id
-                                    :comment :emotional_response :type
-                                    :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
   (fact "Given an emotional response, When the user is from another user, Then verify response is in authors notification feed"
     (let [{body :body} (pav-req :put "/user" follower)
@@ -431,4 +413,21 @@
     (let [{status :status body :body} (pav-req :get "/user/issue/94873662-5d2d-497a-9d30-7c185b042abdd")
           response (ch/parse-string body true)]
       status => 404
-      (keys response) => [:error_message])))
+      (keys response) => [:error_message]))
+
+  (fact "Given a new issue, Then verify the issue appears in all users feeds."
+    (let [{body :body} (pav-req :put "/user" follower)
+          {user1_token :token} (ch/parse-string body true)
+          {body :body} (pav-req :put "/user" test-user)
+          {user2_token :token} (ch/parse-string body true)
+          ;;publish issue
+          _(pav-req :put "/user/issue" user2_token {:comment "Comment Body goes here"})
+          ;;retrieve followers feed
+          _ (Thread/sleep 2000)
+          {status :status body :body} (pav-req :get "/user/feed" user1_token {})
+          response (first (:results (ch/parse-string body true)))]
+      status => 200
+      (some nil? (vals response)) => nil
+      (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :short_issue_id :author_id
+                                    :comment :emotional_response :type :event_id
+                                    :positive_responses :negative_responses :neutral_responses] :in-any-order))))

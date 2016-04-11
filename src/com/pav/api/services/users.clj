@@ -388,7 +388,8 @@ default-followers (:default-followers env))
           new-issue (dynamo-dao/create-bill-issue details)
           to-populate (construct-issue-feed-object user new-issue)]
       ;; populate followers table as the last action
-      (dynamo-dao/populate-user-and-followers-feed-table user_id to-populate)
+      (dynamo-dao/publish-as-global-feed-item to-populate)
+      (dynamo-dao/publish-to-timeline user_id to-populate)
       (merge new-issue {:emotional_response "none"} (select-keys user [:first_name :last_name :img_url])))))
 
 (declare get-user-issue-emotional-response)

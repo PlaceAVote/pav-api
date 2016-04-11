@@ -2,7 +2,7 @@
 	(:use [amazonica.aws.s3 :refer [put-object]]
 				[clojure.tools.logging :as log]
 				[environ.core :refer [env]]
-        [clojure.core.async :as async]))
+        [clojure.core.async :refer [go]]))
 
 (def creds {:access-key (:access-key env)
 						:secret-key (:secret-key env)
@@ -12,7 +12,7 @@
 
 (defn upload-to-s3 [bucket key metadata stream]
   (when (= s3-upload-allowed? "true")
-    (async/go
+    (go
      (put-object creds
        :bucket-name bucket
        :key key
