@@ -152,4 +152,12 @@
   (fact "Create a new user, When password contains numbers and special characters, Then accept password and return 201"
     (let [{status :status} (pav-req :put "/user" (assoc test-user :password "password123!@#$^*"))]
       status => 201))
+
+  (fact "Create a new user, When password contains 6 character spaces, Then reject password and return 400"
+    (let [{status :status} (pav-req :put "/user" (assoc test-user :password "      "))]
+      status => 400))
+
+  (fact "Create a new user, When password contains whitespace at the start and end, Then reject password and return 400"
+    (let [{status :status} (pav-req :put "/user" (assoc test-user :password " password2! "))]
+      status => 400))
 	)
