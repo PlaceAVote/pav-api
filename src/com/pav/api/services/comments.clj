@@ -19,6 +19,9 @@
 (defn assoc-bill-comment-count [comment]
   (dc/assoc-bill-comment-count comment))
 
+(defn get-comment-count [bill_id]
+  (dc/get-comment-count bill_id))
+
 (defn create-comments-key []
   (.toString (UUID/randomUUID)))
 

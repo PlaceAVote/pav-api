@@ -29,7 +29,7 @@
     (when bill
       (redis/increment-bill-pageview (extract-pageview-metadata bill))
       (if user_id
-        (merge bill (construct-user-bill-vote bill_id user_id))
+        (merge bill (construct-user-bill-vote bill_id user_id) {:comment_count (cs/get-comment-count bill_id)})
         bill))))
 
 (defn assoc-bill-metadata

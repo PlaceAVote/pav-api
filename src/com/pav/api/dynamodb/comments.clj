@@ -6,11 +6,14 @@
 (defn create-bill-comment-thread-list-key [bill-id]
   (str "thread:" bill-id))
 
+(defn get-comment-count [bill_id]
+  (-> (far/query dy/client-opts dy/comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"})
+      meta :count))
+
 (defn assoc-bill-comment-count
   "Associate a count of comments to the payload"
   [{:keys [bill_id] :as event}]
-  (let [ccount (count (far/query dy/client-opts dy/comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"}))]
-    (assoc event :comment_count ccount)))
+  (assoc event :comment_count (get-comment-count bill_id)))
 
 (defn- associate-user-img [{:keys [author] :as comment}]
   (if-let [{img :img_url} (if author (far/get-item dy/client-opts dy/user-table-name {:user_id author}))]

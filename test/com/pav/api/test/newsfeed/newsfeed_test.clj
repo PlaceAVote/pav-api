@@ -34,8 +34,4 @@
           {last_timestamp :last_timestamp results :results} (ch/parse-string body true)]
       status => 200
       (count results) => 1
-      last_timestamp => (get-in (last results) [:timestamp])))
-
-  (fact "test"
-    (pav-req :put "/user" (assoc test-user :topics ["Healthcare" "Economics"]))
-    (m/-main)))
+      last_timestamp => (get-in (last results) [:timestamp]))))

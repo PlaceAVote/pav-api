@@ -26,6 +26,16 @@
         (:status response) => 200
         (ch/parse-string (:body response) true) => (contains expected)))
 
+    (fact "Retrieve bill by id,  When a bill contains one comment Then return comment_count = 1."
+      (let [test-comment {:bill_id "hr2-114" :body "comment goes here!!"}
+            expected (dissoc (merge (first test-bills) (first bill-metadata) {:comment_count 1}) :_id)
+            {body :body} (pav-req :put "/user" u/test-user)
+            {token :token} (ch/parse-string body true)
+            _ (pav-req :put "/bills/comments" token test-comment)
+            response (pav-req :get "/bills/hr2-114" token {})]
+        (:status response) => 200
+        (ch/parse-string (:body response) true) => (contains expected)))
+
     (fact "Retrieve trending bills, ensure correct ordering"
       (let [{body :body} (pav-req :put "/user" u/test-user)
             {token :token} (ch/parse-string body true)
