@@ -29,14 +29,14 @@
 		(catch Exception e (log/error "Exception occured processing notification from redis pub/sub, MESSAGE: " msg ", ERROR: " e)))))
 
 (defn start-notification-listener []
-	(log/info "Starting Notification Pub/Sub Listener")
+    (log/info "Starting Notification Pub/Sub Listener")
 	(try
 		(car/with-new-pubsub-listener (:spec redis-conn)
 		 {redis-notification-pubsub notify-client}
 		 (car/subscribe redis-notification-pubsub))
 		(log/info "Started Notification Pub/Sub Listener")
-		(catch Exception e (log/error "Error occured starting Notification Pub/Sub Listener for " redis-conn
-												 " on topic" redis-notification-pubsub e))))
+        (catch Exception e
+          (log/errorf e "Error occured starting Notification Pub/Sub Listener for %s on topic %s" redis-conn redis-notification-pubsub))))
 
 (defn connect! [{:keys [user_id]} channel]
 	(log/info "Channel Open for " user_id)
@@ -45,7 +45,7 @@
 (defn disconnect! [channel {:keys [code reason]}]
 	(log/info "Channel closed, close code: " code " reason: " reason)
 	(swap! channels (fn [col]
-										(filter #(not (= channel (:channel %))) col))))
+                      (filter #(not (= channel (:channel %))) col))))
 
 (defn notify-clients [msg]
 	(log/info "Message received from client, Not Interested " msg))
