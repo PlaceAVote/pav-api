@@ -6,6 +6,7 @@
             [environ.core :refer [env]]
             [taoensso.truss :refer [have]]
             [clojure.tools.logging :as log]
+            [clojure.string :as s]
             [com.pav.api.services.votes :as votes]
             [com.pav.api.dynamodb.comments :as comments]))
 
@@ -109,14 +110,15 @@ yes/no votes for this bill."
            (votes/get-vote-count id))))
 
 (defn search-with-tag
-  "Search for bills with given tag."
+  "Search for bills with given tag or multiple tags separated by comma."
   [tag]
-  (->> (esd/search connection "congress" "billmeta" :query (q/term :pav_tags tag))
-       esrsp/hits-from
-       (map sanitize-tags-result)
-       (sort-by :comment_count)
-       ;; return vector like other functions
-       vec))
+  (let [t (s/split tag #"\s*,\s*")]
+    (->> (esd/search connection "congress" "billmeta" :query (q/term :pav_tags t))
+         esrsp/hits-from
+         (map sanitize-tags-result)
+         (sort-by :comment_count)
+         ;; return vector like other functions
+         vec)))
 
 (defn gather-latest-bills-by-subject [topics]
   (some->> topics
