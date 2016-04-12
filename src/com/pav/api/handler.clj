@@ -18,7 +18,7 @@
             [com.pav.api.resources.legislator :refer [get-legislator]]
             [com.pav.api.resources.bill :refer [get-bill get-trending-bills create-comment get-comments
                                                      top-comments create-comment-reply like-comment dislike-comment]]
-            [com.pav.api.resources.search :refer [search-term]]
+            [com.pav.api.resources.search :refer [search-term search-with-tag]]
             [com.pav.api.resources.vote :refer [cast-vote get-vote-count get-vote-records]]
             [com.pav.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications mark-notification timeline feed
@@ -85,6 +85,7 @@
   (GET "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (DELETE "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (POST "/user/contact" _ contact-form)
+  (GET "/search/bills" [tag] (search-with-tag tag))
   (GET "/search" [term] (search-term term))
   (PUT "/vote" _ cast-vote)
   (GET "/vote/count" [bill-id] (get-vote-count bill-id))
@@ -115,4 +116,4 @@
 
 (defn start-server [options]
   (init)
-  (run-server app options))
+  (run-server #'app options))
