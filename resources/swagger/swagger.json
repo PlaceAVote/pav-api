@@ -2109,6 +2109,24 @@
         }
       }
     },
+    "/search/bills": {
+      "get": {
+        "description": "Search for all Bills with given tag or multiple tags separated by comma.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TermParam"
+          }
+        ],
+        "tags": [
+          "Search"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
     "/vote/bill/{bill_id}": {
       "get": {
         "description": "Get vote records for a bill",
