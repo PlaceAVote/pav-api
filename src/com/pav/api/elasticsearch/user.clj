@@ -7,7 +7,6 @@
             [taoensso.truss :refer [have]]
             [clojure.tools.logging :as log]
             [clojure.string :as s]
-            [com.pav.api.services.votes :as votes]
             [com.pav.api.dynamodb.comments :as comments]))
 
 (def connection (connect (:es-url env)))
@@ -92,6 +91,8 @@
                                        (select-keys [:featured_bill_title])))
               record)))))
 
+(declare get-bill)
+
 (defn- sanitize-tags-result
   "Use result from searching ES with :pav_tags tag and kick out some fields. Also, find
 yes/no votes for this bill."
@@ -102,12 +103,14 @@ yes/no votes for this bill."
                (select-keys [:featured_img_link :govtrack_link :bill_id
                              :featured_bill_summary :featured_bill_title :pav_topic
                              :points_against :congress :pav_tags :points_infavor]))
-        id (:bill_id mp)]
+        id (:bill_id mp)
+        ;; FIXME: prevents cyclic load dependency and should be refactored as possible
+        get-vote-count (resolve 'com.pav.api.services.votes/get-vote-count)]
     (merge mp
            {:type :bill
             :comment_count (comments/get-comment-count id)}
            (select-keys (get-bill id) [:short_title :official_title :subject])
-           (votes/get-vote-count id))))
+           (get-vote-count id))))
 
 (defn search-with-tag
   "Search for bills with given tag or multiple tags separated by comma."
@@ -135,4 +138,5 @@ yes/no votes for this bill."
 (defn get-bill [bill_id]
   (->>
     (esd/multi-get connection "congress" [{:_type "bill" :_id bill_id} {:_type "billmeta" :_id bill_id}])
-    (map :_source) (reduce merge)))
+    (map :_source)
+    (apply merge)))

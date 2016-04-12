@@ -2,7 +2,7 @@
   (:require [com.pav.api.dynamodb.votes :as dv]
             [com.pav.api.dynamodb.user :as du]
             [com.pav.api.notifications.ws-handler :as ws]
-            [com.pav.api.elasticsearch.user :refer [get-bill-info get-bill]])
+            [com.pav.api.elasticsearch.user :refer [get-bill]])
   (:import (java.util UUID)))
 
 (defn new-vote-count-record [{:keys [vote bill_id]}]
