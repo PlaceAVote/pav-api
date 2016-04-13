@@ -22,12 +22,9 @@
 	(fact "Retrieve current users activity timeline"
 		(let [{body :body} (pav-req :put "/user" test-user)
 					{token :token user_id :user_id} (ch/parse-string body true)
-					timeline-events [{:type       "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
-														:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
-														:score      0 :body "Comment text goes here!!"}
-													 {:type       "vote" :bill_id "s1182-114" :user_id user_id
-														:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
-														:timestamp  1446462364297}]
+					timeline-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
+														:score 0 :body "Comment text goes here!!" :bill_title nil}
+													 {:type "vote" :bill_id "s1182-114" :user_id user_id :timestamp  1446462364297 :bill_title nil}]
 					_ (persist-timeline-event timeline-events)
 					{status :status body :body} (pav-req :get "/user/me/timeline" token {})
 					{last_timestamp :last_timestamp results :results} (ch/parse-string body true)]
@@ -39,10 +36,10 @@
     (let [{body :body} (pav-req :put "/user" test-user)
           {token :token user_id :user_id} (ch/parse-string body true)
           timeline-events [{:type       "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
-                            :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+                            :bill_title nil
                             :score      0 :body "Comment text goes here!!"}
                            {:type       "vote" :bill_id "s1182-114" :user_id user_id
-                            :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+                            :bill_title nil
                             :timestamp  1446462364297}]
           _ (persist-timeline-event timeline-events)
           {status :status body :body} (pav-req :get "/user/me/timeline?from=1446479124991" token {})
@@ -55,10 +52,10 @@
 		(let [{body :body} (pav-req :put "/user" test-user)
 					{token :token} (ch/parse-string body true)
 					timeline-events [{:type       "comment" :bill_id "s1182-114" :user_id "user102" :timestamp 1446479124991 :comment_id "comment:1"
-														:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+														:bill_title nil
 														:score      0 :body "Comment text goes here!!"}
 													 {:type       "vote" :bill_id "s1182-114" :user_id "user102"
-														:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+														:bill_title nil
 														:timestamp  1446462364297}]
 					_ (persist-timeline-event timeline-events)
 					{status :status body :body} (pav-req :get "/user/user102/timeline" token {})
@@ -71,10 +68,10 @@
     (let [{body :body} (pav-req :put "/user" test-user)
           {token :token} (ch/parse-string body true)
           timeline-events [{:type       "comment" :bill_id "s1182-114" :user_id "user102" :timestamp 1446479124991 :comment_id "comment:1"
-                            :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+                            :bill_title nil
                             :score      0 :body "Comment text goes here!!"}
                            {:type       "vote" :bill_id "s1182-114" :user_id "user102"
-                            :bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+                            :bill_title nil
                             :timestamp  1446462364297}]
           _ (persist-timeline-event timeline-events)
           {status :status body :body} (pav-req :get "/user/user102/timeline?from=1446479124991" token {})
