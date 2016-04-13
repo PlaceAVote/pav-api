@@ -114,5 +114,6 @@
             ;; Retrieve Followers feed.
             {body :body} (pav-req :get "/user/feed" follower-token {})
             {feed-events :results} (ch/parse-string body true)]
-        (keys (first feed-events)) => (just [:bill_id :bill_title :type :event_id :user_id :timestamp :vote-id :read]
+        (keys (first feed-events)) => (just [:bill_id :bill_title :type :event_id :user_id :timestamp :vote-id :read
+                                             :voter_id :voter_first_name :voter_last_name :voter_img_url]
                                             :in-any-order)))))

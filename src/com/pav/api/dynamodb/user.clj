@@ -115,6 +115,9 @@
       (merge feed-event vcount)
       (merge feed-event {:yes-count 0 :no-count 0}))))
 
+(defn get-vote-info-for-feed [{:keys [first_name last_name img_url]}]
+  {:voter_first_name first_name :voter_last_name last_name :voter_img_url img_url})
+
 (defmulti event-meta-data
   "Retrieve meta data for event item by type"
   (fn [event user_id]
@@ -124,8 +127,10 @@
   (-> (add-bill-comment-count feed-event)
       add-bill-vote-count))
 
-(defmethod event-meta-data "vote" [{:keys [bill_id] :as feed-event} _]
-  (assoc feed-event :bill_title (es/get-priority-bill-title (es/get-bill bill_id))))
+(defmethod event-meta-data "vote" [{:keys [bill_id voter_id] :as feed-event} _]
+  (cond-> feed-event
+    bill_id  (assoc :bill_title (es/get-priority-bill-title (es/get-bill bill_id)))
+    voter_id (merge (get-vote-info-for-feed (get-user-by-id voter_id)))))
 
 (defmethod event-meta-data :default [feed-event _]
   feed-event)

@@ -26,5 +26,6 @@
   EventHandler
   (process-event [{:keys [user_id] :as evt}]
     (try
-      (du/publish-batch-to-feed (map #(assoc evt :user_id (:user_id %)) (du/user-followers user_id)))
+      (du/publish-batch-to-feed
+        (map #(assoc evt :user_id (:user_id %) :voter_id user_id) (du/user-followers user_id)))
       (catch Exception e (log/error ("Error occured publishing VoteNewsfeedEvent " evt) e)))))
