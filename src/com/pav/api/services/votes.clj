@@ -3,7 +3,8 @@
             [com.pav.api.elasticsearch.user :refer [get-bill-info get-bill get-priority-bill-title]]
             [com.pav.api.events.handler :refer [process-event]]
             [com.pav.api.events.vote :refer [create-timeline-vote-event
-                                             create-notification-vote-event]]
+                                             create-notification-vote-event
+                                             create-newsfeed-vote-event]]
             [clojure.tools.logging :as log])
   (:import (java.util UUID)))
 
@@ -29,6 +30,7 @@
     (process-event (->> (get-priority-bill-title (get-bill bill_id))
                         (assoc vote-record :bill_title)
                         create-notification-vote-event))
+    (process-event (create-newsfeed-vote-event vote-record))
     (catch Exception e (log/error (str "Error occured publishing vote events for " vote-record) e))))
 
 (defn create-user-vote-record

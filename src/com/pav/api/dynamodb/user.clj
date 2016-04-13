@@ -7,9 +7,10 @@
             [com.pav.api.notifications.ws-handler :refer [publish-notification]]
             [com.pav.api.s3.user :as s3]
             [com.pav.api.utils.utils :refer [uuid->base64Str
-                                                  base64->uuidStr]]
+                                             base64->uuidStr]]
             [clj-http.client :as http]
-            [clojure.core.async :refer [thread]])
+            [clojure.core.async :refer [thread]]
+            [com.pav.api.elasticsearch.user :as es])
   (:import [java.util Date UUID]))
 
 (defn get-user-by-id [id]
@@ -122,6 +123,9 @@
 (defmethod event-meta-data "bill" [feed-event _]
   (-> (add-bill-comment-count feed-event)
       add-bill-vote-count))
+
+(defmethod event-meta-data "vote" [{:keys [bill_id] :as feed-event} _]
+  (assoc feed-event :bill_title (es/get-priority-bill-title (es/get-bill bill_id))))
 
 (defmethod event-meta-data :default [feed-event _]
   feed-event)

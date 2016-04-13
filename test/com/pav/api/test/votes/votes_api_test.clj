@@ -83,4 +83,36 @@
 
     (fact "When retrieving vote records for a bill that doesn't exist, return empty list"
       (let [{body :body} (pav-req :get "/vote/bill/hr2-114")]
-        (ch/parse-string body true) => []))))
+        (ch/parse-string body true) => []))
+
+    (fact "Given new vote, Then verify that vote record appears in the users timeline, notifications"
+      (let [{body :body} (pav-req :put "/user" u/test-user)
+            {token :token} (ch/parse-string body true)
+            new-vote {:bill_id "hr2-114" :vote true}
+            _ (pav-req :put "/vote" token new-vote)
+            {body :body} (pav-req :get "/user/me/timeline" token {})
+            {timeline-events :results} (ch/parse-string body true)
+            {body :body} (pav-req :get "/user/notifications" token {})
+            {notifications :results} (ch/parse-string body true)]
+        (keys (first timeline-events)) => (just [:bill_id :bill_title :type :event_id :user_id :timestamp :vote-id]
+                                            :in-any-order)
+        (keys (first notifications)) => (just [:bill_id :bill_title :type :notification_id :user_id :timestamp :vote-id
+                                               :read] :in-any-order)))
+
+    (fact "Given new vote, When the voter has followers, Then verify vote event appears in followers feed."
+      (let [;; Create follower
+            {body :body} (pav-req :put "/user" (assoc u/test-user :email "random@placeavote.com"))
+            {follower-token :token} (ch/parse-string body true)
+            ;; Create Voter
+            {body :body} (pav-req :put "/user" u/test-user)
+            {voter-token :token voter-id :user_id} (ch/parse-string body true)
+            ;;Follow voter
+            _ (pav-req :put (str "/user/follow") follower-token {:user_id voter-id})
+            new-vote {:bill_id "hr2-114" :vote true}
+            ;;Cast vote
+            _ (pav-req :put "/vote" voter-token new-vote)
+            ;; Retrieve Followers feed.
+            {body :body} (pav-req :get "/user/feed" follower-token {})
+            {feed-events :results} (ch/parse-string body true)]
+        (keys (first feed-events)) => (just [:bill_id :bill_title :type :event_id :user_id :timestamp :vote-id :read]
+                                            :in-any-order)))))
