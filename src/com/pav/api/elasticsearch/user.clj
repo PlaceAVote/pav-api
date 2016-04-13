@@ -104,3 +104,10 @@
   (->>
     (esd/multi-get connection "congress" [{:_type "bill" :_id bill_id} {:_type "billmeta" :_id bill_id}])
     (map :_source) (reduce merge)))
+
+(defn get-priority-bill-title [bill-info]
+  (when-let [{:keys [official_title short_title featured_bill_title]} bill-info]
+    (cond
+      featured_bill_title featured_bill_title
+      short_title short_title
+      official_title official_title)))

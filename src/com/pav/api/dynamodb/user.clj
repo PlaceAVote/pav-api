@@ -294,6 +294,7 @@ new ID assigned as issue_id and timestamp stored in table."
      (if (:last-prim-kvs (meta users))
        (recur (far/scan client-opts dy/user-table-name {:last-prim-kvs (:last-prim-kvs (meta users))}))))))
 
+;;TODO: IS THIS REQUIRED????
 (defn publish-to-timeline [user_id data]
   (far/put-item client-opts dy/timeline-table-name (assoc data :user_id user_id :event_id (.toString (UUID/randomUUID)))))
 
