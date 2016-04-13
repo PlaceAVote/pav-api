@@ -132,6 +132,10 @@
     bill_id  (assoc :bill_title (es/get-priority-bill-title (es/get-bill bill_id)))
     voter_id (merge (get-vote-info-for-feed (get-user-by-id voter_id)))))
 
+(defmethod event-meta-data "followinguser" [{:keys [following_id] :as feed-event} _]
+  (cond-> feed-event
+    following_id (merge (select-keys (get-user-by-id following_id) [:first_name :last_name]))))
+
 (defmethod event-meta-data :default [feed-event _]
   feed-event)
 

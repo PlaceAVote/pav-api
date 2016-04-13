@@ -99,4 +99,16 @@
 					{pauls-followers :body} (pav-req :get (str "/user/" pauls_user_id "/followers") token {})]
 			unfollow-status => 204
 			(ch/parse-string my-following true) => []
-			(ch/parse-string pauls-followers true) => [])))
+			(ch/parse-string pauls-followers true) => []))
+
+	(fact "Given a user with no followers, When the user follows another user, Then publish event to users timeline."
+    (let [{follower :body} (pav-req :put "/user" test-user)
+          {follower-token :token} (ch/parse-string follower true)
+          {being-followed :body} (pav-req :put "/user" searchable-profile)
+          {followed_user_id :user_id} (ch/parse-string being-followed true)
+          _ (pav-req :put (str "/user/follow") follower-token {:user_id followed_user_id})
+          {status :status body :body} (pav-req :get "/user/me/timeline" follower-token {})
+          {results :results} (ch/parse-string body true)]
+      status => 200
+      (keys (first results)) => (just [:event_id :user_id :following_id :timestamp :type
+                                       :last_name :first_name] :in-any-order))))

@@ -12,6 +12,8 @@
             [com.pav.api.graph.graph-parser :as gp]
             [com.pav.api.s3.user :as s3]
             [com.pav.api.location.location-service :as loc]
+            [com.pav.api.events.handler :refer [process-event]]
+            [com.pav.api.events.user :refer [create-followinguser-timeline-event]]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
             [clojure.core.memoize :as memo]
@@ -230,17 +232,10 @@ default-followers (:default-followers env))
 (defn get-feed [user from]
   (dynamo-dao/get-user-feed user from))
 
-(defn publish-to-timeline [event]
-  (redis-dao/publish-to-timeline event))
-
 (defn publish-following-event [follower following]
   (thread
-   (let [following-event {:type      "followinguser" :user_id follower :following_id following
-                          :timestamp (.getTime (Date.))}
-         follower-event   {:type      "followedbyuser" :user_id following :follower_id follower
-                           :timestamp (.getTime (Date.))}]
-     (publish-to-timeline following-event)
-     (publish-to-timeline follower-event))))
+   (let [following-event {:user_id follower :following_id following :timestamp (.getTime (Date.))}]
+     (process-event (create-followinguser-timeline-event following-event)))))
 
 (defn following? [follower following]
   (dynamo-dao/following? follower following))
