@@ -107,6 +107,7 @@
           {being-followed :body} (pav-req :put "/user" searchable-profile)
           {followed_user_id :user_id} (ch/parse-string being-followed true)
           _ (pav-req :put (str "/user/follow") follower-token {:user_id followed_user_id})
+          _ (Thread/sleep 2000)
           {status :status body :body} (pav-req :get "/user/me/timeline" follower-token {})
           {results :results} (ch/parse-string body true)]
       status => 200
