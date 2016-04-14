@@ -5,7 +5,8 @@
             [com.pav.api.events.vote :refer [create-timeline-vote-event
                                              create-notification-vote-event
                                              create-newsfeed-vote-event]]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [clojure.core.async :refer [go]])
   (:import (java.util UUID)))
 
 (defn new-vote-count-record [{:keys [vote bill_id]}]
@@ -25,13 +26,14 @@
   (dv/update-vote-count bill_id vote))
 
 (defn- publish-vote-events [{:keys [bill_id] :as vote-record}]
-  (try
-    (process-event (create-timeline-vote-event (.toString (UUID/randomUUID)) vote-record))
-    (process-event (->> (get-priority-bill-title (get-bill bill_id))
-                        (assoc vote-record :bill_title)
-                        create-notification-vote-event))
-    (process-event (create-newsfeed-vote-event vote-record))
-    (catch Exception e (log/error (str "Error occured publishing vote events for " vote-record) e))))
+  (go
+    (try
+      (process-event (create-timeline-vote-event (.toString (UUID/randomUUID)) vote-record))
+      (process-event (->> (get-priority-bill-title (get-bill bill_id))
+                       (assoc vote-record :bill_title)
+                       create-notification-vote-event))
+      (process-event (create-newsfeed-vote-event vote-record))
+      (catch Exception e (log/error (str "Error occured publishing vote events for " vote-record) e)))))
 
 (defn create-user-vote-record
   "Create new user vote relationship between a bill and user.  Also publish event on user timeline and notification feed."

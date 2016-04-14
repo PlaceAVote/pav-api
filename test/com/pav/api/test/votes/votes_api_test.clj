@@ -112,6 +112,7 @@
             ;;Cast vote
             _ (pav-req :put "/vote" voter-token new-vote)
             ;; Retrieve Followers feed.
+            _ (Thread/sleep 2000)
             {body :body} (pav-req :get "/user/feed" follower-token {})
             {feed-events :results} (ch/parse-string body true)]
         (keys (first feed-events)) => (just [:bill_id :bill_title :type :event_id :user_id :timestamp :vote-id :read
