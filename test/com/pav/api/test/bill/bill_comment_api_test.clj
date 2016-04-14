@@ -254,6 +254,7 @@
             _ (pav-req :put (str "/user/follow") follower-token {:user_id author_user_id})
             ;;Author Comment
             _ (pav-req :put "/bills/comments" author_token test-comment)
+            _ (Thread/sleep 2000)
             {body :body} (pav-req :get "/user/me/timeline" author_token {})
             {timeline-events :results} (ch/parse-string body true)
             {body :body} (pav-req :get "/user/feed" follower-token {})
@@ -279,6 +280,7 @@
             {body :body} (pav-req :put "/bills/comments" author_token test-comment)
             {comment_id :comment_id} (ch/parse-string body true)
             _ (pav-req :post (str "/comments/" comment_id "/like") liker-token {:bill_id "hr2-114"})
+            _ (Thread/sleep 2000)
             {body :body} (pav-req :get "/user/me/timeline" author_token {})
             {timeline-events :results} (ch/parse-string body true)]
         ;;check timeline event has correct author id
@@ -297,6 +299,7 @@
             {body :body} (pav-req :put "/bills/comments" author_token test-comment)
             {comment_id :comment_id} (ch/parse-string body true)
             _ (pav-req :post (str "/comments/" comment_id "/dislike") liker-token {:bill_id "hr2-114"})
+            _ (Thread/sleep 2000)
             {body :body} (pav-req :get "/user/me/timeline" author_token {})
             {timeline-events :results} (ch/parse-string body true)]
         ;;check timeline event has correct author id

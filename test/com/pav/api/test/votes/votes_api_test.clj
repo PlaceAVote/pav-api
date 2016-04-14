@@ -90,6 +90,7 @@
             {token :token} (ch/parse-string body true)
             new-vote {:bill_id "hr2-114" :vote true}
             _ (pav-req :put "/vote" token new-vote)
+            _ (Thread/sleep 2000)
             {body :body} (pav-req :get "/user/me/timeline" token {})
             {timeline-events :results} (ch/parse-string body true)
             {body :body} (pav-req :get "/user/notifications" token {})
