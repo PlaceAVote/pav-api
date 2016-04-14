@@ -3,7 +3,9 @@
             [environ.core :refer [env]]
             [clojure.tools.logging :as log]
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
+            [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.dynamodb.db :as dy :refer [client-opts]]
+            [com.pav.api.dynamodb.comments :refer [associate-user-score get-bill-comment]]
             [com.pav.api.notifications.ws-handler :refer [publish-notification]]
             [com.pav.api.s3.user :as s3]
             [com.pav.api.utils.utils :refer [uuid->base64Str
@@ -115,8 +117,14 @@
       (merge feed-event vcount)
       (merge feed-event {:yes-count 0 :no-count 0}))))
 
-(defn get-vote-info-for-feed [{:keys [first_name last_name img_url]}]
+(defn- get-vote-info-for-feed [{:keys [first_name last_name img_url]}]
   {:voter_first_name first_name :voter_last_name last_name :voter_img_url img_url})
+
+(defn- assoc-author-info [event {:keys [user_id first_name last_name img_url]}]
+  (assoc event :author user_id :author_first_name first_name :author_last_name last_name :author_img_url img_url))
+
+(defn assoc-comment-timeline-info [event comment]
+  (merge event (select-keys comment [:score :body])))
 
 (defmulti event-meta-data
   "Retrieve meta data for event item by type"
@@ -148,6 +156,16 @@
         (assoc issue :short_issue_id (uuid->base64Str (UUID/fromString (:issue_id issue))))
         issue))
     (select-keys (get-user-by-id (:author_id feed-event)) [:first_name :last_name :img_url])))
+
+(defmethod event-meta-data "comment" [{:keys [bill_id comment_id author] :as event} user_id]
+  (->
+    (if author
+      (assoc-author-info event (get-user-by-id author))
+      (assoc-author-info event (get-user-by-id (:user_id event))))
+    (cond->
+     bill_id (assoc :bill_title (es/get-priority-bill-title (es/get-bill bill_id)))
+     comment_id (assoc-comment-timeline-info (get-bill-comment comment_id))
+     user_id (associate-user-score user_id))))
 
 (defn get-user-feed [user_id & [from]]
   (let [opts (merge

@@ -1,6 +1,8 @@
 (ns com.pav.api.services.comments
   (:require [com.pav.api.dynamodb.comments :as dc]
             [com.pav.api.redis.redis :as redis]
+            [com.pav.api.events.comment :refer [create-comment-timeline-event create-comment-newsfeed-event]]
+            [com.pav.api.events.handler :refer [process-event]]
             [clojure.core.memoize :as memo])
   (:import (java.util UUID Date)))
 
@@ -34,7 +36,8 @@
         comment-with-img-url (assoc comment :author_img_url (:img_url user))
         new-dynamo-comment (new-dynamo-comment new-comment-id author comment-with-img-url)]
     (persist-comment new-dynamo-comment)
-    (redis/publish-bill-comment new-dynamo-comment)
+    (process-event (create-comment-timeline-event new-dynamo-comment))
+    (process-event (create-comment-newsfeed-event new-dynamo-comment))
     {:record new-dynamo-comment}))
 
 (defn create-bill-comment-reply [comment-id reply user]

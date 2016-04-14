@@ -1,6 +1,6 @@
 (ns com.pav.api.test.bill.bill-comment-api-test
   (:use midje.sweet)
-  (:require [com.pav.api.test.utils.utils :as utils :refer [pav-req]]
+  (:require [com.pav.api.test.utils.utils :as utils :refer [pav-req test-user]]
             [cheshire.core :as ch]
             [buddy.sign.jws :as jws]
             [buddy.sign.util :as u]
@@ -240,4 +240,31 @@
         status => 200
         (:total response) => 2
         (:comment_id first-comment) => comment2ID
-        (:score first-comment) => 1))))
+        (:score first-comment) => 1))
+
+    (fact "Create a comment, When the author has followers, Then verify the follower has the new comment in there
+          Newsfeed and the comment author has an event in there Timeline"
+      (let [;;Create Follower
+            {follower :body} (pav-req :put "/user" test-user)
+            {follower-token :token} (ch/parse-string follower true)
+            ;;Create Author
+            {author :body} (pav-req :put "/user" (assoc test-user :email "random@placeavote.com"))
+            {author_user_id :user_id author_token :token} (ch/parse-string author true)
+            ;;Follow author
+            _ (pav-req :put (str "/user/follow") follower-token {:user_id author_user_id})
+            ;;Author Comment
+            _ (pav-req :put "/bills/comments" author_token test-comment)
+            {body :body} (pav-req :get "/user/me/timeline" author_token {})
+            {timeline-events :results} (ch/parse-string body true)
+            {body :body} (pav-req :get "/user/feed" follower-token {})
+            {newsfeed-events :results} (ch/parse-string body true)]
+        ;;check timeline event has correct author id
+        (get-in (first timeline-events) [:author]) => author_user_id
+        (keys (first timeline-events)) => (just [:event_id :user_id :bill_id :comment_id :type :bill_title
+                                                 :author :author_img_url :author_first_name :author_last_name
+                                                 :disliked :liked :timestamp :body :score] :in-any-order)
+        ;;check newsfeed event has correct author id
+        (get-in (first newsfeed-events) [:author]) => author_user_id
+        (keys (first newsfeed-events)) => (just [:event_id :user_id :bill_id :comment_id :type :bill_title :read
+                                                 :author :author_img_url :author_first_name :author_last_name
+                                                 :disliked :liked :timestamp :body :score] :in-any-order)))))
