@@ -315,6 +315,7 @@
             {body :body} (pav-req :put "/bills/comments" author_token test-comment)
             {comment_id :comment_id} (ch/parse-string body true)
             _ (pav-req :put (str "/comments/" comment_id "/reply") replier-token test-comment)
+            _ (Thread/sleep 2000)
             {body :body} (pav-req :get "/user/notifications" author_token {})
             {notifications :results} (ch/parse-string body true)]
         ;;check notifications event has correct author id

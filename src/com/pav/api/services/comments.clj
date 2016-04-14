@@ -1,13 +1,14 @@
 (ns com.pav.api.services.comments
   (:require [com.pav.api.dynamodb.comments :as dc]
-            [com.pav.api.dynamodb.user :as du]
             [com.pav.api.elasticsearch.user :as eu]
             [com.pav.api.events.comment :refer [create-comment-timeline-event create-comment-newsfeed-event
                                                 create-comment-score-timeline-event
                                                 create-comment-reply-notification-event
                                                 create-comment-reply-wsnotification-event]]
             [com.pav.api.events.handler :refer [process-event]]
-            [clojure.core.memoize :as memo])
+            [clojure.core.memoize :as memo]
+            [clojure.tools.logging :as log]
+            [clojure.core.async :refer [go]])
   (:import (java.util UUID Date)))
 
 (defn new-dynamo-comment [comment-id author comment]
@@ -46,9 +47,12 @@
 (defn- publish-comment-events
   "Takes a new comment then generates the relevant event types and processes them."
   [{:keys [parent_id] :as comment}]
-  (process-event (create-comment-timeline-event comment))
-  (and (nil? parent_id) (process-event (create-comment-newsfeed-event comment)))
-  (and parent_id (publish-comment-reply-notifications comment)))
+  (go
+    (try
+      (process-event (create-comment-timeline-event comment))
+      (and (nil? parent_id) (process-event (create-comment-newsfeed-event comment)))
+      (and parent_id (publish-comment-reply-notifications comment))
+      (catch Exception e (log/error "Error Occured processing comment events " e)))))
 
 (defn create-bill-comment [comment user]
   (let [author user
