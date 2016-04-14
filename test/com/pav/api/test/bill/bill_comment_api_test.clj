@@ -16,7 +16,7 @@
     {:alg :rs256 :exp (-> (t/plus (t/now) (t/days 30)) (u/to-timestamp))}))
 
 (def test-token (create-auth-token {:user_id "12345" :first_name "John" :last_name "Rambo" :img_url "https://img.com"}))
-(def test-comment {:bill_id "hr2-114" :body    "comment goes here!!"})
+(def test-comment {:bill_id "hr2-114" :body "comment goes here!!"})
 (def expected-comment-response {:bill_id "hr2-114" :author  "12345" :author_img_url "https://img.com" :author_first_name "John"
                                 :author_last_name "Rambo" :body "comment goes here!!" :score 0 :parent_id nil :has_children false})
 
@@ -321,6 +321,4 @@
         (get-in (first notifications) [:author]) => replier_user_id
         (keys (first notifications)) => (just [:notification_id :user_id :bill_id :comment_id :type :bill_title :read
                                                :author :author_img_url :author_first_name :author_last_name :parent_id
-                                               :disliked :liked :timestamp :body :score] :in-any-order)))
-
-    ))
+                                               :disliked :liked :timestamp :body :score] :in-any-order)))))

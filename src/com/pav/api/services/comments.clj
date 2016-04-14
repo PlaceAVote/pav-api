@@ -1,9 +1,11 @@
 (ns com.pav.api.services.comments
   (:require [com.pav.api.dynamodb.comments :as dc]
-            [com.pav.api.redis.redis :as redis]
+            [com.pav.api.dynamodb.user :as du]
+            [com.pav.api.elasticsearch.user :as eu]
             [com.pav.api.events.comment :refer [create-comment-timeline-event create-comment-newsfeed-event
                                                 create-comment-score-timeline-event
-                                                create-comment-reply-notification-event]]
+                                                create-comment-reply-notification-event
+                                                create-comment-reply-wsnotification-event]]
             [com.pav.api.events.handler :refer [process-event]]
             [clojure.core.memoize :as memo])
   (:import (java.util UUID Date)))
@@ -32,12 +34,21 @@
 (defn persist-comment [comment]
   (dc/create-comment comment))
 
+(defn- publish-comment-reply-notifications [{:keys [bill_id parent_id] :as comment}]
+  (let [notification_id (.toString (UUID/randomUUID))
+        parent_user_id (:author (dc/get-bill-comment parent_id))
+        bill_title (eu/get-priority-bill-title (eu/get-bill bill_id))]
+    (process-event (create-comment-reply-notification-event notification_id
+                     (assoc comment :user_id parent_user_id)))
+    (process-event (create-comment-reply-wsnotification-event notification_id
+                     (assoc comment :user_id parent_user_id :bill_title bill_title)))))
+
 (defn- publish-comment-events
   "Takes a new comment then generates the relevant event types and processes them."
   [{:keys [parent_id] :as comment}]
   (process-event (create-comment-timeline-event comment))
   (and (nil? parent_id) (process-event (create-comment-newsfeed-event comment)))
-  (and parent_id (process-event (create-comment-reply-notification-event comment))))
+  (and parent_id (publish-comment-reply-notifications comment)))
 
 (defn create-bill-comment [comment user]
   (let [author user
@@ -53,7 +64,7 @@
         new-comment-id (create-comments-key)
         reply-with-img-url (assoc reply :author_img_url (:img_url user))
         new-dynamo-comment (-> (new-dynamo-comment new-comment-id author reply-with-img-url)
-                             (assoc :parent_id comment-id))]
+                               (assoc :parent_id comment-id))]
     (persist-comment new-dynamo-comment)
     (publish-comment-events new-dynamo-comment)
     {:record new-dynamo-comment}))

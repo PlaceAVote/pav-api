@@ -14,6 +14,7 @@
 (def redis-notification-pubsub (:redis-notification-pubsub env))
 
 (defn publish-notification [notification]
+	(log/info "Publishing Notification on WebSocket " notification)
   (car/wcar redis-conn
     (car/publish redis-notification-pubsub (pack-event notification))))
 

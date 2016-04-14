@@ -62,9 +62,13 @@
 
 (extend-type com.pav.api.events.comment.CommentReplyNotificationEvent
   EventHandler
-  (process-event [{:keys [parent_id user_id] :as evt}]
-    (let [parent_user_id (:author (dc/get-bill-comment parent_id))]
-      (du/add-event-to-user-notifications (assoc evt :user_id parent_user_id :author user_id)))))
+  (process-event [evt]
+    (du/add-event-to-user-notifications evt)))
+
+(extend-type com.pav.api.events.comment.CommentReplyWSNotificationEvent
+  EventHandler
+  (process-event [evt]
+    (ws/publish-notification evt)))
 
 (extend-type com.pav.api.events.comment.CommentScoreTimelineEvent
   EventHandler
