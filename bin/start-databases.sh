@@ -1,10 +1,7 @@
 #!/bin/sh
 # optionally download and start/stop necessary databases
 
-# Environment variables to setup. If they are not set, script will download
-# databases whose paths aren't set.
-
-WORK_PATH=".db"
+WORK_PATH=${WORK_PATH:-".db"}
 #ES_PATH=""
 #REDIS_PATH=""
 #DYNAMODB_PATH=""
@@ -93,9 +90,22 @@ es_start() {
 	(cd $ES_PATH && ./bin/elasticsearch 2>../es.err 1>../es.log) &
 }
 
+es_stop() {
+	trace "Stopping elasticsearch..."
+	pid=$(ps aux | grep elasticsearch | awk '{print $2}')
+	# trick to silently kill running process, without 'Killing...' stuff
+	(kill $pid 2>&1) >/dev/null
+}
+
 redis_start() {
 	trace "Starting redis..."
-	echo $(cd $REDIS_PATH && ./src/redis-server 2>../redis.err 1>../redis.log) &
+	(cd $REDIS_PATH && ./src/redis-server 2>../redis.err 1>../redis.log) &
+}
+
+redis_stop() {
+	trace "Stopping redis..."
+	pid=$(ps aux | grep redis-server | awk '{print $2}')
+	(kill $pid 2>&1) >/dev/null
 }
 
 dynamodb_start() {
@@ -104,26 +114,75 @@ dynamodb_start() {
 	(cd $DYNAMODB_PATH && $cmd  2>../dynamodb.err 1>../dynamodb.log) &
 }
 
-# operate everything in working directory
-mkdir -p $WORK_PATH && cd $WORK_PATH
+dynamodb_stop() {
+	trace "Stopping dynamodb..."
+	pid=$(ps aux | grep DynamoDBLocal | awk '{print $2}')
+	(kill $pid 2>&1) >/dev/null
+}
 
-# check necessary variables and download archives if necessary
-if [ -z $ES_PATH ]; then
-	[ ! -d $es_dir ] && do_download $es_url $es_checksum
-	export ES_PATH=$es_dir
-fi
+help() {
+	cat << EOF
+Usage: $0 [options]
+Start/stop necessary databases, targeting mainly for tests.
+The script will download and compile dependent databases, if required.
 
-if [ -z $REDIS_PATH ]; then
-	[ ! -d $redis_dir ] && do_download $redis_url $redis_checksum
-	export REDIS_PATH=$redis_dir
-fi
+Options:
 
-if [ -z $DYNAMODB_PATH ]; then
-	[ ! -d $dynamodb_dir ] && do_download $dynamodb_url $dynamodb_checksum
-	export DYNAMODB_PATH=$dynamodb_dir
-fi
+  start - start everything
+  stop  - stop everything
+  help  - this help
 
-# start services
-es_start
-redis_start
-dynamodb_start
+Environment variables:
+
+  WORK_PATH     - location where databases will be download and unpacked (default is "$WORK_PATH")
+  ES_PATH       - absolute path of ElasticSearch installation. If set, ElasticSearch will not be downloaded.
+  REDIS_PATH    - absolute path of Redis installation. If set, Redis will not be downloaded.
+  DYNAMODB_PATH - absolute path of DynamoDB installation. If set, DynamoDB will not be downloaded.
+
+EOF
+}
+
+start_everything() {
+	# operate everything in working directory
+	mkdir -p $WORK_PATH && cd $WORK_PATH
+
+	# check necessary variables and download archives if necessary
+	if [ -z $ES_PATH ]; then
+		[ ! -d $es_dir ] && do_download $es_url $es_checksum
+		export ES_PATH=$es_dir
+	fi
+
+	if [ -z $REDIS_PATH ]; then
+		[ ! -d $redis_dir ] && do_download $redis_url $redis_checksum
+		export REDIS_PATH=$redis_dir
+	fi
+
+	if [ -z $DYNAMODB_PATH ]; then
+		[ ! -d $dynamodb_dir ] && do_download $dynamodb_url $dynamodb_checksum
+		export DYNAMODB_PATH=$dynamodb_dir
+	fi
+
+	es_start
+	redis_start
+	dynamodb_start
+}
+
+stop_everything() {
+	cd $WORK_PATH
+
+	es_stop
+	redis_stop
+	dynamodb_stop
+}
+
+case "$1" in
+	"start")
+		start_everything
+		;;
+	"stop")
+		stop_everything
+		;;
+	*)
+		help
+		;;
+esac
