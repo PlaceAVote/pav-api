@@ -74,36 +74,6 @@
           {:update-map {:registered [:put true]}})))
     (catch Exception e (log/info (str "Error occured updating registeration status for token " token " " e)))))
 
-(defn wrap-query-with-pagination
-  "Helper function to wrap common pagination functionality for timeline related data."
-  [key-conds opts table]
-  (if-let [results (far/query client-opts table key-conds opts)]
-    {:last_timestamp (:timestamp (last results)) :results results}
-    {:last_timestamp 0 :results []}))
-
-(defn get-notifications [user_id & [from]]
-  (let [opts (merge
-               {:limit 10 :span-reqs {:max 1} :order :desc}
-               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
-    (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/notification-table-name)))
-
-(defn mark-notification [id]
-  (let [notification (first
-                      (far/query client-opts dy/notification-table-name {:notification_id [:eq id]}
-                                 {:index "notification_id-idx" :return [:user_id :timestamp]}))]
-    (when notification
-      (far/update-item client-opts dy/notification-table-name notification
-        {:update-map {:read [:put true]}}))))
-
-(declare event-meta-data)
-(defn get-user-timeline [user_id & [from]]
-  (let [opts (merge
-               {:limit 10 :span-reqs {:max 1} :order :desc}
-               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
-    (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/timeline-table-name)
-        (update-in [:results] (fn [results]
-                                (mapv #(event-meta-data % user_id) results))))))
-
 (defn add-bill-comment-count [{:keys [bill_id] :as feed-event}]
   "Count Bill comments associated with feed event."
   (let [ccount (count (far/query client-opts dy/comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"}))]
@@ -120,7 +90,7 @@
 (defn- get-vote-info-for-feed [{:keys [first_name last_name img_url]}]
   {:voter_first_name first_name :voter_last_name last_name :voter_img_url img_url})
 
-(defn- assoc-author-info [event {:keys [user_id first_name last_name img_url]}]
+(defn- assoc-author-info [event {:keys [user_id first_name last_name img_url] :as u}]
   (assoc event :author user_id :author_first_name first_name :author_last_name last_name :author_img_url img_url))
 
 (defn- assoc-comment-timeline-info [event comment]
@@ -170,19 +140,50 @@
 (defmethod event-meta-data "comment" [event user_id]
   (assoc-comment-metadata event user_id))
 
+(defmethod event-meta-data "commentreply" [event user_id]
+  (assoc-comment-metadata event user_id))
+
 (defmethod event-meta-data "likecomment" [event user_id]
   (assoc-comment-metadata event user_id))
 
 (defmethod event-meta-data "dislikecomment" [event user_id]
   (assoc-comment-metadata event user_id))
 
+(defn wrap-query-with-pagination
+  "Helper function to wrap common pagination functionality for timeline related data."
+  [key-conds opts table]
+  (if-let [results (far/query client-opts table key-conds opts)]
+    {:last_timestamp (:timestamp (last results)) :results results}
+    {:last_timestamp 0 :results []}))
+
+(defn mark-notification [id]
+  (let [notification (first
+                       (far/query client-opts dy/notification-table-name {:notification_id [:eq id]}
+                         {:index "notification_id-idx" :return [:user_id :timestamp]}))]
+    (when notification
+      (far/update-item client-opts dy/notification-table-name notification
+        {:update-map {:read [:put true]}}))))
+
 (defn get-user-feed [user_id & [from]]
   (let [opts (merge
                {:limit 10 :span-reqs {:max 1} :order :desc}
                (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
     (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/userfeed-table-name)
-        (update-in [:results] (fn [results]
-                                (mapv #(event-meta-data % user_id) results))))))
+        (update-in [:results] (fn [results] (mapv #(event-meta-data % user_id) results))))))
+
+(defn get-notifications [user_id & [from]]
+  (let [opts (merge
+               {:limit 10 :span-reqs {:max 1} :order :desc}
+               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
+    (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/notification-table-name)
+        (update-in [:results] (fn [results] (mapv #(event-meta-data % user_id) results))))))
+
+(defn get-user-timeline [user_id & [from]]
+  (let [opts (merge
+               {:limit 10 :span-reqs {:max 1} :order :desc}
+               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
+    (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/timeline-table-name)
+        (update-in [:results] (fn [results] (mapv #(event-meta-data % user_id) results))))))
 
 (defn persist-to-newsfeed [events]
   (when events

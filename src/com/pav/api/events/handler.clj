@@ -1,5 +1,6 @@
 (ns com.pav.api.events.handler
   (:require [com.pav.api.dynamodb.user :as du]
+            [com.pav.api.dynamodb.comments :as dc]
             [com.pav.api.notifications.ws-handler :as ws]
             [com.pav.api.events.vote :refer :all]
             [com.pav.api.events.user :refer :all]
@@ -58,6 +59,12 @@
   (process-event [{:keys [user_id] :as evt}]
     (publish-batch-to-newsfeed
       (map #(assoc evt :user_id (:user_id %) :author user_id) (du/user-followers user_id)))))
+
+(extend-type com.pav.api.events.comment.CommentReplyNotificationEvent
+  EventHandler
+  (process-event [{:keys [parent_id user_id] :as evt}]
+    (let [parent_user_id (:author (dc/get-bill-comment parent_id))]
+      (du/add-event-to-user-notifications (assoc evt :user_id parent_user_id :author user_id)))))
 
 (extend-type com.pav.api.events.comment.CommentScoreTimelineEvent
   EventHandler

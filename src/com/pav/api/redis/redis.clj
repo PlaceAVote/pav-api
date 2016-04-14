@@ -1,29 +1,11 @@
 (ns com.pav.api.redis.redis
   (:require [environ.core :refer [env]]
             [taoensso.carmine :as car :refer (wcar)]
-            [taoensso.carmine.message-queue :as car-mq]
-            [msgpack.core :as msg]
             [msgpack.clojure-extensions]
-            [cheshire.core :as ch]
             [clj-time.core :as t]
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]))
 
 (def redis-conn {:spec {:uri (:redis-url env)}})
-(def timeline-queue (:timeline-queue env))
-(def notification-queue (:notification-queue env))
-(def email-notification-queue (:email-notification-queue env))
-
-(defn queue-event [queue event]
-  (wcar redis-conn (car-mq/enqueue queue (-> event ch/generate-string msg/pack))))
-
-(defn publish-bill-comment [comment]
-  (queue-event timeline-queue (assoc comment :type "comment")))
-
-(defn publish-bill-comment-reply [comment]
-  (queue-event notification-queue (assoc comment :type "commentreply")))
-
-(defn publish-bill-comment-email-reply [comment]
-  (queue-event email-notification-queue (assoc comment :type "commentreply")))
 
 (defn upk [user_id]
 	"Create user profile key"

@@ -305,4 +305,22 @@
                                                  :author :author_img_url :author_first_name :author_last_name
                                                  :disliked :liked :timestamp :body :score] :in-any-order)))
 
+    (fact "Given a comment, When a user replies to the comment, Then verify the author receives a notification."
+      (let [;;Create Scorer
+            {replier :body} (pav-req :put "/user" test-user)
+            {replier_user_id :user_id replier-token :token} (ch/parse-string replier true)
+            ;;Create Author
+            {author :body} (pav-req :put "/user" (assoc test-user :email "random@placeavote.com"))
+            {author_token :token} (ch/parse-string author true)
+            {body :body} (pav-req :put "/bills/comments" author_token test-comment)
+            {comment_id :comment_id} (ch/parse-string body true)
+            _ (pav-req :put (str "/comments/" comment_id "/reply") replier-token test-comment)
+            {body :body} (pav-req :get "/user/notifications" author_token {})
+            {notifications :results} (ch/parse-string body true)]
+        ;;check notifications event has correct author id
+        (get-in (first notifications) [:author]) => replier_user_id
+        (keys (first notifications)) => (just [:notification_id :user_id :bill_id :comment_id :type :bill_title :read
+                                               :author :author_img_url :author_first_name :author_last_name :parent_id
+                                               :disliked :liked :timestamp :body :score] :in-any-order)))
+
     ))

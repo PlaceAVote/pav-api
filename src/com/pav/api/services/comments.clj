@@ -2,7 +2,8 @@
   (:require [com.pav.api.dynamodb.comments :as dc]
             [com.pav.api.redis.redis :as redis]
             [com.pav.api.events.comment :refer [create-comment-timeline-event create-comment-newsfeed-event
-                                                create-comment-score-timeline-event]]
+                                                create-comment-score-timeline-event
+                                                create-comment-reply-notification-event]]
             [com.pav.api.events.handler :refer [process-event]]
             [clojure.core.memoize :as memo])
   (:import (java.util UUID Date)))
@@ -31,14 +32,20 @@
 (defn persist-comment [comment]
   (dc/create-comment comment))
 
+(defn- publish-comment-events
+  "Takes a new comment then generates the relevant event types and processes them."
+  [{:keys [parent_id] :as comment}]
+  (process-event (create-comment-timeline-event comment))
+  (and (nil? parent_id) (process-event (create-comment-newsfeed-event comment)))
+  (and parent_id (process-event (create-comment-reply-notification-event comment))))
+
 (defn create-bill-comment [comment user]
   (let [author user
         new-comment-id (create-comments-key)
         comment-with-img-url (assoc comment :author_img_url (:img_url user))
         new-dynamo-comment (new-dynamo-comment new-comment-id author comment-with-img-url)]
     (persist-comment new-dynamo-comment)
-    (process-event (create-comment-timeline-event new-dynamo-comment))
-    (process-event (create-comment-newsfeed-event new-dynamo-comment))
+    (publish-comment-events new-dynamo-comment)
     {:record new-dynamo-comment}))
 
 (defn create-bill-comment-reply [comment-id reply user]
@@ -48,10 +55,7 @@
         new-dynamo-comment (-> (new-dynamo-comment new-comment-id author reply-with-img-url)
                              (assoc :parent_id comment-id))]
     (persist-comment new-dynamo-comment)
-    ;;Publish necessary notification messages to redis for timeline worker.
-    (redis/publish-bill-comment new-dynamo-comment)
-    (redis/publish-bill-comment-reply new-dynamo-comment)
-    (redis/publish-bill-comment-email-reply new-dynamo-comment)
+    (publish-comment-events new-dynamo-comment)
     {:record new-dynamo-comment}))
 
 (defn get-bill-comments
