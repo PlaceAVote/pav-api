@@ -123,8 +123,18 @@
 (defn- assoc-author-info [event {:keys [user_id first_name last_name img_url]}]
   (assoc event :author user_id :author_first_name first_name :author_last_name last_name :author_img_url img_url))
 
-(defn assoc-comment-timeline-info [event comment]
+(defn- assoc-comment-timeline-info [event comment]
   (merge event (select-keys comment [:score :body])))
+
+(defn- assoc-comment-metadata [{:keys [bill_id comment_id author] :as event} user_id]
+  (->
+    (if author
+      (assoc-author-info event (get-user-by-id author))
+      (assoc-author-info event (get-user-by-id (:user_id event))))
+    (cond->
+      true       (associate-user-score user_id)
+      bill_id    (assoc :bill_title (es/get-priority-bill-title (es/get-bill bill_id)))
+      comment_id (assoc-comment-timeline-info (get-bill-comment comment_id)))))
 
 (defmulti event-meta-data
   "Retrieve meta data for event item by type"
@@ -157,15 +167,14 @@
         issue))
     (select-keys (get-user-by-id (:author_id feed-event)) [:first_name :last_name :img_url])))
 
-(defmethod event-meta-data "comment" [{:keys [bill_id comment_id author] :as event} user_id]
-  (->
-    (if author
-      (assoc-author-info event (get-user-by-id author))
-      (assoc-author-info event (get-user-by-id (:user_id event))))
-    (cond->
-     bill_id (assoc :bill_title (es/get-priority-bill-title (es/get-bill bill_id)))
-     comment_id (assoc-comment-timeline-info (get-bill-comment comment_id))
-     user_id (associate-user-score user_id))))
+(defmethod event-meta-data "comment" [event user_id]
+  (assoc-comment-metadata event user_id))
+
+(defmethod event-meta-data "likecomment" [event user_id]
+  (assoc-comment-metadata event user_id))
+
+(defmethod event-meta-data "dislikecomment" [event user_id]
+  (assoc-comment-metadata event user_id))
 
 (defn get-user-feed [user_id & [from]]
   (let [opts (merge

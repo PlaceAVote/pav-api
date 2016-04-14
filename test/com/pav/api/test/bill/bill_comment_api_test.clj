@@ -267,4 +267,42 @@
         (get-in (first newsfeed-events) [:author]) => author_user_id
         (keys (first newsfeed-events)) => (just [:event_id :user_id :bill_id :comment_id :type :bill_title :read
                                                  :author :author_img_url :author_first_name :author_last_name
-                                                 :disliked :liked :timestamp :body :score] :in-any-order)))))
+                                                 :disliked :liked :timestamp :body :score] :in-any-order)))
+
+    (fact "Given a comment, When another user likes the comment, Then verify its in the users timeline."
+      (let [;;Create Scorer
+            {liker :body} (pav-req :put "/user" test-user)
+            {liker-token :token} (ch/parse-string liker true)
+            ;;Create Author
+            {author :body} (pav-req :put "/user" (assoc test-user :email "random@placeavote.com"))
+            {author_user_id :user_id author_token :token} (ch/parse-string author true)
+            {body :body} (pav-req :put "/bills/comments" author_token test-comment)
+            {comment_id :comment_id} (ch/parse-string body true)
+            _ (pav-req :post (str "/comments/" comment_id "/like") liker-token {:bill_id "hr2-114"})
+            {body :body} (pav-req :get "/user/me/timeline" author_token {})
+            {timeline-events :results} (ch/parse-string body true)]
+        ;;check timeline event has correct author id
+        (get-in (first timeline-events) [:author]) => author_user_id
+        (keys (first timeline-events)) => (just [:event_id :user_id :bill_id :comment_id :type :bill_title
+                                                 :author :author_img_url :author_first_name :author_last_name
+                                                 :disliked :liked :timestamp :body :score] :in-any-order)))
+
+    (fact "Given a comment, When another user dislikes the comment, Then verify its in the users timeline."
+      (let [;;Create Scorer
+            {liker :body} (pav-req :put "/user" test-user)
+            {liker-token :token} (ch/parse-string liker true)
+            ;;Create Author
+            {author :body} (pav-req :put "/user" (assoc test-user :email "random@placeavote.com"))
+            {author_user_id :user_id author_token :token} (ch/parse-string author true)
+            {body :body} (pav-req :put "/bills/comments" author_token test-comment)
+            {comment_id :comment_id} (ch/parse-string body true)
+            _ (pav-req :post (str "/comments/" comment_id "/dislike") liker-token {:bill_id "hr2-114"})
+            {body :body} (pav-req :get "/user/me/timeline" author_token {})
+            {timeline-events :results} (ch/parse-string body true)]
+        ;;check timeline event has correct author id
+        (get-in (first timeline-events) [:author]) => author_user_id
+        (keys (first timeline-events)) => (just [:event_id :user_id :bill_id :comment_id :type :bill_title
+                                                 :author :author_img_url :author_first_name :author_last_name
+                                                 :disliked :liked :timestamp :body :score] :in-any-order)))
+
+    ))
