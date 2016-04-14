@@ -58,3 +58,8 @@
   (process-event [{:keys [user_id] :as evt}]
     (publish-batch-to-newsfeed
       (map #(assoc evt :user_id (:user_id %) :author user_id) (du/user-followers user_id)))))
+
+(extend-type com.pav.api.events.comment.CommentScoreTimelineEvent
+  EventHandler
+  (process-event [evt]
+    (publish-to-timeline evt)))

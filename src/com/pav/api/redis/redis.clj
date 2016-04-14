@@ -25,11 +25,6 @@
 (defn publish-bill-comment-email-reply [comment]
   (queue-event email-notification-queue (assoc comment :type "commentreply")))
 
-(defn publish-scoring-comment-evt [comment user_id operation]
-  (case operation
-    :like (queue-event timeline-queue (assoc comment :type "likecomment" :user_id user_id))
-    :dislike (queue-event timeline-queue (assoc comment :type "dislikecomment" :user_id user_id))))
-
 (defn upk [user_id]
 	"Create user profile key"
 	(str "user:" user_id ":profile"))

@@ -1,7 +1,8 @@
 (ns com.pav.api.services.comments
   (:require [com.pav.api.dynamodb.comments :as dc]
             [com.pav.api.redis.redis :as redis]
-            [com.pav.api.events.comment :refer [create-comment-timeline-event create-comment-newsfeed-event]]
+            [com.pav.api.events.comment :refer [create-comment-timeline-event create-comment-newsfeed-event
+                                                create-comment-score-timeline-event]]
             [com.pav.api.events.handler :refer [process-event]]
             [clojure.core.memoize :as memo])
   (:import (java.util UUID Date)))
@@ -60,7 +61,9 @@
 
 (defn score-bill-comment [user_id comment-id operation]
   (dc/score-comment comment-id user_id operation)
-  (redis/publish-scoring-comment-evt (dc/get-bill-comment comment-id) user_id operation))
+  (process-event
+    (create-comment-score-timeline-event operation (assoc (dc/get-bill-comment comment-id)
+                                                     :timestamp (.getTime (Date.))))))
 
 (defn revoke-liked-comment [user_id comment_id]
   (dc/remove-liked-comment user_id comment_id))
