@@ -26,7 +26,7 @@
                                                      user-profile validate-token reset-password confirm-password-reset
                                                      user-settings change-password questions upload-profile-image
                                                      create-user-issue get-user-issue user-issue-emotional-response
-                                                     update-user-issue feed contact-form]]
+                                                     update-user-issue feed contact-form validate-user]]
             [com.pav.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.api.resources.docs :refer [swagger-docs]]
             [com.pav.api.dynamodb.db :refer [create-all-tables!]]
@@ -101,6 +101,7 @@
   (DELETE "/comments/:comment_id/like" [comment_id] (like-comment comment_id))
   (POST "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))
   (DELETE "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))
+  (POST "/user/validate" [] validate-user)
   (route/resources "/")
   (route/not-found "Not Found"))
 

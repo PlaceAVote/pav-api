@@ -183,6 +183,18 @@ default-followers (:default-followers env))
     (facebook-user-exists? email facebook_id)
     (not (empty? (get-user-by-email email)))))
 
+(defn- assoc-email-error [errors email]
+  (cond-> errors
+    (user-exist? email) (conj {:email "This email is currently in use."})))
+
+(defn validate-conflicting-user-properties
+  "Validates a collection of user properties and validates them for conflicts and eturns a vector of errors or Nil"
+  [{:keys [email] :as b}]
+  (->
+    (cond-> []
+      email (assoc-email-error b))
+    seq))
+
 (defn allowed-to-reset-password? [email]
   (let [user (get-user-by-email email)]
     (if user
