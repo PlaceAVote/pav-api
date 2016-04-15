@@ -6,3 +6,8 @@
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :handle-ok (es/search-for-term term))
+
+(defresource search-with-tag [tag]
+  :allowed-methods [:get]
+  :available-media-types ["application/json"]
+  :handle-ok (es/search-with-tag tag))
