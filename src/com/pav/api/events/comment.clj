@@ -34,19 +34,20 @@
 (s/defrecord CommentScoreTimelineEvent
   [event_id 					:- s/Str
    user_id 	 					:- s/Str
+   author             :- s/Str
    comment_id 				:- s/Str
    bill_id						:- s/Str
    type 							:- s/Str
    timestamp 					:- Long])
 
 (s/defn ^:always-validate create-comment-score-timeline-event :- CommentScoreTimelineEvent
-  ([event_id operation {:keys [author comment_id bill_id timestamp]}]
+  ([event_id operation scorer_id {:keys [author comment_id bill_id timestamp]}]
     (let [type (case operation
                  :like    "likecomment"
                  :dislike "dislikecomment")]
-      (CommentScoreTimelineEvent. event_id author comment_id bill_id type timestamp)))
-  ([operation comment]
-    (create-comment-score-timeline-event (.toString (UUID/randomUUID)) operation comment)))
+      (CommentScoreTimelineEvent. event_id scorer_id author comment_id bill_id type timestamp)))
+  ([operation scorer_id comment]
+    (create-comment-score-timeline-event (.toString (UUID/randomUUID)) operation scorer_id comment)))
 
 (s/defrecord CommentReplyNotificationEvent
   [notification_id  :- s/Str

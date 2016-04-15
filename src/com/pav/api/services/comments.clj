@@ -86,8 +86,8 @@
 (defn score-bill-comment [user_id comment-id operation]
   (dc/score-comment comment-id user_id operation)
   (process-event
-    (create-comment-score-timeline-event operation (assoc (dc/get-bill-comment comment-id)
-                                                     :timestamp (.getTime (Date.))))))
+    (create-comment-score-timeline-event
+      operation user_id (assoc (dc/get-bill-comment comment-id) :timestamp (.getTime (Date.))))))
 
 (defn revoke-liked-comment [user_id comment_id]
   (dc/remove-liked-comment user_id comment_id))
