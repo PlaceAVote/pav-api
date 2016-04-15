@@ -16,17 +16,17 @@
             [clojure.edn :as edn]
             [clojure.string :refer [lower-case]]
             [com.pav.api.resources.legislator :refer [get-legislator]]
-            [com.pav.api.resources.bill :refer [get-bill get-trending-bills create-comment get-comments
-                                                     top-comments create-comment-reply like-comment dislike-comment]]
+            [com.pav.api.resources.bill :refer [get-bill get-trending-bills create-comment update-comment get-comments
+                                                top-comments create-comment-reply like-comment dislike-comment]]
             [com.pav.api.resources.search :refer [search-term search-with-tag]]
             [com.pav.api.resources.vote :refer [cast-vote get-vote-count get-vote-records]]
             [com.pav.api.resources.user :refer [create create-facebook user authenticate
-                                                     confirm-user notifications mark-notification timeline feed
-                                                     follow following followers unfollow
-                                                     user-profile validate-token reset-password confirm-password-reset
-                                                     user-settings change-password questions upload-profile-image
-                                                     create-user-issue get-user-issue user-issue-emotional-response
-                                                     update-user-issue feed contact-form validate-user]]
+                                                confirm-user notifications mark-notification timeline feed
+                                                follow following followers unfollow
+                                                user-profile validate-token reset-password confirm-password-reset
+                                                user-settings change-password questions upload-profile-image
+                                                create-user-issue get-user-issue user-issue-emotional-response
+                                                update-user-issue feed contact-form validate-user]]
             [com.pav.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.api.resources.docs :refer [swagger-docs]]
             [com.pav.api.dynamodb.db :refer [create-all-tables!]]
@@ -98,6 +98,7 @@
   (PUT "/bills/comments" _ create-comment)
   (PUT "/comments/:comment_id/reply" [comment_id] (create-comment-reply comment_id))
   (POST "/comments/:comment_id/like" [comment_id] (like-comment comment_id))
+  (POST "/comments/:comment_id" [comment_id] (update-comment comment_id))
   (DELETE "/comments/:comment_id/like" [comment_id] (like-comment comment_id))
   (POST "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))
   (DELETE "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))

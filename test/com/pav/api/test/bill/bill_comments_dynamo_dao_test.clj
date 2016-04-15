@@ -27,6 +27,18 @@
         (:total persisted-comment) => 1
         (:comments persisted-comment) => (contains (assoc new-comment :replies [] :liked false :disliked false))))
 
+    (fact "Update an existing comment"
+      (let [new-comment {:score 5 :bill_id "hr2-114"
+                         :author     "user1" :timestamp (.getTime (Date.))
+                         :comment_id "comment:1" :has_children false
+                         :parent_id nil
+                         :body       "comment body goes here!!!"}
+            _ (dc/create-comment new-comment)
+            _ (dc/update-comment "updated comment body" "comment:1")
+            persisted-comment (dc/get-bill-comments "hr2-114")]
+        (:total persisted-comment) => 1
+        (get-in (first (:comments persisted-comment)) [:body]) => "updated comment body"))
+
     (fact "Persist new Bill Comment to DynamoDB & retrieve by id, When user_id is missing, Then verify comments are still present."
       (let [new-comment {:score 5 :bill_id "hr2-114"
                          :author     "user1" :timestamp (.getTime (Date.))

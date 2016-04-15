@@ -59,6 +59,9 @@
       (and parent_id (publish-comment-reply-notifications comment))
       (catch Exception e (log/error "Error Occured processing comment events " e)))))
 
+(defn update-bill-comment [payload comment_id]
+  (dc/update-comment (:body payload) comment_id))
+
 (defn create-bill-comment [comment user]
   (let [author user
         new-comment-id (create-comments-key)
