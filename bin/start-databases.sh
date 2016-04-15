@@ -2,9 +2,6 @@
 # optionally download and start/stop necessary databases
 
 WORK_PATH=${WORK_PATH:-".db"}
-#ES_PATH=""
-#REDIS_PATH=""
-#DYNAMODB_PATH=""
 
 # packages to download with sha1 sums
 es_url="https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.3.1/elasticsearch-2.3.1.tar.gz"
