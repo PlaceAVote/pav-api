@@ -115,13 +115,14 @@ yes/no votes for this bill."
 (defn search-with-tag
   "Search for bills with given tag or multiple tags separated by comma."
   [tag]
-  (let [t (-> tag s/lower-case (s/split #"\s*,\s*"))]
-    (->> (esd/search connection "congress" "billmeta" :query (q/term :pav_tags t))
-         esrsp/hits-from
-         (map sanitize-tags-result)
-         (sort-by :comment_count)
-         ;; return vector like other functions
-         vec)))
+  (when tag
+    (let [t (-> tag s/lower-case (s/split #"\s*,\s*"))]
+      (->> (esd/search connection "congress" "billmeta" :query (q/term :pav_tags t))
+           esrsp/hits-from
+           (map sanitize-tags-result)
+           (sort-by :comment_count)
+           ;; return vector like other functions
+           vec))))
 
 (defn gather-latest-bills-by-subject [topics]
   (some->> topics
