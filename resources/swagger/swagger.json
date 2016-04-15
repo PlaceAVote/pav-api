@@ -48,6 +48,15 @@
         "$ref": "#/definitions/NewCommentRecord"
       }
     },
+    "UpdateCommentParam": {
+      "name": "Update Comment Body",
+      "in": "body",
+      "description": "Update Comment Body",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/UpdateCommentRecord"
+      }
+    },
     "LegislatorIDParam": {
       "name": "id",
       "in": "path",
@@ -1036,6 +1045,16 @@
           "type": "string",
           "format": "string"
         },
+        "body": {
+          "title": "body",
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "UpdateCommentRecord": {
+      "type": "object",
+      "properties": {
         "body": {
           "title": "body",
           "type": "string",
@@ -2445,6 +2464,36 @@
           },
           "400": {
             "description": "Bad Request (check body of request)"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/comments/{comment_id}": {
+      "post": {
+        "description": "Update a comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          },
+          {
+            "$ref": "#/parameters/UpdateCommentParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "schema": {
+              "$ref": "#/definitions/BillCommentRecord"
+            }
           },
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
