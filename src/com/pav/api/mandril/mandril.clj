@@ -8,6 +8,7 @@
 (def email-mode (:email-mode env))
 (def password-reset-template (:mandril-pwd-reset-template env))
 (def welcome-email-template (:mandril-welcome-email-template env))
+(def comment-reply-template (:mandril-comment-reply-template env))
 
 (defn build-email-header
   ([api-key template]
@@ -29,9 +30,27 @@
 
 (defn build-welcome-email-body
   [message {:keys [email]}]
+  (-> {:message {:to         [{:email email :type "to"}]
+                 :important  true
+                 :inline_css true}}
+    (merge message)))
+
+(defn build-comment-reply-body
+  [message {:keys [email author_first_name author_last_name
+                   author_img_url bill_title body
+                   bill_id author]}]
   (-> {:message {:to                [{:email email :type "to"}]
-                 :important         true
-                 :inline_css        true}}
+                 :important         false
+                 :inline_css        true
+                 :merge             true
+                 :merge_language    "handlebars"
+                 :global_merge_vars [{:name "author_first_name" :content author_first_name}
+                                     {:name "author_last_name" :content author_last_name}
+                                     {:name "author_img_url" :content author_img_url}
+                                     {:name "author_id" :content author}
+                                     {:name "bill_title" :content bill_title}
+                                     {:name "bill_id" :content bill_id}
+                                     {:name "body" :content body}]}}
     (merge message)))
 
 (defn build-contact-form-body [message {:keys [email name body]}]
@@ -44,36 +63,38 @@
     (merge message)))
 
 (defn- send-template-email [body]
-  (when (= email-mode "live")
-    (client/post "https://mandrillapp.com/api/1.0/messages/send-template.json" {:body body})))
+  (try
+    (when (= email-mode "live")
+      (client/post "https://mandrillapp.com/api/1.0/messages/send-template.json" {:body body}))
+      (log/info "Email Body being sent to mandril Template " body)
+    (catch Exception e (log/error (str "Error occured sending Email to Mandril Template Endpoint " body) e))))
 
 (defn- send-email [body]
-  (when (= email-mode "live")
-    (client/post "https://mandrillapp.com/api/1.0/messages/send.json" {:body body})))
+  (try
+    (when (= email-mode "live")
+      (client/post "https://mandrillapp.com/api/1.0/messages/send.json" {:body body}))
+    (catch Exception e (log/error (str "Error occured sending Email to Mandril" body) e))))
 
 (defn send-password-reset-email [user token]
-	(let [body (-> (build-email-header mandril-api-key password-reset-template)
-							 	 (build-pwd-reset-body user token)
-							 	 ch/generate-string)]
-		(log/info "Email Body being sent to mandril " body)
-		(try
-			(send-template-email body)
-			(catch Exception e (log/error "Error sending email " e)))))
+  (-> (build-email-header mandril-api-key password-reset-template)
+      (build-pwd-reset-body user token)
+      ch/generate-string
+      send-template-email))
 
 (defn send-welcome-email [user]
-  (let [body (-> (build-email-header mandril-api-key welcome-email-template)
-                 (build-welcome-email-body user)
-                 ch/generate-string)]
-    (log/info "Email Body being sent to mandril " body)
-    (try
-      (send-template-email body)
-      (catch Exception e (log/error (str "Error sending welcome email to user: " (:user_id user)) e)))))
+  (-> (build-email-header mandril-api-key welcome-email-template)
+      (build-welcome-email-body user)
+      ch/generate-string
+      send-template-email))
+
+(defn send-comment-reply-email [comment]
+  (-> (build-email-header mandril-api-key comment-reply-template)
+      (build-comment-reply-body comment)
+      ch/generate-string
+      send-template-email))
 
 (defn send-contact-form-email [msg-body]
-  (log/info "Sending Email from Contact form for " msg-body)
-  (try
-    (when-let [body (-> (build-email-header mandril-api-key)
-                        (build-contact-form-body msg-body)
-                        ch/generate-string)]
-      (send-email body))
-    (catch Exception e (log/error (str "Error occured sending following contact form email " msg-body) e))))
+  (-> (build-email-header mandril-api-key)
+      (build-contact-form-body msg-body)
+      ch/generate-string
+      send-email))

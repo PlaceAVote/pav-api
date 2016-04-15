@@ -1,8 +1,12 @@
 (ns com.pav.api.services.votes
   (:require [com.pav.api.dynamodb.votes :as dv]
-            [com.pav.api.dynamodb.user :as du]
-            [com.pav.api.notifications.ws-handler :as ws]
-            [com.pav.api.elasticsearch.user :refer [get-bill-info get-bill]])
+            [com.pav.api.elasticsearch.user :refer [get-bill-info get-bill get-priority-bill-title]]
+            [com.pav.api.events.handler :refer [process-event]]
+            [com.pav.api.events.vote :refer [create-timeline-vote-event
+                                             create-notification-vote-event
+                                             create-newsfeed-vote-event]]
+            [clojure.tools.logging :as log]
+            [clojure.core.async :refer [go]])
   (:import (java.util UUID)))
 
 (defn new-vote-count-record [{:keys [vote bill_id]}]
@@ -21,31 +25,25 @@
   [bill_id vote]
   (dv/update-vote-count bill_id vote))
 
-(defn publish-notification-event [evt]
-  (du/add-event-to-user-notifications evt)
-  (ws/publish-notification evt))
-
-(defn- get-priority-bill-title [bill-info]
-  (when-let [{:keys [official_title short_title featured_bill_title]} bill-info]
-    (cond
-      featured_bill_title featured_bill_title
-      short_title short_title
-      official_title official_title)))
+(defn- publish-vote-events [{:keys [bill_id] :as vote-record}]
+  (go
+    (try
+      (process-event (create-timeline-vote-event (.toString (UUID/randomUUID)) vote-record))
+      (process-event (->> (get-priority-bill-title (get-bill bill_id))
+                       (assoc vote-record :bill_title)
+                       create-notification-vote-event))
+      (process-event (create-newsfeed-vote-event vote-record))
+      (catch Exception e (log/error (str "Error occured publishing vote events for " vote-record) e)))))
 
 (defn create-user-vote-record
   "Create new user vote relationship between a bill and user.  Also publish event on user timeline and notification feed."
   [{:keys [vote bill_id] :as record}]
-  (let [bill-info (get-bill bill_id)
-        vote-evt (assoc record :type "vote" :event_id (.toString (UUID/randomUUID))
-                               :bill_title (get-priority-bill-title bill-info))
-        notification-evt (assoc record :type "vote" :read false :notification_id (.toString (UUID/randomUUID)))
-        current-count (dv/get-vote-count bill_id)]
+  (let [current-count (dv/get-vote-count bill_id)]
     (dv/create-user-vote record)
     (if current-count
       (update-vote-count bill_id vote)
       (create-vote-count (new-vote-count-record record)))
-    (du/add-event-to-usertimeline vote-evt)
-    (publish-notification-event notification-evt)))
+    (publish-vote-events record)))
 
 (defn get-user-vote
   "Retrieve user vote record using vote-id"

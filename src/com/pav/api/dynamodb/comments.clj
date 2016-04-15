@@ -20,7 +20,7 @@
     (assoc comment :author_img_url img)
     comment))
 
-(defn- associate-user-vote [comment user_id]
+(defn associate-user-score [comment user_id]
   (if-let [scoring-record (and user_id (far/get-item dy/client-opts dy/comment-user-scoring-table
                                          {:comment_id (:comment_id comment) :user_id user_id}))]
     (if (:liked scoring-record)
@@ -34,10 +34,10 @@
   (t/have (complement empty?) comment-ids)
   (->> ((keyword dy/comment-details-table-name)
          (far/batch-get-item dy/client-opts {dy/comment-details-table-name {:prim-kvs {:comment_id comment-ids}}}))
-    (mapv #(associate-user-vote % user_id))
+    (mapv #(associate-user-score % user_id))
     (mapv #(associate-user-img %))
     (sort-by sort-key >)))
-;;{:cc-units nil, :last-prim-kvs {:id hr2-114, :comment_id comment:1, :timestamp 1458147015000N}, :count 1}
+
 (defn get-comments
   "Retrieve Parent level comments for bill-comment-idx"
   [bill_id sorted-by limit & {:keys [user_id last_comment_id]}]
