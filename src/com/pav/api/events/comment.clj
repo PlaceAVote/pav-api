@@ -76,16 +76,33 @@
    author_first_name :- s/Str
    author_last_name  :- s/Str
    author_img_url    :- (s/maybe s/Str)
+   body              :- s/Str
    type 						 :- s/Str
    timestamp 				 :- Long
    read              :- s/Bool])
 
 (s/defn create-comment-reply-wsnotification-event :- CommentReplyWSNotificationEvent
-  ([notification_id {:keys [user_id comment_id parent_id bill_id bill_title
-                            author author_first_name author_last_name author_img_url timestamp] :as comment}]
+  ([notification_id {:keys [user_id comment_id parent_id bill_id bill_title body
+                            author author_first_name author_last_name author_img_url timestamp]}]
     (CommentReplyWSNotificationEvent.
       notification_id user_id comment_id parent_id bill_id bill_title
       author author_first_name author_last_name author_img_url
-      "commentreply" timestamp false))
+      body "commentreply" timestamp false))
   ([comment]
     (create-comment-reply-wsnotification-event (.toString (UUID/randomUUID)) comment)))
+
+(s/defrecord CommentReplyEmailNotificationEvent
+  [comment_id        :- s/Str
+   bill_id					 :- s/Str
+   bill_title 			 :- s/Str
+   author            :- s/Str
+   author_first_name :- s/Str
+   author_last_name  :- s/Str
+   author_img_url    :- (s/maybe s/Str)
+   body              :- s/Str
+   email             :- s/Str])
+
+(s/defn create-comment-reply-email-notification-event :- CommentReplyEmailNotificationEvent
+  [{:keys [comment_id email bill_id bill_title body author author_first_name author_last_name author_img_url]}]
+    (CommentReplyEmailNotificationEvent. comment_id bill_id bill_title
+      author author_first_name author_last_name author_img_url body email))

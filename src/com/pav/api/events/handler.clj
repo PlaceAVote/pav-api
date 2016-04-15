@@ -1,7 +1,7 @@
 (ns com.pav.api.events.handler
   (:require [com.pav.api.dynamodb.user :as du]
-            [com.pav.api.dynamodb.comments :as dc]
             [com.pav.api.notifications.ws-handler :as ws]
+            [com.pav.api.mandril.mandril :as mandril]
             [com.pav.api.events.vote :refer :all]
             [com.pav.api.events.user :refer :all]
             [com.pav.api.events.comment :refer :all]
@@ -69,6 +69,11 @@
   EventHandler
   (process-event [evt]
     (ws/publish-notification evt)))
+
+(extend-type com.pav.api.events.comment.CommentReplyEmailNotificationEvent
+  EventHandler
+  (process-event [evt]
+    (mandril/send-comment-reply-email evt)))
 
 (extend-type com.pav.api.events.comment.CommentScoreTimelineEvent
   EventHandler

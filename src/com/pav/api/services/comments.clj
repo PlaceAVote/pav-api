@@ -4,11 +4,13 @@
             [com.pav.api.events.comment :refer [create-comment-timeline-event create-comment-newsfeed-event
                                                 create-comment-score-timeline-event
                                                 create-comment-reply-notification-event
-                                                create-comment-reply-wsnotification-event]]
+                                                create-comment-reply-wsnotification-event
+                                                create-comment-reply-email-notification-event]]
             [com.pav.api.events.handler :refer [process-event]]
             [clojure.core.memoize :as memo]
             [clojure.tools.logging :as log]
-            [clojure.core.async :refer [go]])
+            [clojure.core.async :refer [go]]
+            [com.pav.api.dynamodb.user :as du])
   (:import (java.util UUID Date)))
 
 (defn new-dynamo-comment [comment-id author comment]
@@ -38,11 +40,14 @@
 (defn- publish-comment-reply-notifications [{:keys [bill_id parent_id] :as comment}]
   (let [notification_id (.toString (UUID/randomUUID))
         parent_user_id (:author (dc/get-bill-comment parent_id))
+        {:keys [email]} (du/get-user-by-id parent_user_id)
         bill_title (eu/get-priority-bill-title (eu/get-bill bill_id))]
     (process-event (create-comment-reply-notification-event notification_id
                      (assoc comment :user_id parent_user_id)))
     (process-event (create-comment-reply-wsnotification-event notification_id
-                     (assoc comment :user_id parent_user_id :bill_title bill_title)))))
+                     (assoc comment :user_id parent_user_id :bill_title bill_title)))
+    (process-event (create-comment-reply-email-notification-event
+                     (assoc comment :bill_title bill_title :email email)))))
 
 (defn- publish-comment-events
   "Takes a new comment then generates the relevant event types and processes them."
