@@ -96,6 +96,11 @@
       (far/put-item dy/client-opts dy/comment-details-table-name comment))
     (create-reply comment)))
 
+(defn update-comment [new-body comment_id]
+  (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}
+    {:update-expr "SET #body = :body" :expr-attr-names {"#body" "body"} :expr-attr-vals {":body" new-body}
+     :return :all-new}))
+
 (defn get-bill-comments
   "Retrieve comments for bill, if user_id is specified gather additional meta data."
   [id & {:keys [user_id sort-by limit last_comment_id] :or {sort-by :highest-score limit 10}}]

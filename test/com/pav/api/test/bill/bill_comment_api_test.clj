@@ -35,6 +35,16 @@
         (keys body) => (contains [:bill_id :author :author_first_name :author_last_name :body :score :comment_id :id
                                   :timestamp :parent_id :has_children] :in-any-order)))
 
+    (fact "Update an existing comment and verify its new body"
+      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+            {comment_id :comment_id} (ch/parse-string body true)
+            {status :status body :body} (pav-req :post (str "/comments/" comment_id) test-token {:body "I have been updated"})
+            body (ch/parse-string body true)]
+        status => 201
+        (:body body) => "I have been updated"
+        (keys body) => (contains [:bill_id :author :author_first_name :author_last_name
+                                  :body :score :comment_id :id :timestamp :parent_id :has_children] :in-any-order)))
+
     (fact "Try creating a comment without a bill_id, should throw 400 HTTP Status code"
       (let [{status :status} (pav-req :put "/bills/comments" test-token {:body "comment goes here!!"})]
         status => 400))

@@ -13,6 +13,9 @@
 (def ScoringRecord
   {:bill_id s/Str})
 
+(def CommentRecordUpdate
+  {:body s/Str})
+
 (defn valid-payload? [schema payload]
   (if (nil? (s/check schema payload))
     false
@@ -23,6 +26,9 @@
 
 (defn new-comment-malformed? [payload]
   (valid-payload? CommentRecord payload))
+
+(defn comment-update-malformed? [payload]
+  (valid-payload? CommentRecordUpdate payload))
 
 (defresource get-bill [bill_id]
   :allowed-methods [:get]
@@ -36,13 +42,24 @@
   :handle-ok (bs/trending-bills))
 
 (defresource create-comment [bill_id]
+  :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (us/is-authenticated? (u/retrieve-user-details ctx)))
   :malformed? (fn [ctx] (new-comment-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
   :put! (fn [ctx] (cs/create-bill-comment (u/retrieve-body ctx) (u/retrieve-user-details ctx)))
-  :handle-malformed "Comment is invalid"
+  :handle-malformed {:errors [{:body "Please specify a comment body and bill_id"}]}
   :handle-created :record)
+
+(defresource update-comment [comment_id]
+  :service-available? {:representation {:media-type "application/json"}}
+  :authorized? (fn [ctx] (us/is-authenticated? (u/retrieve-user-details ctx)))
+  :malformed? (fn [ctx] (comment-update-malformed? (get-in ctx [:request :body])))
+  :allowed-methods [:post]
+  :available-media-types ["application/json"]
+  :post! (fn [ctx] {::record (cs/update-bill-comment (u/retrieve-body ctx) comment_id)})
+  :handle-malformed {:errors [{:body "Please specify a comment body"}]}
+  :handle-created ::record)
 
 (defresource create-comment-reply [comment-id]
   :authorized? (fn [ctx] (us/is-authenticated? (u/retrieve-user-details ctx)))
