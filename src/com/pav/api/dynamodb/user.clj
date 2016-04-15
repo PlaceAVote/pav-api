@@ -3,13 +3,16 @@
             [environ.core :refer [env]]
             [clojure.tools.logging :as log]
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
+            [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.dynamodb.db :as dy :refer [client-opts]]
+            [com.pav.api.dynamodb.comments :refer [associate-user-score get-bill-comment]]
             [com.pav.api.notifications.ws-handler :refer [publish-notification]]
             [com.pav.api.s3.user :as s3]
             [com.pav.api.utils.utils :refer [uuid->base64Str
-                                                  base64->uuidStr]]
+                                             base64->uuidStr]]
             [clj-http.client :as http]
-            [clojure.core.async :refer [thread]])
+            [clojure.core.async :refer [thread]]
+            [com.pav.api.elasticsearch.user :as es])
   (:import [java.util Date UUID]))
 
 (defn get-user-by-id [id]
@@ -71,36 +74,6 @@
           {:update-map {:registered [:put true]}})))
     (catch Exception e (log/info (str "Error occured updating registeration status for token " token " " e)))))
 
-(defn wrap-query-with-pagination
-  "Helper function to wrap common pagination functionality for timeline related data."
-  [key-conds opts table]
-  (if-let [results (far/query client-opts table key-conds opts)]
-    {:last_timestamp (:timestamp (last results)) :results results}
-    {:last_timestamp 0 :results []}))
-
-(defn get-notifications [user_id & [from]]
-  (let [opts (merge
-               {:limit 10 :span-reqs {:max 1} :order :desc}
-               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
-    (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/notification-table-name)))
-
-(defn mark-notification [id]
-  (let [notification (first
-                      (far/query client-opts dy/notification-table-name {:notification_id [:eq id]}
-                                 {:index "notification_id-idx" :return [:user_id :timestamp]}))]
-    (when notification
-      (far/update-item client-opts dy/notification-table-name notification
-        {:update-map {:read [:put true]}}))))
-
-(declare event-meta-data)
-(defn get-user-timeline [user_id & [from]]
-  (let [opts (merge
-               {:limit 10 :span-reqs {:max 1} :order :desc}
-               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
-    (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/timeline-table-name)
-        (update-in [:results] (fn [results]
-                                (mapv #(event-meta-data % user_id) results))))))
-
 (defn add-bill-comment-count [{:keys [bill_id] :as feed-event}]
   "Count Bill comments associated with feed event."
   (let [ccount (count (far/query client-opts dy/comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"}))]
@@ -114,6 +87,35 @@
       (merge feed-event vcount)
       (merge feed-event {:yes-count 0 :no-count 0}))))
 
+(defn- get-vote-info-for-feed [{:keys [first_name last_name img_url]}]
+  {:voter_first_name first_name :voter_last_name last_name :voter_img_url img_url})
+
+(defn- assoc-author-info [event {:keys [user_id first_name last_name img_url]}]
+  (assoc event :author user_id :author_first_name first_name :author_last_name last_name :author_img_url img_url))
+
+(defn- assoc-comment-timeline-info [event comment]
+  (merge event (select-keys comment [:score :body])))
+
+(defn- assoc-comment-metadata
+  "Process Timeline, Newsfeed and Notification Events"
+  [{:keys [bill_id comment_id author] :as event} user_id]
+  (->
+    (if author
+      (assoc-author-info event (get-user-by-id author))
+      (assoc-author-info event (get-user-by-id (:user_id event))))
+    (cond->
+      true       (associate-user-score user_id)
+      bill_id    (assoc :bill_title (es/get-priority-bill-title (es/get-bill bill_id)))
+      comment_id (assoc-comment-timeline-info (get-bill-comment comment_id)))))
+
+(defn- assoc-comment-score-metadata [{:keys [bill_id comment_id author] :as event} user_id]
+  (->
+    (cond-> event
+      true       (associate-user-score user_id)
+      author     (assoc-author-info (get-user-by-id author))
+      bill_id    (assoc :bill_title (es/get-priority-bill-title (es/get-bill bill_id)))
+      comment_id (assoc-comment-timeline-info (get-bill-comment comment_id)))))
+
 (defmulti event-meta-data
   "Retrieve meta data for event item by type"
   (fn [event user_id]
@@ -122,6 +124,15 @@
 (defmethod event-meta-data "bill" [feed-event _]
   (-> (add-bill-comment-count feed-event)
       add-bill-vote-count))
+
+(defmethod event-meta-data "vote" [{:keys [bill_id voter_id] :as feed-event} _]
+  (cond-> feed-event
+    bill_id  (assoc :bill_title (es/get-priority-bill-title (es/get-bill bill_id)))
+    voter_id (merge (get-vote-info-for-feed (get-user-by-id voter_id)))))
+
+(defmethod event-meta-data "followinguser" [{:keys [following_id] :as feed-event} _]
+  (cond-> feed-event
+    following_id (merge (select-keys (get-user-by-id following_id) [:first_name :last_name]))))
 
 (defmethod event-meta-data :default [feed-event _]
   feed-event)
@@ -136,13 +147,53 @@
         issue))
     (select-keys (get-user-by-id (:author_id feed-event)) [:first_name :last_name :img_url])))
 
+(defmethod event-meta-data "comment" [event user_id]
+  (assoc-comment-metadata event user_id))
+
+(defmethod event-meta-data "commentreply" [event user_id]
+  (assoc-comment-metadata event user_id))
+
+(defmethod event-meta-data "likecomment" [event user_id]
+  (assoc-comment-score-metadata event user_id))
+
+(defmethod event-meta-data "dislikecomment" [event user_id]
+  (assoc-comment-score-metadata event user_id))
+
+(defn wrap-query-with-pagination
+  "Helper function to wrap common pagination functionality for timeline related data."
+  [key-conds opts table]
+  (if-let [results (far/query client-opts table key-conds opts)]
+    {:last_timestamp (:timestamp (last results)) :results results}
+    {:last_timestamp 0 :results []}))
+
+(defn mark-notification [id]
+  (let [notification (first
+                       (far/query client-opts dy/notification-table-name {:notification_id [:eq id]}
+                         {:index "notification_id-idx" :return [:user_id :timestamp]}))]
+    (when notification
+      (far/update-item client-opts dy/notification-table-name notification
+        {:update-map {:read [:put true]}}))))
+
 (defn get-user-feed [user_id & [from]]
   (let [opts (merge
                {:limit 10 :span-reqs {:max 1} :order :desc}
                (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
     (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/userfeed-table-name)
-        (update-in [:results] (fn [results]
-                                (mapv #(event-meta-data % user_id) results))))))
+        (update-in [:results] (fn [results] (mapv #(event-meta-data % user_id) results))))))
+
+(defn get-notifications [user_id & [from]]
+  (let [opts (merge
+               {:limit 10 :span-reqs {:max 1} :order :desc}
+               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
+    (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/notification-table-name)
+        (update-in [:results] (fn [results] (mapv #(event-meta-data % user_id) results))))))
+
+(defn get-user-timeline [user_id & [from]]
+  (let [opts (merge
+               {:limit 10 :span-reqs {:max 1} :order :desc}
+               (if from {:last-prim-kvs {:user_id user_id :timestamp (read-string from)}}))]
+    (-> (wrap-query-with-pagination {:user_id [:eq user_id]} opts dy/timeline-table-name)
+        (update-in [:results] (fn [results] (mapv #(event-meta-data % user_id) results))))))
 
 (defn persist-to-newsfeed [events]
   (when events
@@ -294,6 +345,7 @@ new ID assigned as issue_id and timestamp stored in table."
      (if (:last-prim-kvs (meta users))
        (recur (far/scan client-opts dy/user-table-name {:last-prim-kvs (:last-prim-kvs (meta users))}))))))
 
+;;TODO: IS THIS REQUIRED????
 (defn publish-to-timeline [user_id data]
   (far/put-item client-opts dy/timeline-table-name (assoc data :user_id user_id :event_id (.toString (UUID/randomUUID)))))
 

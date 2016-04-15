@@ -12,6 +12,15 @@
 (def existing-user-error-msg {:error "A User already exists with this email"})
 (def login-error-msg {:error "Invalid Login credientials"})
 
+(defresource validate-user
+  :service-available? {:representation {:media-type "application/json"}}
+  :allowed-methods [:post]
+  :available-media-types ["application/json"]
+  :malformed? (fn [ctx] (if-let [errors (service/validate-conflicting-user-properties (retrieve-body ctx))]
+                          {::errors {:errors errors}}))
+  :handle-malformed ::errors
+  :handle-created (ring-response {:status 200}))
+
 (defresource create
   :service-available? {:representation {:media-type "application/json"}}
   :allowed-methods [:put]

@@ -12,6 +12,8 @@
             [com.pav.api.graph.graph-parser :as gp]
             [com.pav.api.s3.user :as s3]
             [com.pav.api.location.location-service :as loc]
+            [com.pav.api.events.handler :refer [process-event]]
+            [com.pav.api.events.user :refer [create-followinguser-timeline-event]]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
             [clojure.core.memoize :as memo]
@@ -181,6 +183,18 @@ default-followers (:default-followers env))
     (facebook-user-exists? email facebook_id)
     (not (empty? (get-user-by-email email)))))
 
+(defn- assoc-email-error [errors email]
+  (cond-> errors
+    (user-exist? email) (conj {:email "This email is currently in use."})))
+
+(defn validate-conflicting-user-properties
+  "Validates a collection of user properties and validates them for conflicts and eturns a vector of errors or Nil"
+  [{:keys [email] :as b}]
+  (->
+    (cond-> []
+      email (assoc-email-error b))
+    seq))
+
 (defn allowed-to-reset-password? [email]
   (let [user (get-user-by-email email)]
     (if user
@@ -230,17 +244,10 @@ default-followers (:default-followers env))
 (defn get-feed [user from]
   (dynamo-dao/get-user-feed user from))
 
-(defn publish-to-timeline [event]
-  (redis-dao/publish-to-timeline event))
-
 (defn publish-following-event [follower following]
   (thread
-   (let [following-event {:type      "followinguser" :user_id follower :following_id following
-                          :timestamp (.getTime (Date.))}
-         follower-event   {:type      "followedbyuser" :user_id following :follower_id follower
-                           :timestamp (.getTime (Date.))}]
-     (publish-to-timeline following-event)
-     (publish-to-timeline follower-event))))
+   (let [following-event {:user_id follower :following_id following :timestamp (.getTime (Date.))}]
+     (process-event (create-followinguser-timeline-event following-event)))))
 
 (defn following? [follower following]
   (dynamo-dao/following? follower following))

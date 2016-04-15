@@ -18,7 +18,7 @@
             [com.pav.api.resources.legislator :refer [get-legislator]]
             [com.pav.api.resources.bill :refer [get-bill get-trending-bills create-comment get-comments
                                                      top-comments create-comment-reply like-comment dislike-comment]]
-            [com.pav.api.resources.search :refer [search-term]]
+            [com.pav.api.resources.search :refer [search-term search-with-tag]]
             [com.pav.api.resources.vote :refer [cast-vote get-vote-count get-vote-records]]
             [com.pav.api.resources.user :refer [create create-facebook user authenticate
                                                      confirm-user notifications mark-notification timeline feed
@@ -26,7 +26,7 @@
                                                      user-profile validate-token reset-password confirm-password-reset
                                                      user-settings change-password questions upload-profile-image
                                                      create-user-issue get-user-issue user-issue-emotional-response
-                                                     update-user-issue feed contact-form]]
+                                                     update-user-issue feed contact-form validate-user]]
             [com.pav.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.api.resources.docs :refer [swagger-docs]]
             [com.pav.api.dynamodb.db :refer [create-all-tables!]]
@@ -85,6 +85,7 @@
   (GET "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (DELETE "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (POST "/user/contact" _ contact-form)
+  (GET "/search/bills" [tag] (search-with-tag tag))
   (GET "/search" [term] (search-term term))
   (PUT "/vote" _ cast-vote)
   (GET "/vote/count" [bill-id] (get-vote-count bill-id))
@@ -100,6 +101,7 @@
   (DELETE "/comments/:comment_id/like" [comment_id] (like-comment comment_id))
   (POST "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))
   (DELETE "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))
+  (POST "/user/validate" [] validate-user)
   (route/resources "/")
   (route/not-found "Not Found"))
 
@@ -115,4 +117,4 @@
 
 (defn start-server [options]
   (init)
-  (run-server app options))
+  (run-server #'app options))

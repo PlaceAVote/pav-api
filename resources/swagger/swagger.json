@@ -81,6 +81,20 @@
       "type": "string",
       "format": "hr2-114"
     },
+    "UserValidationBodyParam": {
+      "name": "UserValidationRequest",
+      "in": "body",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      }
+    },
     "ContactFormParam": {
       "name": "ContactFormRequest",
       "in": "body",
@@ -333,6 +347,14 @@
     "TermParam": {
       "name": "term",
       "description": "Search Term",
+      "in": "query",
+      "required": true,
+      "type": "string",
+      "format": "string"
+    },
+    "TagParam": {
+      "name": "tag",
+      "description": "Search tag, specify comma seperated list e.g. Education,Drugs",
       "in": "query",
       "required": true,
       "type": "string",
@@ -1319,6 +1341,27 @@
         }
       }
     },
+    "/user/validate": {
+      "post": {
+        "description": "Validate User Properties provided during onboarding",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserValidationBodyParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad Request (Check body of request)"
+          }
+        }
+      }
+    },
     "/user": {
       "put": {
         "description": "Register new user",
@@ -2097,6 +2140,24 @@
         "parameters": [
           {
             "$ref": "#/parameters/TermParam"
+          }
+        ],
+        "tags": [
+          "Search"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        }
+      }
+    },
+    "/search/bills": {
+      "get": {
+        "description": "Search for all Bills with given tag or multiple tags separated by comma.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TagParam"
           }
         ],
         "tags": [

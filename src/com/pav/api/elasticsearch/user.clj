@@ -5,7 +5,9 @@
             [clojurewerkz.elastisch.query :as q]
             [environ.core :refer [env]]
             [taoensso.truss :refer [have]]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [clojure.string :as s]
+            [com.pav.api.dynamodb.comments :as comments]))
 
 (def connection (connect (:es-url env)))
 
@@ -66,8 +68,9 @@
       (retrieve-bill-metadata-for-topics topics))
     (catch Exception e (log/error "Error retrieving bills when populating users feed " e))))
 
-(defn search-for-term [term]
+(defn search-for-term
   "Search for term across bills and placeavote users."
+  [term]
   (->> (esrsp/hits-from (esd/search connection ["congress" "pav"] ["users" "bill"]
                           :query {:multi_match {:query term
                                                 :type "best_fields"
@@ -83,18 +86,50 @@
     (mapv assign-pav-subject)
     (mapv (fn [{:keys [type bill_id] :as record}]
             (case type
-              "bill" (merge record (-> (get-bill-metadata bill_id) (select-keys [:featured_bill_title])))
+              "bill" (merge record (-> bill_id
+                                       get-bill-metadata
+                                       (select-keys [:featured_bill_title])))
               record)))))
 
+(declare get-bill)
+
+(defn- sanitize-tags-result
+  "Use result from searching ES with :pav_tags tag and kick out some fields. Also, find
+yes/no votes for this bill."
+  [result-mp]
+  ;; :event_id, :user_id, :timestamp
+  (let [mp (-> result-mp
+               :_source
+               (select-keys [:featured_img_link :govtrack_link :bill_id
+                             :featured_bill_summary :featured_bill_title :pav_topic
+                             :points_against :congress :pav_tags :points_infavor]))
+        id (:bill_id mp)
+        ;; FIXME: prevents cyclic load dependency and should be refactored as possible
+        get-vote-count (resolve 'com.pav.api.services.votes/get-vote-count)]
+    (merge mp
+           {:type :bill
+            :comment_count (comments/get-comment-count id)}
+           (select-keys (get-bill id) [:short_title :official_title :subject])
+           (get-vote-count id))))
+
+(defn search-with-tag
+  "Search for bills with given tag or multiple tags separated by comma."
+  [tag]
+  (let [t (s/split tag #"\s*,\s*")]
+    (->> (esd/search connection "congress" "billmeta" :query (q/term :pav_tags t))
+         esrsp/hits-from
+         (map sanitize-tags-result)
+         (sort-by :comment_count)
+         ;; return vector like other functions
+         vec)))
+
 (defn gather-latest-bills-by-subject [topics]
-	(when topics
-		(let [bills (->>
-                  (search-for-topic topics)
-                  (mapv (fn [{:keys [pav_topic] :as bill}]
-                          (if pav_topic
-                            (assoc bill :subject pav_topic)
-                            (update-in bill [:subject] to-pav-subjects)))))]
-			bills)))
+  (some->> topics
+           search-for-topic
+           (mapv (fn [{:keys [pav_topic] :as bill}]
+                   (if pav_topic
+                     (assoc bill :subject pav_topic)
+                     (update-in bill [:subject] to-pav-subjects))))))
 
 (defn get-legislator [thomas]
   (-> (esd/get connection "congress" "legislator" thomas)
@@ -103,4 +138,11 @@
 (defn get-bill [bill_id]
   (->>
     (esd/multi-get connection "congress" [{:_type "bill" :_id bill_id} {:_type "billmeta" :_id bill_id}])
-    (map :_source) (reduce merge)))
+    (map :_source) (apply merge)))
+
+(defn get-priority-bill-title [bill-info]
+  (when-let [{:keys [official_title short_title featured_bill_title]} bill-info]
+    (cond
+      featured_bill_title featured_bill_title
+      short_title short_title
+      official_title official_title)))

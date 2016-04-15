@@ -1,7 +1,16 @@
 (ns com.pav.api.services.comments
   (:require [com.pav.api.dynamodb.comments :as dc]
-            [com.pav.api.redis.redis :as redis]
-            [clojure.core.memoize :as memo])
+            [com.pav.api.elasticsearch.user :as eu]
+            [com.pav.api.events.comment :refer [create-comment-timeline-event create-comment-newsfeed-event
+                                                create-comment-score-timeline-event
+                                                create-comment-reply-notification-event
+                                                create-comment-reply-wsnotification-event
+                                                create-comment-reply-email-notification-event]]
+            [com.pav.api.events.handler :refer [process-event]]
+            [clojure.core.memoize :as memo]
+            [clojure.tools.logging :as log]
+            [clojure.core.async :refer [go]]
+            [com.pav.api.dynamodb.user :as du])
   (:import (java.util UUID Date)))
 
 (defn new-dynamo-comment [comment-id author comment]
@@ -28,13 +37,35 @@
 (defn persist-comment [comment]
   (dc/create-comment comment))
 
+(defn- publish-comment-reply-notifications [{:keys [bill_id parent_id] :as comment}]
+  (let [notification_id (.toString (UUID/randomUUID))
+        parent_user_id (:author (dc/get-bill-comment parent_id))
+        {:keys [email]} (du/get-user-by-id parent_user_id)
+        bill_title (eu/get-priority-bill-title (eu/get-bill bill_id))]
+    (process-event (create-comment-reply-notification-event notification_id
+                     (assoc comment :user_id parent_user_id)))
+    (process-event (create-comment-reply-wsnotification-event notification_id
+                     (assoc comment :user_id parent_user_id :bill_title bill_title)))
+    (process-event (create-comment-reply-email-notification-event
+                     (assoc comment :bill_title bill_title :email email)))))
+
+(defn- publish-comment-events
+  "Takes a new comment then generates the relevant event types and processes them."
+  [{:keys [parent_id] :as comment}]
+  (go
+    (try
+      (process-event (create-comment-timeline-event comment))
+      (and (nil? parent_id) (process-event (create-comment-newsfeed-event comment)))
+      (and parent_id (publish-comment-reply-notifications comment))
+      (catch Exception e (log/error "Error Occured processing comment events " e)))))
+
 (defn create-bill-comment [comment user]
   (let [author user
         new-comment-id (create-comments-key)
         comment-with-img-url (assoc comment :author_img_url (:img_url user))
         new-dynamo-comment (new-dynamo-comment new-comment-id author comment-with-img-url)]
     (persist-comment new-dynamo-comment)
-    (redis/publish-bill-comment new-dynamo-comment)
+    (publish-comment-events new-dynamo-comment)
     {:record new-dynamo-comment}))
 
 (defn create-bill-comment-reply [comment-id reply user]
@@ -42,12 +73,9 @@
         new-comment-id (create-comments-key)
         reply-with-img-url (assoc reply :author_img_url (:img_url user))
         new-dynamo-comment (-> (new-dynamo-comment new-comment-id author reply-with-img-url)
-                             (assoc :parent_id comment-id))]
+                               (assoc :parent_id comment-id))]
     (persist-comment new-dynamo-comment)
-    ;;Publish necessary notification messages to redis for timeline worker.
-    (redis/publish-bill-comment new-dynamo-comment)
-    (redis/publish-bill-comment-reply new-dynamo-comment)
-    (redis/publish-bill-comment-email-reply new-dynamo-comment)
+    (publish-comment-events new-dynamo-comment)
     {:record new-dynamo-comment}))
 
 (defn get-bill-comments
@@ -57,7 +85,9 @@
 
 (defn score-bill-comment [user_id comment-id operation]
   (dc/score-comment comment-id user_id operation)
-  (redis/publish-scoring-comment-evt (dc/get-bill-comment comment-id) user_id operation))
+  (process-event
+    (create-comment-score-timeline-event
+      operation user_id (assoc (dc/get-bill-comment comment-id) :timestamp (.getTime (Date.))))))
 
 (defn revoke-liked-comment [user_id comment_id]
   (dc/remove-liked-comment user_id comment_id))

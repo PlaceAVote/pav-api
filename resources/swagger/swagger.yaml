@@ -1,8 +1,8 @@
 swagger: '2.0'
 info:
   version: 0.0.0
-  title: 'PlaceAVote API'
-  description: 'PlaceAVote API'
+  title: PlaceAVote API
+  description: PlaceAVote API
 consumes:
   - application/json
   - multipart/form-data
@@ -30,21 +30,14 @@ parameters:
     description: Like Body
     required: true
     schema:
-      $ref: "#/definitions/NewScoreRecord"
+      $ref: '#/definitions/NewScoreRecord'
   NewCommentParam:
     name: Comment
     in: body
     description: New Comment
     required: true
     schema:
-      $ref: "#/definitions/NewCommentRecord"
-  BillIDParam:
-    name: bill_id
-    in: path
-    description: Bill ID
-    required: true
-    type: string
-    format: hr2-114
+      $ref: '#/definitions/NewCommentRecord'
   LegislatorIDParam:
     name: id
     in: path
@@ -58,7 +51,7 @@ parameters:
     description: Vote Record
     required: true
     schema:
-      $ref: "#/definitions/NewVoteRecord"
+      $ref: '#/definitions/NewVoteRecord'
   BillIDQueryParam:
     name: bill-id
     in: query
@@ -73,6 +66,16 @@ parameters:
     required: true
     type: string
     format: hr2-114
+  UserValidationBodyParam:
+    name: UserValidationRequest
+    in: body
+    required: true
+    schema:
+      type: object
+      properties:
+        email:
+          type: string
+          format: string
   ContactFormParam:
     name: ContactFormRequest
     in: body
@@ -141,8 +144,7 @@ parameters:
     format: string
   ProfileImageParam:
     name: file
-    description: Profile image, size must be 50x50x of type .jpeg or png.  
-                 Payload should be a Base64 Encoded Data URI.
+    description: 'Profile image, size must be 50x50x of type .jpeg or png. Payload should be a Base64 Encoded Data URI.'
     in: body
     required: true
     schema:
@@ -249,7 +251,7 @@ parameters:
       properties:
         user_id:
           type: string
-          format: string 
+          format: string
   TokenBodyParam:
     name: token
     in: query
@@ -266,6 +268,13 @@ parameters:
   TermParam:
     name: term
     description: Search Term
+    in: query
+    required: true
+    type: string
+    format: string
+  TagParam:
+    name: tag
+    description: Search tag, specify comma seperated list e.g. Education,Drugs
     in: query
     required: true
     type: string
@@ -287,7 +296,7 @@ parameters:
         token:
           type: string
           format: string
-        first_name: 
+        first_name:
           type: string
           format: string
         last_name:
@@ -323,7 +332,7 @@ parameters:
           format: test@place.com
         password:
           type: string
-        first_name: 
+        first_name:
           type: string
         last_name:
           type: string
@@ -389,22 +398,22 @@ definitions:
   UserFollowingRecords:
     type: array
     items:
-      $ref: "#/definitions/UserFollowingRecord"
+      $ref: '#/definitions/UserFollowingRecord'
   UserFollowingRecord:
     type: object
     properties:
-        user_id:
-          type: string
-          format: string
-        first_name:
-          type: string
-        last_name:
-          type: string
-        img_url:
-          type: string
-        follower_count:
-          type: number
-          format: number
+      user_id:
+        type: string
+        format: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      img_url:
+        type: string
+      follower_count:
+        type: number
+        format: number
   NewTokenResponse:
     type: object
     properties:
@@ -452,7 +461,7 @@ definitions:
       results:
         type: array
         items:
-          $ref: "#/definitions/FeedEventRecord"
+          $ref: '#/definitions/FeedEventRecord'
   FeedEventRecord:
     type: object
     properties:
@@ -474,7 +483,7 @@ definitions:
       results:
         type: array
         items:
-          $ref: "#/definitions/TimelineEventRecord"
+          $ref: '#/definitions/TimelineEventRecord'
   TimelineEventRecord:
     type: object
     properties:
@@ -496,7 +505,7 @@ definitions:
       results:
         type: array
         items:
-          $ref: "#/definitions/NotificationRecord"
+          $ref: '#/definitions/NotificationRecord'
   NotificationRecord:
     type: object
     properties:
@@ -527,7 +536,7 @@ definitions:
   VoteRecords:
     type: array
     items:
-      $ref: "#/definitions/VoteRecord"
+      $ref: '#/definitions/VoteRecord'
   VoteCount:
     type: object
     properties:
@@ -689,7 +698,7 @@ definitions:
   TrendingBillRecords:
     type: array
     items:
-      $ref: "#/definitions/TrendingBillRecord"
+      $ref: '#/definitions/TrendingBillRecord'
   BillCommentRecords:
     type: object
     properties:
@@ -702,7 +711,7 @@ definitions:
       comments:
         type: array
         items:
-          $ref: "#/definitions/BillCommentRecord"
+          $ref: '#/definitions/BillCommentRecord'
   BillCommentRecord:
     type: object
     properties:
@@ -746,11 +755,6 @@ definitions:
         title: has_children
         type: boolean
         format: boolean
-#      replies:
-#        title: replies
-#        type: array
-#        items:
-#          $ref: "#/definitions/BillCommentRecord"
       liked:
         title: User Liked Comment?
         type: boolean
@@ -776,88 +780,88 @@ definitions:
       bill_id:
         title: bill_id
         type: string
-        format: string      
+        format: string
 paths:
   /user/feed:
     get:
       description: Get the current users feed
       parameters:
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/FromParam"
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/FromParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/FeedEventRecords"
+            $ref: '#/definitions/FeedEventRecords'
         '401':
           description: Not Authorized (Check Authentication Token)
-  /user/{user_id}/timeline:
+  '/user/{user_id}/timeline':
     get:
       description: Given a user ID then retrieve that users personal timeline
       parameters:
-        - $ref: "#/parameters/UserIDParam"
-        - $ref: "#/parameters/FromParam"
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/UserIDParam'
+        - $ref: '#/parameters/FromParam'
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/TimelineEventRecords"
+            $ref: '#/definitions/TimelineEventRecords'
         '401':
           description: Not Authorized (Check Authentication Token)
   /user/me/settings:
     get:
       description: Given a users token.  Retrieve there account settings
       parameters:
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/AccountSettingsResponse"
+            $ref: '#/definitions/AccountSettingsResponse'
         '401':
           description: Not Authorized (Check Authentication Token)
     post:
       description: Update users account settings
       parameters:
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/AccountSettingsUpdateParam"
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/AccountSettingsUpdateParam'
       tags:
         - Users
       responses:
         '201':
           description: Successful response
           schema:
-            $ref: "#/definitions/AccountSettingsResponse"
+            $ref: '#/definitions/AccountSettingsResponse'
         '401':
-          description: Not Authorized (Check Authentication Token)  
+          description: Not Authorized (Check Authentication Token)
   /user/me/timeline:
     get:
       description: Given a user ID then retrieve that users personal timeline
       parameters:
-        - $ref: "#/parameters/FromParam"
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/FromParam'
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/TimelineEventRecords"
+            $ref: '#/definitions/TimelineEventRecords'
         '401':
           description: Not Authorized (Check Authentication Token)
-  /user/notification/{notification_id}/mark:
+  '/user/notification/{notification_id}/mark':
     post:
       description: Mark notification if user has read it
       parameters:
-        - $ref: "#/parameters/NotificationIDParam"
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/NotificationIDParam'
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
@@ -869,115 +873,127 @@ paths:
     get:
       description: Get the current users notifications
       parameters:
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/FromParam"
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/FromParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/NotificationRecords"
+            $ref: '#/definitions/NotificationRecords'
         '401':
           description: Not Authorized (Check Authentication Token)
   /user/facebook:
     put:
       description: Register new user
       parameters:
-        - $ref: "#/parameters/NewFacebookUserProfileBodyParam"
+        - $ref: '#/parameters/NewFacebookUserProfileBodyParam'
       tags:
-        - Users  
+        - Users
       responses:
         '201':
           description: Successful response
           schema:
-            $ref: "#/definitions/NewUserProfileResponse"
+            $ref: '#/definitions/NewUserProfileResponse'
         '400':
           description: Bad Request (Check body of request)
   /user/me/profile/image:
     post:
       description: Upload Profile image to user profile
       parameters:
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/ProfileImageParam"
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/ProfileImageParam'
       tags:
         - Users
       responses:
         '201':
           description: Successful response
           schema:
-            $ref: "#/definitions/NewProfileImageResponse"
+            $ref: '#/definitions/NewProfileImageResponse'
         '401':
           description: Not Authorized (Check Authentication Token)
   /user/me/profile:
     get:
       description: Given a user_id retrieve user profile in relation to current user.
       parameters:
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/UserProfileResponse"
+            $ref: '#/definitions/UserProfileResponse'
         '401':
           description: Not Authorized (Check Authentication Token)
-  /user/{user_id}/profile:
+  '/user/{user_id}/profile':
     get:
       description: Given a user_id retrieve user profile in relation to current user.
       parameters:
-        - $ref: "#/parameters/OptionalTokenParam"
-        - $ref: "#/parameters/UserIDParam"
+        - $ref: '#/parameters/OptionalTokenParam'
+        - $ref: '#/parameters/UserIDParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/UserProfileResponse"
+            $ref: '#/definitions/UserProfileResponse'
         '401':
           description: Not Authorized (Check Authentication Token)
+  /user/validate:
+    post:
+      description: Validate User Properties provided during onboarding
+      parameters:
+        - $ref: '#/parameters/UserValidationBodyParam'
+      tags:
+        - Users
+      responses:
+        '201':
+          description: Successful response
+        '400':
+          description: Bad Request (Check body of request)
   /user:
     put:
       description: Register new user
       parameters:
-        - $ref: "#/parameters/NewUserProfileBodyParam"
+        - $ref: '#/parameters/NewUserProfileBodyParam'
       tags:
-        - Users  
+        - Users
       responses:
         '201':
           description: Successful response
           schema:
-            $ref: "#/definitions/NewUserProfileResponse"
+            $ref: '#/definitions/NewUserProfileResponse'
         '400':
           description: Bad Request (Check body of request)
   /user/authenticate:
     post:
       description: Authenticate existing user
       parameters:
-        - $ref: "#/parameters/LoginBodyParam"
+        - $ref: '#/parameters/LoginBodyParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/NewTokenResponse"
+            $ref: '#/definitions/NewTokenResponse'
         '401':
           description: Not Authorized
   /user/facebook/authenticate:
     post:
       description: Authenticate existing user
       parameters:
-        - $ref: "#/parameters/FacebookLoginBodyParam"
+        - $ref: '#/parameters/FacebookLoginBodyParam'
       tags:
         - Users
       responses:
         '201':
           description: Successful response
           schema:
-            $ref: "#/definitions/NewTokenResponse"
+            $ref: '#/definitions/NewTokenResponse'
         '401':
           description: Not Authorized
   /password/reset:
@@ -1000,7 +1016,7 @@ paths:
     post:
       description: Change Users Password
       parameters:
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/TokenParam'
         - name: PasswordChangeRequest
           in: body
           required: true
@@ -1018,15 +1034,15 @@ paths:
       responses:
         '201':
           description: Successful response
-        '401':
-          description: Check token and current password is correct
         '400':
           description: Bad Request
+        '401':
+          description: Check token and current password is correct
   /password/reset/confirm:
     post:
       description: Confirm password reset
       parameters:
-        - $ref: "#/parameters/ConfirmPasswordResetBodyParam"
+        - $ref: '#/parameters/ConfirmPasswordResetBodyParam'
       tags:
         - Users
       responses:
@@ -1034,11 +1050,11 @@ paths:
           description: Successful response
         '401':
           description: Not Authorized
-  /user/confirm/{confirm-token}:
+  '/user/confirm/{confirm-token}':
     post:
       description: Confirm token sent in users email
       parameters:
-        - $ref: "#/parameters/ConfirmTokenParam"
+        - $ref: '#/parameters/ConfirmTokenParam'
       tags:
         - Users
       responses:
@@ -1050,66 +1066,66 @@ paths:
     get:
       description: Get users the current logged in user is following
       parameters:
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/UserFollowingRecords"
+            $ref: '#/definitions/UserFollowingRecords'
         '401':
           description: Not Authorized
-  /user/{user_id}/following:
+  '/user/{user_id}/following':
     get:
-      description: Given a user id, retrieve users they are following
+      description: 'Given a user id, retrieve users they are following'
       parameters:
-        - $ref: "#/parameters/UserIDParam"
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/UserIDParam'
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/UserFollowingRecords"
+            $ref: '#/definitions/UserFollowingRecords'
         '401':
           description: Not Authorized
   /user/me/followers:
     get:
       description: Get users the current logged in user is followed by
       parameters:
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/UserFollowingRecords"
+            $ref: '#/definitions/UserFollowingRecords'
         '401':
           description: Not Authorized
-  /user/{user_id}/followers:
+  '/user/{user_id}/followers':
     get:
-      description: Given a user id, retrieve users they are being followed by
+      description: 'Given a user id, retrieve users they are being followed by'
       parameters:
-        - $ref: "#/parameters/UserIDParam"
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/UserIDParam'
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/UserFollowingRecords"
+            $ref: '#/definitions/UserFollowingRecords'
         '401':
           description: Not Authorized
   /user/follow:
     put:
       description: Follow a user
       parameters:
-        - $ref: "#/parameters/UserFollowBodyParam"
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/UserFollowBodyParam'
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
@@ -1121,8 +1137,8 @@ paths:
     delete:
       description: Unfollow a user
       parameters:
-        - $ref: "#/parameters/UserFollowBodyParam"
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/UserFollowBodyParam'
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Users
       responses:
@@ -1134,7 +1150,7 @@ paths:
     get:
       description: Validate Authentication Token
       parameters:
-        - $ref: "#/parameters/TokenBodyParam"
+        - $ref: '#/parameters/TokenBodyParam'
       tags:
         - Users
       responses:
@@ -1142,12 +1158,12 @@ paths:
           description: Successful response
         '401':
           description: Token invalid
-  /user/issue/{issue_id}/response:
+  '/user/issue/{issue_id}/response':
     get:
       description: Get users response to issue
       parameters:
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/IssueIDParam"
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/IssueIDParam'
       tags:
         - Users
       responses:
@@ -1158,17 +1174,17 @@ paths:
             properties:
               emotional_response:
                 type: string
-                format: "positive, neutral, negative, none"
+                format: 'positive, neutral, negative, none'
+        '400':
+          description: Bad Request
         '401':
           description: Token invalid
-        '400':
-          description: Bad Request  
     post:
       description: Create a user response to issue
       parameters:
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/IssueIDParam"
-        - $ref: "#/parameters/IssueResponseBodyParam"
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/IssueIDParam'
+        - $ref: '#/parameters/IssueResponseBodyParam'
       tags:
         - Users
       responses:
@@ -1179,16 +1195,16 @@ paths:
             properties:
               emotional_response:
                 type: string
-                format: "positive, neutral, negative, none"
+                format: 'positive, neutral, negative, none'
+        '400':
+          description: Bad Request
         '401':
           description: Token invalid
-        '400':
-          description: Bad Request  
     delete:
       description: Delete users response to issue
       parameters:
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/IssueIDParam"
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/IssueIDParam'
       tags:
         - Users
       responses:
@@ -1199,18 +1215,17 @@ paths:
             properties:
               emotional_response:
                 type: string
-                format: "positive, neutral, negative, none"
+                format: 'positive, neutral, negative, none'
+        '400':
+          description: Bad Request
         '401':
           description: Token invalid
-        '400':
-          description: Bad Request  
-          
   /user/issue:
     put:
       description: Create new user issue
       parameters:
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/NewUserIssueParam"
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/NewUserIssueParam'
       tags:
         - Users
       responses:
@@ -1257,7 +1272,7 @@ paths:
                 format: string
               emotional_response:
                 type: string
-                format: "positive, neutral, negative, none"
+                format: 'positive, neutral, negative, none'
               positive_responses:
                 type: number
                 format: number
@@ -1267,16 +1282,16 @@ paths:
               negative_responses:
                 type: number
                 format: number
-        '401':
-          description: Token invalid
         '400':
           description: Bad Request
-  /user/issue/{issue_id}:
+        '401':
+          description: Token invalid
+  '/user/issue/{issue_id}':
     get:
       description: Get user issue
       parameters:
-        - $ref: "#/parameters/OptionalTokenParam"
-        - $ref: "#/parameters/IssueIDParam"
+        - $ref: '#/parameters/OptionalTokenParam'
+        - $ref: '#/parameters/IssueIDParam'
       tags:
         - Users
       responses:
@@ -1323,7 +1338,7 @@ paths:
                 format: string
               emotional_response:
                 type: string
-                format: "positive, neutral, negative, none"
+                format: 'positive, neutral, negative, none'
               positive_responses:
                 type: number
                 format: number
@@ -1333,18 +1348,18 @@ paths:
               negative_responses:
                 type: number
                 format: number
-        '401':
-          description: Token invalid
         '400':
           description: Bad Request
+        '401':
+          description: Token invalid
         '404':
           description: Issue Not Found
     post:
       description: Create new user issue
       parameters:
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/NewUserIssueParam"
-        - $ref: "#/parameters/IssueIDParam"
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/NewUserIssueParam'
+        - $ref: '#/parameters/IssueIDParam'
       tags:
         - Users
       responses:
@@ -1391,7 +1406,7 @@ paths:
                 format: string
               emotional_response:
                 type: string
-                format: "positive, neutral, negative, none"
+                format: 'positive, neutral, negative, none'
               positive_responses:
                 type: number
                 format: number
@@ -1401,15 +1416,15 @@ paths:
               negative_responses:
                 type: number
                 format: number
-        '401':
-          description: Token invalid
         '400':
           description: Bad Request
+        '401':
+          description: Token invalid
   /user/contact:
     post:
       description: Submit Contact Form Email
       parameters:
-        - $ref: "#/parameters/ContactFormParam"
+        - $ref: '#/parameters/ContactFormParam'
       tags:
         - Users
       responses:
@@ -1421,98 +1436,108 @@ paths:
     get:
       description: Search For Bills and Public Users using a term.
       parameters:
-        - $ref: "#/parameters/TermParam"
+        - $ref: '#/parameters/TermParam'
       tags:
         - Search
       responses:
         '200':
           description: Successful response
-  /vote/bill/{bill_id}:
+  /search/bills:
+    get:
+      description: Search for all Bills with given tag or multiple tags separated by comma.
+      parameters:
+        - $ref: '#/parameters/TagParam'
+      tags:
+        - Search
+      responses:
+        '200':
+          description: Successful response
+  '/vote/bill/{bill_id}':
     get:
       description: Get vote records for a bill
       parameters:
-        - $ref: "#/parameters/BillIDPathParam"
-        - $ref: "#/parameters/OptionalTokenParam"
+        - $ref: '#/parameters/BillIDPathParam'
+        - $ref: '#/parameters/OptionalTokenParam'
       tags:
         - Votes
       responses:
-        '401':
-          description: Not Authorized (Check Authentication Token)
-        '400':
-          description: Bad Request
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/VoteRecords"
+            $ref: '#/definitions/VoteRecords'
+        '400':
+          description: Bad Request
+        '401':
+          description: Not Authorized (Check Authentication Token)
   /vote/count:
     get:
       description: Get vote count for a bill.
       parameters:
-        - $ref: "#/parameters/BillIDQueryParam"
-        - $ref: "#/parameters/OptionalTokenParam"
+        - $ref: '#/parameters/BillIDQueryParam'
+        - $ref: '#/parameters/OptionalTokenParam'
       tags:
         - Votes
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/VoteCount"
+            $ref: '#/definitions/VoteCount'
         '401':
           description: Not Authorized (Check Authentication Token)
   /vote:
     put:
       description: Create user vote record
       parameters:
-        - $ref: "#/parameters/VoteRecordParam"
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/VoteRecordParam'
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Votes
       responses:
         '201':
           description: Successful response
         '400':
-          description: Invalid vote record, check payload
+          description: 'Invalid vote record, check payload'
         '401':
           description: Not Authorized (Check Authentication Token)
         '409':
-          description: Vote Record already associated with this user and bill     
-          
-  /legislators/{id}:
+          description: Vote Record already associated with this user and bill
+  '/legislators/{id}':
     get:
       description: Get Legislator by thomas id
       parameters:
-        - $ref: "#/parameters/LegislatorIDParam"
-        - $ref: "#/parameters/OptionalTokenParam"
+        - $ref: '#/parameters/LegislatorIDParam'
+        - $ref: '#/parameters/OptionalTokenParam'
       tags:
         - Legislators
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/LegislatorRecord"
+            $ref: '#/definitions/LegislatorRecord'
         '401':
           description: Not Authorized (Check Authentication Token)
   /bills/trending:
     get:
       description: Retrieve a list of trending bills
       parameters:
-        - $ref: "#/parameters/OptionalTokenParam"
+        - $ref: '#/parameters/OptionalTokenParam'
       tags:
         - Bills
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/TrendingBillRecords"
+            $ref: '#/definitions/TrendingBillRecords'
         '401':
           description: Not Authorized (Check Authentication Token)
-  /bills/{bill_id}:
+  '/bills/{bill_id}':
     get:
-      description: |
-        Get a `Bill` object by bill id e.g. hr2-114.  A bill ID is made up of a type, number and congress session
+      description: >
+        Get a `Bill` object by bill id e.g. hr2-114.  A bill ID is made up of
+        a type, number and congress session
       parameters:
-        - $ref: "#/parameters/BillIDParam"
-        - $ref: "#/parameters/OptionalTokenParam"
+        - $ref: '#/parameters/BillIDParam'
+        - $ref: '#/parameters/OptionalTokenParam'
       tags:
         - Bills
       responses:
@@ -1523,16 +1548,15 @@ paths:
             type: object
         '401':
           description: Not Authorized (Check Authentication Token)
-  /bills/{bill_id}/comments:
+  '/bills/{bill_id}/comments':
     get:
-      description:
-        Get all comments for a 'Bill.  This is a nested datastructure
+      description: "Get all comments for a 'Bill.  This is a nested datastructure"
       parameters:
-        - $ref: "#/parameters/BillIDParam"
-        - $ref: "#/parameters/OptionalTokenParam"
+        - $ref: '#/parameters/BillIDParam'
+        - $ref: '#/parameters/OptionalTokenParam'
         - name: sort-by
           in: query
-          description: Parameter used sorting.  Specify 'latest' or 'highest-score'.  If you omit this parameter it will sort comments by highest score
+          description: "Parameter used sorting.  Specify 'latest' or 'highest-score'.  If you omit this parameter it will sort comments by highest score"
           required: false
           type: string
           format: string
@@ -1541,7 +1565,7 @@ paths:
             - highest-score
         - name: last_comment_id
           in: query
-          description: "Include the last comment_id specified in the response payload for pagination support"
+          description: Include the last comment_id specified in the response payload for pagination support
           required: false
           type: string
           format: string
@@ -1551,21 +1575,18 @@ paths:
         '200':
           description: Successful response
           schema:
-            $ref: "#/definitions/BillCommentRecords"
+            $ref: '#/definitions/BillCommentRecords'
         '401':
           description: Not Authorized (Check Authentication Token)
-  /bills/{bill_id}/topcomments:
+  '/bills/{bill_id}/topcomments':
     get:
-      description:
-        Get the top comment for and against a bill.  Comments will only be returned if comments exist for users who voted for and against the bill.
+      description: Get the top comment for and against a bill.  Comments will only be returned if comments exist for users who voted for and against the bill.
       parameters:
-        - $ref: "#/parameters/BillIDParam"
-        - $ref: "#/parameters/OptionalTokenParam"
+        - $ref: '#/parameters/BillIDParam'
+        - $ref: '#/parameters/OptionalTokenParam'
       tags:
         - Bills
       responses:
-        '401':
-          description: Not Authorized (Check Authentication Token)
         '200':
           description: Successful response
           schema:
@@ -1575,95 +1596,97 @@ paths:
                 type: number
                 format: number
               for-comment:
-                $ref: "#/definitions/BillCommentRecord"
+                $ref: '#/definitions/BillCommentRecord'
               against-comment:
-                $ref: "#/definitions/BillCommentRecord"
+                $ref: '#/definitions/BillCommentRecord'
+        '401':
+          description: Not Authorized (Check Authentication Token)
   /bills/comments:
     put:
       description: Create a new comment for a given bill
       parameters:
-        - $ref: "#/parameters/NewCommentParam"
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/NewCommentParam'
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Bills
       responses:
-        '401':
-          description: Not Authorized (Check Authentication Token)
-        '400':
-          description: Bad Request (check body of request)
         '201':
           description: Successful Response
           schema:
-            $ref: "#/definitions/BillCommentRecord"      
-  /comments/{comment_id}/like:
+            $ref: '#/definitions/BillCommentRecord'
+        '400':
+          description: Bad Request (check body of request)
+        '401':
+          description: Not Authorized (Check Authentication Token)
+  '/comments/{comment_id}/like':
     post:
       description: Like a comment
       parameters:
-        - $ref: "#/parameters/ScoreBodyParam"
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/CommentIDParam"
+        - $ref: '#/parameters/ScoreBodyParam'
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/CommentIDParam'
       tags:
         - Bills
       responses:
-        '401':
-          description: Not Authorized (Check Authentication Token)
         '201':
           description: Successful response
+        '401':
+          description: Not Authorized (Check Authentication Token)
     delete:
       description: Revoke a Liked comment
       parameters:
-        - $ref: "#/parameters/ScoreBodyParam"
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/CommentIDParam"
+        - $ref: '#/parameters/ScoreBodyParam'
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/CommentIDParam'
       tags:
         - Bills
       responses:
-        '401':
-          description: Not Authorized (Check Authentication Token)
         '204':
           description: Successful response
-  /comments/{comment_id}/dislike:
+        '401':
+          description: Not Authorized (Check Authentication Token)
+  '/comments/{comment_id}/dislike':
     post:
       description: Dislike a comment
       parameters:
-        - $ref: "#/parameters/ScoreBodyParam"
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/CommentIDParam"
+        - $ref: '#/parameters/ScoreBodyParam'
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/CommentIDParam'
       tags:
         - Bills
       responses:
-        '401':
-          description: Not Authorized (Check Authentication Token)
         '201':
           description: Successful response
+        '401':
+          description: Not Authorized (Check Authentication Token)
     delete:
       description: Revoke a disliked comment
       parameters:
-        - $ref: "#/parameters/ScoreBodyParam"
-        - $ref: "#/parameters/TokenParam"
-        - $ref: "#/parameters/CommentIDParam"
+        - $ref: '#/parameters/ScoreBodyParam'
+        - $ref: '#/parameters/TokenParam'
+        - $ref: '#/parameters/CommentIDParam'
       tags:
         - Bills
       responses:
-        '401':
-          description: Not Authorized (Check Authentication Token)
         '204':
           description: Successful response
-  /comments/{comment_id}/reply:
+        '401':
+          description: Not Authorized (Check Authentication Token)
+  '/comments/{comment_id}/reply':
     put:
       description: Reply to an existing comment id
       parameters:
-        - $ref: "#/parameters/CommentIDParam"
-        - $ref: "#/parameters/NewCommentParam"
-        - $ref: "#/parameters/TokenParam"
+        - $ref: '#/parameters/CommentIDParam'
+        - $ref: '#/parameters/NewCommentParam'
+        - $ref: '#/parameters/TokenParam'
       tags:
         - Bills
       responses:
-        '401':
-          description: Not Authorized (Check Authentication Token)
-        '400':
-          description: Bad request (Check body of request)
         '201':
           description: Successful response
           schema:
-            $ref: "#/definitions/BillCommentRecord"
+            $ref: '#/definitions/BillCommentRecord'
+        '400':
+          description: Bad request (Check body of request)
+        '401':
+          description: Not Authorized (Check Authentication Token)
