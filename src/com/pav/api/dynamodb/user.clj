@@ -90,19 +90,29 @@
 (defn- get-vote-info-for-feed [{:keys [first_name last_name img_url]}]
   {:voter_first_name first_name :voter_last_name last_name :voter_img_url img_url})
 
-(defn- assoc-author-info [event {:keys [user_id first_name last_name img_url] :as u}]
+(defn- assoc-author-info [event {:keys [user_id first_name last_name img_url]}]
   (assoc event :author user_id :author_first_name first_name :author_last_name last_name :author_img_url img_url))
 
 (defn- assoc-comment-timeline-info [event comment]
   (merge event (select-keys comment [:score :body])))
 
-(defn- assoc-comment-metadata [{:keys [bill_id comment_id author] :as event} user_id]
+(defn- assoc-comment-metadata
+  "Process Timeline, Newsfeed and Notification Events"
+  [{:keys [bill_id comment_id author] :as event} user_id]
   (->
     (if author
       (assoc-author-info event (get-user-by-id author))
       (assoc-author-info event (get-user-by-id (:user_id event))))
     (cond->
       true       (associate-user-score user_id)
+      bill_id    (assoc :bill_title (es/get-priority-bill-title (es/get-bill bill_id)))
+      comment_id (assoc-comment-timeline-info (get-bill-comment comment_id)))))
+
+(defn- assoc-comment-score-metadata [{:keys [bill_id comment_id author] :as event} user_id]
+  (->
+    (cond-> event
+      true       (associate-user-score user_id)
+      author     (assoc-author-info (get-user-by-id author))
       bill_id    (assoc :bill_title (es/get-priority-bill-title (es/get-bill bill_id)))
       comment_id (assoc-comment-timeline-info (get-bill-comment comment_id)))))
 
@@ -144,10 +154,10 @@
   (assoc-comment-metadata event user_id))
 
 (defmethod event-meta-data "likecomment" [event user_id]
-  (assoc-comment-metadata event user_id))
+  (assoc-comment-score-metadata event user_id))
 
 (defmethod event-meta-data "dislikecomment" [event user_id]
-  (assoc-comment-metadata event user_id))
+  (assoc-comment-score-metadata event user_id))
 
 (defn wrap-query-with-pagination
   "Helper function to wrap common pagination functionality for timeline related data."
