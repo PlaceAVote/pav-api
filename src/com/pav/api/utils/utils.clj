@@ -1,7 +1,8 @@
 (ns com.pav.api.utils.utils
-	(:require [msgpack.core :as msg]
-						[msgpack.clojure-extensions]
-						[cheshire.core :as ch])
+  (:require [msgpack.core :as msg]
+            [msgpack.clojure-extensions]
+            [clj-http.client :as http]
+            [cheshire.core :as ch])
   (:import (java.io ByteArrayInputStream)
            (org.apache.commons.codec.binary Base64)
            (java.nio ByteBuffer)
@@ -82,3 +83,30 @@
   [val]
   (let [byte-buffer (ByteBuffer/wrap (Base64/decodeBase64 val))]
     (.toString (UUID. (.getLong byte-buffer) (.getLong byte-buffer)))))
+
+(defn is-java7-or-6?
+  "Returns true if we are running on Java 7 or 6 (7 is first checks, since it is highly a chance we will hit it).
+This is used for SSL workaround for sunlightfoundation.com site."
+  []
+  (let [version (System/getProperty "java.version")]
+     (or (.startsWith version "1.7")
+         (.startsWith version "1.6"))))
+
+(defn http-to-json
+  "Retrieve url and convert result to JSON. Since Java 7 does not support
+SSL on sunlightfoundation, 'nossl?' parameter should be set to true. 'url' part should be
+without 'http(s)://'."
+  ([url nossl?]
+     (-> (str (if nossl? "http" "https") "://" url)
+         http/get
+         :body
+         (ch/parse-string true)
+         :results
+         first))
+  ([url] (http-to-json url false)))
+
+(defn http-to-json-sunlightfoundation-api
+  "Call http-to-json on congress.api.sunlightfoundation.com/suburl, choosing between
+http or https, depending on Java version. Make sure suburl to start with slash."
+  [suburl]
+  (http-to-json (str "congress.api.sunlightfoundation.com" suburl) (is-java7-or-6?)))

@@ -3,18 +3,18 @@
             [com.pav.api.services.votes :as vs]
             [com.pav.api.services.comments :as cs]
             [com.pav.api.redis.redis :as redis]
-            [cheshire.core :as ch]
-            [clj-http.client :as http]
+            [com.pav.api.utils.utils :as u]
             [environ.core :refer [env]]))
 
 (def sunlight-api-key (:sunlight-congress-apikey env))
 
 (defn assoc-bill-text [{:keys [bill_type congress number] :as bill}]
-  (let [url (format "https://congress.api.sunlightfoundation.com/bills?bill_type=%s&number=%s&congress=%s&apikey=%s"
-              bill_type number congress sunlight-api-key)]
-    (if-let [last_version (-> (http/get url) :body (ch/parse-string true) :results first :last_version)]
-      (assoc bill :last_version last_version)
-      bill)))
+  (let [ret (u/http-to-json-sunlightfoundation-api
+             (format "/bills?bill_type=%s&number=%s&congress=%s&apikey=%s"
+                     bill_type number congress sunlight-api-key))]
+    (merge
+     bill
+     (select-keys ret [:last_version]))))
 
 (defn extract-pageview-metadata [bill]
   (select-keys bill [:bill_id :official_title :short_title :popular_title :summary :subject]))
