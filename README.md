@@ -78,7 +78,7 @@ or to rerun tests as you change the code:
 
     ./bin/run.sh autotests
 
-If you'd like to setting up dependencies manually, run tests it with:
+If you have dependencies set up manually, run tests it with:
  
     lein midje
 
