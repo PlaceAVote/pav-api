@@ -53,7 +53,7 @@
   ([] (new-fb-user {})))
 
 (defn- parse-response [response]
-  (update-in response [:body] #(when % (ch/parse-string % true))))
+  (update-in response [:body] #(when (seq %) (ch/parse-string % true))))
 
 (defn pav-reqv2
   ([method url] (parse-response (app (content-type (request method url) "application/json"))))

@@ -10,11 +10,11 @@
 
 
 (against-background [(before :contents (do
-																			(flush-dynamo-tables)
-																			(flush-redis)
-																			(flush-es-indexes)
-																			(bootstrap-bills-and-metadata)))]
-  
+                                         (flush-dynamo-tables)
+                                         (flush-redis)
+                                         (flush-es-indexes)
+																			   (bootstrap-bills-and-metadata)))]
+
   (facts "Test cases covering retrieval of user profiles and following and unfollowing users"
 
     (fact "Retrieve a users profile in relation to current user"

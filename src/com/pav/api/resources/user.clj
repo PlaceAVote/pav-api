@@ -131,7 +131,9 @@
   :authorized? (service/allowed-to-reset-password? email)
   :allowed-methods [:post]
   :available-media-types ["application/json"]
-  :post! (service/issue-password-reset-request email))
+  :post! (service/issue-password-reset-request email)
+  :handle-created {:message "Password reset request successfully processed"}
+  :handle-unauthorized {:error "User is not authorized to reset password"})
 
 (defresource confirm-password-reset
   :service-available? {:representation {:media-type "application/json"}}
@@ -141,7 +143,9 @@
   :malformed? (fn [ctx] (service/validate-password-reset-confirmation-payload (retrieve-body ctx)))
   :handle-malformed (fn [ctx] (get-in ctx [:errors]))
   :post! (fn [ctx] (let [{token :reset_token password :new_password} (retrieve-body ctx)]
-                     (service/confirm-password-reset token password))))
+                     (service/confirm-password-reset token password)))
+  :handle-unauthorized {:error "Reset Token is invalid"}
+  :handle-created {:message "Password has been reset successfully"})
 
 (defresource timeline [from]
   :service-available? {:representation {:media-type "application/json"}}
@@ -213,7 +217,8 @@
   :authorized? (fn [ctx] (service/validate-token (retrieve-request-param ctx :token)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok {:message "Token is valid"})
+  :handle-ok {:message "Token is valid"}
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource create-user-issue
   :service-available? {:representation {:media-type "application/json"}}
