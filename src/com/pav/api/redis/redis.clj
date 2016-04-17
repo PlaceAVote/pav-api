@@ -102,8 +102,9 @@
     (car/expire key (* 24 3600))))
 
 (defn increment-bill-pageview [{:keys [bill_id] :as bill-meta}]
-  (create-bill-meta-data bill-meta)
-  (increment-bill-pageview-24hr (str "bill:" bill_id ":meta")))
+  (when bill-meta
+    (create-bill-meta-data bill-meta)
+    (increment-bill-pageview-24hr (str "bill:" bill_id ":meta"))))
 
 (defn- retrieve-bill-meta [key]
   (wcar redis-conn (car/parse-map (car/hgetall key) :keywordize)))
