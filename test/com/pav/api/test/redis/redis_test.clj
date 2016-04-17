@@ -2,7 +2,7 @@
   (:use midje.sweet)
   (:require [com.pav.api.test.utils.utils :refer [flush-redis]]
             [com.pav.api.redis.redis :refer [create-user-profile get-user-profile get-user-profile-by-email
-                                                  update-token]]))
+                                             update-token]]))
 
 
 (against-background [(before :facts (flush-redis))]

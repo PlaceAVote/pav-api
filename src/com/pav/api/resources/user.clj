@@ -101,7 +101,8 @@
              (if-let [id (retrieve-request-param ctx :user_id)]
                (service/user-profile-exist? (retrieve-token-user-id ctx) id)
                (service/user-profile-exist? (retrieve-token-user-id ctx))))
-  :handle-ok :record)
+  :handle-ok :record
+  :handle-not-found (fn [ctx] (select-keys ctx [:error])))
 
 (defresource confirm-user [token]
   :service-available? {:representation {:media-type "application/json"}}
@@ -175,7 +176,8 @@
                   true false))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
-  :put! (fn [ctx] (service/follow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))))
+  :put! (fn [ctx] (service/follow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id)))
+  :handle-malformed {:error "You cannot follow yourself"})
 
 (defresource unfollow
   :service-available? {:representation {:media-type "application/json"}}
