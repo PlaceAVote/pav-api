@@ -81,6 +81,9 @@
 	 (s/optional-key :gender)     gender-schema
 	 (s/optional-key :city)     	str-schema})
 
+(def ValidateUserProperties
+  {:email email-schema})
+
 (def ChangePassword
 	{:current_password pwd-schema
 	 :new_password 		 pwd-schema})
@@ -142,6 +145,9 @@
 				(= :comment k) {k "Please include a comment"}
         (= :zipcode k) {k "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}
 				:else {k "field is unknown"}))
+
+(defn validate-user-properties-payload [payload]
+  (map find-suitable-error (s/check ValidateUserProperties payload)))
 
 (defn construct-error-msg [errors]
   (log/error (str "An Error has occured " errors))

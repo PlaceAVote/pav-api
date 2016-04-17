@@ -28,14 +28,16 @@
         status => 400
         errors => {:errors [{:email "This email is currently in use."}]}))
 
+    (fact "Create two new users, When an unrecognised parameter is provided, Then return 400"
+      (pav-req :put "/user" test-user)
+      (let [{status :status body :body} (pav-req :post "/user/validate" {:crap "equals crap"})
+            errors (ch/parse-string body true)]
+        status => 400
+        errors => {:errors [{:email "A valid email address is a required"} {:crap "field is unknown"}]}))
+
     (fact "Create two new users, When the second users email is valid, Then return 200"
       (pav-req :put "/user" test-user)
-      (let [{status :status} (pav-req :post "/user/validate" (assoc test-user :email "random@placeavote.com"))]
-        status => 200))
-
-    (fact "Create two new users, When an unrecognised parameter is provided, Then ignore and return 200"
-      (pav-req :put "/user" test-user)
-      (let [{status :status} (pav-req :post "/user/validate" {:crap "equals crap"})]
+      (let [{status :status} (pav-req :post "/user/validate" {:email "random@placeavote.com"})]
         status => 200))))
 
 
