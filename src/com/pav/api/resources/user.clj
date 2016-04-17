@@ -108,7 +108,8 @@
   :authorized? (fn [_] (service/confirm-token-valid? token))
   :allowed-methods [:post]
   :available-media-types ["application/json"]
-  :post! (service/update-registration token))
+  :post! (service/update-registration token)
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource notifications [from]
   :service-available? {:representation {:media-type "application/json"}}
