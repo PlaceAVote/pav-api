@@ -121,7 +121,8 @@
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok (fn [ctx] (service/get-notifications (retrieve-token-user-id ctx) from)))
+  :handle-ok (fn [ctx] (service/get-notifications (retrieve-token-user-id ctx) from))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource mark-notification [id]
   :service-available? {:representation {:media-type "application/json"}}
@@ -159,14 +160,16 @@
   :handle-ok (fn [ctx]
                (if-not (nil? (retrieve-request-param ctx :user_id))
                  (service/get-timeline (retrieve-request-param ctx :user_id) from)
-                 (service/get-timeline (retrieve-token-user-id ctx) from))))
+                 (service/get-timeline (retrieve-token-user-id ctx) from)))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource feed [from]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok (fn [ctx] (service/get-feed (retrieve-token-user-id ctx) from)))
+  :handle-ok (fn [ctx] (service/get-feed (retrieve-token-user-id ctx) from))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource questions
   :service-available? {:representation {:media-type "application/json"}}

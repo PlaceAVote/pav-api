@@ -1,6 +1,6 @@
 (ns com.pav.api.test.search.search-api-test
   (:use midje.sweet)
-  (:require [com.pav.api.test.utils.utils :as u :refer [pav-req]]
+  (:require [com.pav.api.test.utils.utils :as u :refer [pav-reqv2]]
             [com.pav.api.elasticsearch.user :as eu]
             [cheshire.core :as c]))
 
@@ -22,61 +22,52 @@
   (facts "Test cases for search API Endpoints"
 
     (fact "Given a term, when that term matches a users first_name, Then return that users record"
-      (let [{:keys [status body]} (pav-req :get "/search?term=john")
-            body (c/parse-string body true)]
+      (let [{:keys [status body]} (pav-reqv2 :get "/search?term=john")]
         status => 200
         (first body) => (-> (assoc user1 :type "users") (dissoc :public))))
 
     (fact "Given a term, When the term matches a users first_name and that user is private, Then return empty search results"
-      (let [{:keys [status body]} (pav-req :get "/search?term=johnny")
-            body (c/parse-string body true)]
+      (let [{:keys [status body]} (pav-reqv2 :get "/search?term=johnny")]
         status => 200
         body => '()))
 
     (fact "Given a term, When the term matches the last_name of two users, Then return those users in the search results"
-      (let [{:keys [status body]} (pav-req :get "/search?term=rambo")
-            body (c/parse-string body true)]
+      (let [{:keys [status body]} (pav-reqv2 :get "/search?term=rambo")]
         status => 200
         body => (contains [(-> (assoc user1 :type "users") (dissoc :public))
                            (-> (assoc user2 :type "users") (dissoc :public))] :in-any-order)))
 
 
     (fact "Given term, When term matches sponsors last name, Then return empty result set"
-      (let [{:keys [status body]} (pav-req :get "/search?term=Burgess")
-            body (c/parse-string body true)]
+      (let [{:keys [status body]} (pav-reqv2 :get "/search?term=Burgess")]
         status => 200
         body => '()))
 
     (fact "Given term, When term matches a user and sponsors last name, Then return only one user record."
-      (let [{:keys [status body]} (pav-req :get "/search?term=Shaheen")
-            body (c/parse-string body true)]
+      (let [{:keys [status body]} (pav-reqv2 :get "/search?term=Shaheen")]
         status => 200
         (first body) => (-> (assoc user3 :type "users") (dissoc :public))))
 
     (fact "Given term, When term appears as a keyword, Then return only one bill record"
-      (let [{:keys [status body]} (pav-req :get "/search?term=foreign")
-            body (c/parse-string body true)]
+      (let [{:keys [status body]} (pav-reqv2 :get "/search?term=foreign")]
         status => 200
         (first body) => (contains {:bill_id "s25-114" :type "bill"})))
 
     (fact "Given term, When that term appears in both bills short_titles,
            Then both both bills, s25 should have priority because it contains both terms"
-      (let [{:keys [status body]} (pav-req :get "/search?term=growth%20act")
-            body (c/parse-string body true)]
+      (let [{:keys [status body]} (pav-reqv2 :get "/search?term=growth%20act")]
         status => 200
         (count body) => 4
         (first body) => (contains {:bill_id "s25-114" :type "bill"})))
 
     (fact "Given term, When that term matches bill_id, Then return that bill."
-      (let [{:keys [status body]} (pav-req :get "/search?term=hr2")
-            body (c/parse-string body true)]
+      (let [{:keys [status body]} (pav-reqv2 :get "/search?term=hr2")]
         status => 200
         (count body) => 1
         (first body) => (contains {:bill_id "hr2-114" :type "bill"})))
 
     (fact "Given terms, When those terms match part of the summary field, Then return that bill with the featured bill title."
-      (let [{:keys [status body]} (pav-req :get "/search?term=Medicare%20Payment%20Advisory%20Commission")
-            body (c/parse-string body true)]
+      (let [{:keys [status body]} (pav-reqv2 :get "/search?term=Medicare%20Payment%20Advisory%20Commission")]
         status => 200
         (count body) => 1
         (first body) => (contains {:bill_id "hr2-114" :type "bill" :featured_bill_title "hr2 bill title"})))))

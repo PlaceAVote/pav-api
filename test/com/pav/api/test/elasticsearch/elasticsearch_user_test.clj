@@ -1,10 +1,9 @@
 (ns com.pav.api.test.elasticsearch.elasticsearch-user-test
   (:use [midje.sweet])
-  (:require [com.pav.api.elasticsearch.user :as eu :refer [index-user
-																																gather-latest-bills-by-subject]]
+  (:require [com.pav.api.elasticsearch.user :refer [index-user
+																										gather-latest-bills-by-subject]]
             [com.pav.api.test.utils.utils :refer [flush-es-indexes
-                                                       bootstrap-bills-and-metadata]]
-						[clojurewerkz.elastisch.query :as q]
+																									bootstrap-bills-and-metadata]]
 						[clojurewerkz.elastisch.rest :refer [connect]]))
 
 
