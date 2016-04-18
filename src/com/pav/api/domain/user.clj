@@ -2,7 +2,7 @@
   (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
             [com.pav.api.authentication.authentication :refer [create-auth-token]]
-						[com.pav.api.location.location-service :refer [location-by-zip]])
+						[com.pav.api.location.location-service :refer [retrieve-location-by-zip]])
   (:import (java.util UUID)
            (java.util Date)))
 
@@ -17,7 +17,7 @@
              :created_at (.getTime (Date.))
              :confirmation-token (.toString (UUID/randomUUID)))
 		  (update-in [:email] clojure.string/lower-case)
-      (merge {:public true} (location-by-zip (:zipcode user-profile)))))
+      (merge {:public true} (retrieve-location-by-zip (:zipcode user-profile)))))
 
 (defn hash-password [user-profile]
   (update-in user-profile [:password] h/encrypt))

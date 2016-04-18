@@ -142,9 +142,9 @@ default-followers (:default-followers env))
 
 (defn validzipcode?
   "Validate a given zipcode is associated with a US State and Congressional District"
-  [{:keys [zipcode] :as user}]
+  [{:keys [zipcode]}]
   (if zipcode
-    (if-let [location (loc/location-by-zip zipcode)]
+    (if-let [location (loc/retrieve-location-by-zip zipcode)]
      (and (= (:country_code location) "USA")
        (contains? location :state)
        (contains? location :district))
