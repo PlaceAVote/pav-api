@@ -60,6 +60,7 @@
   :allowed-methods [:delete]
   :available-media-types ["application/json"]
   :delete! (fn [ctx] (service/delete-user (retrieve-user-details ctx)))
+  :handle-unauthorized {:error "Not Authorized"}
   :handle-ok record-in-ctx)
 
 (defresource user-settings
@@ -81,7 +82,8 @@
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
 	:post! (fn [ctx] {:record (service/upload-profile-image (retrieve-token-user-id ctx) (:image ctx))})
- 	:handle-created :record)
+ 	:handle-created :record
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource change-password
   :service-available? {:representation {:media-type "application/json"}}
@@ -129,7 +131,8 @@
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:post]
   :available-media-types ["application/json"]
-  :post! (service/mark-notification id))
+  :post! (service/mark-notification id)
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource reset-password [email]
   :service-available? {:representation {:media-type "application/json"}}
@@ -177,7 +180,8 @@
   :allowed-methods [:get :post]
   :available-media-types ["application/json"]
   :post! (fn [ctx] (q-service/submit-answers (retrieve-token-user-id ctx) (retrieve-body ctx)))
-  :handle-ok (fn [ctx] (q-service/retrieve-questions (retrieve-token-user-id ctx))))
+  :handle-ok (fn [ctx] (q-service/retrieve-questions (retrieve-token-user-id ctx)))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource follow
   :service-available? {:representation {:media-type "application/json"}}
@@ -188,14 +192,16 @@
   :allowed-methods [:put]
   :available-media-types ["application/json"]
   :put! (fn [ctx] (service/follow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id)))
-  :handle-malformed {:error "You cannot follow yourself"})
+  :handle-malformed {:error "You cannot follow yourself"}
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource unfollow
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:delete]
   :available-media-types ["application/json"]
-  :delete! (fn [ctx] (service/unfollow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))))
+  :delete! (fn [ctx] (service/unfollow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id)))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource following
   :service-available? {:representation {:media-type "application/json"}}
@@ -206,7 +212,8 @@
                (service/user-following
                 (if-let [id (retrieve-request-param ctx :user_id)]
                   id
-                  (retrieve-token-user-id ctx)))))
+                  (retrieve-token-user-id ctx))))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource followers
   :service-available? {:representation {:media-type "application/json"}}
@@ -217,7 +224,8 @@
                (service/user-followers
                 (if-let [id (retrieve-request-param ctx :user_id)]
                   id
-                  (retrieve-token-user-id ctx)))))
+                  (retrieve-token-user-id ctx))))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource validate-token
   :service-available? {:representation {:media-type "application/json"}}
