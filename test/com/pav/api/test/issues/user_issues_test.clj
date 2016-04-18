@@ -231,6 +231,7 @@
             ;;(new-pav-user) responds positively
             _ (pav-req :post (str "/user/issue/" issue_id "/response") follower_token {:emotional_response "positive"})
             ;;retrieve authors notification feed
+            _ (Thread/sleep 2000)
             {body :body} (pav-req :get "/user/notifications" token {})
             {results :results} body]
         (some nil? (vals (first results))) => nil
@@ -246,6 +247,7 @@
             ;;user responds positively to his own issue
             _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response "positive"})
             ;;retrieve users notification feed
+            _ (Thread/sleep 2000)
             {body :body} (pav-req :get "/user/notifications" token {})
             {results :results} body]
         results => []))
@@ -319,6 +321,7 @@
             _ (pav-req :post (str "/user/issue/" issue_id) token
                 {:article_link "http://time.com/4225033/george-w-bush-counter-punches-donald-trump-at-jeb-rally/"})
             ;;extract issue from followers feed
+            _ (Thread/sleep 2000)
             {status :status body :body} (pav-req :get "/user/feed" follower_token {})
             response (first (:results body))]
         status => 200
