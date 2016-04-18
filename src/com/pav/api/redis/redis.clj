@@ -88,10 +88,11 @@
 
 
 (defn create-bill-meta-data [{:keys [bill_id] :as meta-data}]
-  (let [key (str "bill:" bill_id ":meta")]
-    (wcar redis-conn
-      (car/hmset* key meta-data)
-      (car/expire key (* 24 3600)))))
+  (when meta-data
+    (let [key (str "bill:" bill_id ":meta")]
+      (wcar redis-conn
+        (car/hmset* key meta-data)
+        (car/expire key (* 24 3600))))))
 
 (defn- pageview-bill-key-24hr []
   (str "top-pageviews:bills:" (.toString (.toLocalDate (t/now)))))
