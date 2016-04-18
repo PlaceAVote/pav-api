@@ -13,7 +13,7 @@
                                          (flush-redis)
                                          (flush-es-indexes)
                                          (bootstrap-bills-and-metadata)))]
-  (facts "Temporarily disabled."
+  (future-facts "Temporarily disabled."
     (fact "Add new issue"
       (let [{body :body} (pav-req :put "/user" (new-pav-user))
             {token :token} body
