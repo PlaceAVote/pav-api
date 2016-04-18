@@ -12,9 +12,6 @@
 (defn valid-token? [payload]
   (contains? (retrieve-user-token payload) :user_id))
 
-(defn- map->json [m]
-  (cheshire.core/generate-string m))
-
 (defn new-vote-record [payload user_id]
   (-> payload
     (assoc :vote-id (.toString (UUID/randomUUID)))
@@ -33,7 +30,8 @@
                       vs/create-user-vote-record))
   :handle-malformed {:error "Check payload is valid"}
   :handle-conflict  {:error "User has already voted on this issue"}
-  :handle-created   {:message "Vote created successfully"})
+  :handle-created   {:message "Vote created successfully"}
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource get-vote-count [bill-id]
   :service-available? {:representation {:media-type "application/json"}}
