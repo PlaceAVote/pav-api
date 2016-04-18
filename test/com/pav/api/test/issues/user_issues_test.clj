@@ -182,7 +182,7 @@
             _ (pav-req :put "/user/issue" token
                 {:bill_id      "hr2-114" :comment "Comment Body goes here"
                  :article_link "https://medium.com/the-trans-pacific-partnership/here-s-the-deal-the-text-of-the-trans-pacific-partnership-103adc324500#.mn7t24yff"})
-            _ (Thread/sleep 1000)
+            _ (Thread/sleep 2000)
             {status :status body :body} (pav-req :get "/user/feed" token {})
             response (first (:results body))]
         status => 200
