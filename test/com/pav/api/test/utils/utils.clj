@@ -49,7 +49,7 @@
 (defn- parse-response [response]
   (update-in response [:body] #(when (seq %) (ch/parse-string % true))))
 
-(defn pav-reqv2
+(defn pav-req
   ([method url] (parse-response (app (content-type (request method url) "application/json"))))
   ([method url payload] (parse-response (app (content-type (request method url (ch/generate-string payload)) "application/json"))))
   ([method url token payload] (parse-response (app (content-type (header (request method url (ch/generate-string payload))

@@ -6,7 +6,7 @@
                                                   flush-es-indexes
                                                   bootstrap-bills-and-metadata
                                                   new-pav-user
-                                                  pav-reqv2]]))
+                                                  pav-req]]))
 
 (against-background [(before :contents (do
                                          (flush-redis)
@@ -14,21 +14,21 @@
                                          (flush-es-indexes)
                                          (bootstrap-bills-and-metadata)))]
   (fact "Retrieve current users feed"
-      (let [{body :body} (pav-reqv2 :put "/user" (new-pav-user {:topics ["Healthcare"]}))
+      (let [{body :body} (pav-req :put "/user" (new-pav-user {:topics ["Healthcare"]}))
             {token :token} body
-            {status :status body :body} (pav-reqv2 :get "/user/feed" token {})
+            {status :status body :body} (pav-req :get "/user/feed" token {})
             {last_timestamp :last_timestamp results :results} body]
         status => 200
         last_timestamp => (get-in (last results) [:timestamp])
         (count results) => 1))
 
   (fact "Retrieve current user feed, When from parameter is equal to the first items timestamp, Then return second item only"
-    (let [{body :body} (pav-reqv2 :put "/user" (new-pav-user {:topics ["Healthcare" "Economics"]}))
+    (let [{body :body} (pav-req :put "/user" (new-pav-user {:topics ["Healthcare" "Economics"]}))
           {token :token} body
-          {body :body} (pav-reqv2 :get "/user/feed" token {})
+          {body :body} (pav-req :get "/user/feed" token {})
           {results :results} body
           from (:timestamp (first results))
-          {status :status body :body} (pav-reqv2 :get (str "/user/feed?from=" from) token {})
+          {status :status body :body} (pav-req :get (str "/user/feed?from=" from) token {})
           {last_timestamp :last_timestamp results :results} body]
       status => 200
       (count results) => 1
