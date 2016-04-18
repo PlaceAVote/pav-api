@@ -16,12 +16,6 @@
            [clojure.edn :as edn]
            [com.pav.api.dynamodb.db :as db]))
 
-(def test-user {:email "john@stuff.com" :password "stuff2" :first_name "john" :last_name "stuff" :dob "05/10/1984"
-                :topics ["Defense"] :gender "male" :zipcode "12345"})
-
-(def test-fb-user {:email "paul@facebook.com" :first_name "john" :last_name "stuff" :dob "05/10/1984"
-                   :img_url "http://image.com/image.jpg" :topics ["Defense"] :token "token" :gender "male" :id "818181" :zipcode "12345"})
-
 (defn new-pav-user
   ([{:keys [email password first_name last_name dob topics gender zipcode]
      :or   {email      (str "test" (rand-int 1000) "@placeavote.com")
@@ -136,9 +130,3 @@
     (esi/create es-connection "congress")
     (catch Exception e
       (println "Error while connecting to ElasticSearch: " e))))
-
-(defn pav-req
-  ([method url] (app (content-type (request method url) "application/json")))
-  ([method url payload] (app (content-type (request method url (ch/generate-string payload)) "application/json")))
-  ([method url token payload] (app (content-type (header (request method url (ch/generate-string payload))
-                                                         "Authorization" (str "PAV_AUTH_TOKEN " token)) "application/json"))))
