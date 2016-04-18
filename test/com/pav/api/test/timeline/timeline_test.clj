@@ -27,6 +27,7 @@
 													 {:type "vote" :bill_id "s1182-114" :user_id user_id :timestamp  1446462364297 :bill_title nil}]
 					_ (persist-timeline-event timeline-events)
 					{status :status body :body} (pav-req :get "/user/me/timeline" token {})
+          _ (Thread/sleep 2000)
 					{last_timestamp :last_timestamp results :results} body]
 			status => 200
 			last_timestamp => (:timestamp (last results))))
@@ -41,6 +42,7 @@
                             :bill_title nil
                             :timestamp  1446462364297}]
           _ (persist-timeline-event timeline-events)
+          _ (Thread/sleep 2000)
           {status :status body :body} (pav-req :get "/user/me/timeline?from=1446479124991" token {})
           {last_timestamp :last_timestamp results :results} body]
       status => 200
@@ -56,6 +58,7 @@
 														:bill_title nil
 														:timestamp  1446462364297}]
 					_ (persist-timeline-event timeline-events)
+          _ (Thread/sleep 2000)
 					{status :status body :body} (pav-req :get "/user/user102/timeline" token {})
           {last_timestamp :last_timestamp results :results} body]
       status => 200
@@ -71,6 +74,7 @@
                             :bill_title nil
                             :timestamp  1446462364297}]
           _ (persist-timeline-event timeline-events)
+          _ (Thread/sleep 2000)
           {status :status body :body} (pav-req :get "/user/user102/timeline?from=1446479124991" token {})
           {last_timestamp :last_timestamp results :results} body]
       status => 200
