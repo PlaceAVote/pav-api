@@ -142,9 +142,9 @@ default-followers (:default-followers env))
 
 (defn validzipcode?
   "Validate a given zipcode is associated with a US State and Congressional District"
-  [{:keys [zipcode] :as user}]
+  [{:keys [zipcode]}]
   (if zipcode
-    (if-let [location (loc/location-by-zip zipcode)]
+    (if-let [location (loc/retrieve-location-by-zip zipcode)]
      (and (= (:country_code location) "USA")
        (contains? location :state)
        (contains? location :district))
@@ -165,7 +165,8 @@ default-followers (:default-followers env))
   (validate-payload payload us/validate-settings-payload))
 
 (defn validate-password-change-payload [payload]
-  (validate-payload payload us/validate-change-password-payload))
+  (-> (validate-payload payload us/validate-change-password-payload)
+      wrap-validation-errors))
 
 (defn validate-password-reset-confirmation-payload [payload]
   (validate-payload payload us/validate-confirm-reset-password-payload))

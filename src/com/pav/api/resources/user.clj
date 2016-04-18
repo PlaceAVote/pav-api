@@ -60,6 +60,7 @@
   :allowed-methods [:delete]
   :available-media-types ["application/json"]
   :delete! (fn [ctx] (service/delete-user (retrieve-user-details ctx)))
+  :handle-unauthorized {:error "Not Authorized"}
   :handle-ok record-in-ctx)
 
 (defresource user-settings
@@ -70,6 +71,7 @@
   :available-media-types ["application/json"]
   :post! (fn [ctx] (service/update-account-settings (retrieve-token-user-id ctx) (retrieve-body ctx)))
   :handle-malformed (fn [ctx] (get-in ctx [:errors]))
+  :handle-unauthorized {:error "Not Authorized"}
   :handle-ok (fn [ctx] (service/get-account-settings (retrieve-token-user-id ctx))))
 
 (defresource upload-profile-image
@@ -80,7 +82,8 @@
 	:allowed-methods [:post]
 	:available-media-types ["application/json"]
 	:post! (fn [ctx] {:record (service/upload-profile-image (retrieve-token-user-id ctx) (:image ctx))})
- 	:handle-created :record)
+ 	:handle-created :record
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource change-password
   :service-available? {:representation {:media-type "application/json"}}
@@ -88,10 +91,13 @@
                               (service/password-matches?
                                (retrieve-token-user-id ctx)
                                (retrieve-body-param ctx :current_password))))
-  :malformed? (fn [ctx] (service/validate-password-change-payload (retrieve-body ctx)))
+  :malformed? (fn [ctx] (when-let [errors (service/validate-password-change-payload (retrieve-body ctx))]
+                          {::errors errors}))
   :allowed-methods [:post :get]
   :available-media-types ["application/json"]
-  :post! (fn [ctx] (service/change-password (retrieve-token-user-id ctx) (retrieve-body-param ctx :new_password))))
+  :post! (fn [ctx] (service/change-password (retrieve-token-user-id ctx) (retrieve-body-param ctx :new_password)))
+  :handle-unauthorized {:error "Not Authorized"}
+  :handle-malformed ::errors)
 
 (defresource user-profile
   :service-available? {:representation {:media-type "application/json"}}
@@ -101,35 +107,41 @@
              (if-let [id (retrieve-request-param ctx :user_id)]
                (service/user-profile-exist? (retrieve-token-user-id ctx) id)
                (service/user-profile-exist? (retrieve-token-user-id ctx))))
-  :handle-ok :record)
+  :handle-ok :record
+  :handle-not-found (fn [ctx] (select-keys ctx [:error])))
 
 (defresource confirm-user [token]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [_] (service/confirm-token-valid? token))
   :allowed-methods [:post]
   :available-media-types ["application/json"]
-  :post! (service/update-registration token))
+  :post! (service/update-registration token)
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource notifications [from]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok (fn [ctx] (service/get-notifications (retrieve-token-user-id ctx) from)))
+  :handle-ok (fn [ctx] (service/get-notifications (retrieve-token-user-id ctx) from))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource mark-notification [id]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:post]
   :available-media-types ["application/json"]
-  :post! (service/mark-notification id))
+  :post! (service/mark-notification id)
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource reset-password [email]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (service/allowed-to-reset-password? email)
   :allowed-methods [:post]
   :available-media-types ["application/json"]
-  :post! (service/issue-password-reset-request email))
+  :post! (service/issue-password-reset-request email)
+  :handle-created {:message "Password reset request successfully processed"}
+  :handle-unauthorized {:error "User is not authorized to reset password"})
 
 (defresource confirm-password-reset
   :service-available? {:representation {:media-type "application/json"}}
@@ -139,7 +151,9 @@
   :malformed? (fn [ctx] (service/validate-password-reset-confirmation-payload (retrieve-body ctx)))
   :handle-malformed (fn [ctx] (get-in ctx [:errors]))
   :post! (fn [ctx] (let [{token :reset_token password :new_password} (retrieve-body ctx)]
-                     (service/confirm-password-reset token password))))
+                     (service/confirm-password-reset token password)))
+  :handle-unauthorized {:error "Reset Token is invalid"}
+  :handle-created {:message "Password has been reset successfully"})
 
 (defresource timeline [from]
   :service-available? {:representation {:media-type "application/json"}}
@@ -149,14 +163,16 @@
   :handle-ok (fn [ctx]
                (if-not (nil? (retrieve-request-param ctx :user_id))
                  (service/get-timeline (retrieve-request-param ctx :user_id) from)
-                 (service/get-timeline (retrieve-token-user-id ctx) from))))
+                 (service/get-timeline (retrieve-token-user-id ctx) from)))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource feed [from]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok (fn [ctx] (service/get-feed (retrieve-token-user-id ctx) from)))
+  :handle-ok (fn [ctx] (service/get-feed (retrieve-token-user-id ctx) from))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource questions
   :service-available? {:representation {:media-type "application/json"}}
@@ -164,7 +180,8 @@
   :allowed-methods [:get :post]
   :available-media-types ["application/json"]
   :post! (fn [ctx] (q-service/submit-answers (retrieve-token-user-id ctx) (retrieve-body ctx)))
-  :handle-ok (fn [ctx] (q-service/retrieve-questions (retrieve-token-user-id ctx))))
+  :handle-ok (fn [ctx] (q-service/retrieve-questions (retrieve-token-user-id ctx)))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource follow
   :service-available? {:representation {:media-type "application/json"}}
@@ -174,14 +191,17 @@
                   true false))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
-  :put! (fn [ctx] (service/follow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))))
+  :put! (fn [ctx] (service/follow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id)))
+  :handle-malformed {:error "You cannot follow yourself"}
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource unfollow
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :allowed-methods [:delete]
   :available-media-types ["application/json"]
-  :delete! (fn [ctx] (service/unfollow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id))))
+  :delete! (fn [ctx] (service/unfollow-user (retrieve-token-user-id ctx) (retrieve-body-param ctx :user_id)))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource following
   :service-available? {:representation {:media-type "application/json"}}
@@ -192,7 +212,8 @@
                (service/user-following
                 (if-let [id (retrieve-request-param ctx :user_id)]
                   id
-                  (retrieve-token-user-id ctx)))))
+                  (retrieve-token-user-id ctx))))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource followers
   :service-available? {:representation {:media-type "application/json"}}
@@ -203,14 +224,16 @@
                (service/user-followers
                 (if-let [id (retrieve-request-param ctx :user_id)]
                   id
-                  (retrieve-token-user-id ctx)))))
+                  (retrieve-token-user-id ctx))))
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource validate-token
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/validate-token (retrieve-request-param ctx :token)))
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok {:message "Token is valid"})
+  :handle-ok {:message "Token is valid"}
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource create-user-issue
   :service-available? {:representation {:media-type "application/json"}}
@@ -225,7 +248,8 @@
   ;; on for PUT we have to implement 'handle-created'
   :put! (fn [ctx] {::user-issue-response
                    (service/create-bill-issue (retrieve-token-user-id ctx) (retrieve-body ctx))})
-  :handle-created ::user-issue-response)
+  :handle-created ::user-issue-response
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource get-user-issue [issue_id]
   :service-available? {:representation {:media-type "application/json"}}
@@ -245,7 +269,8 @@
   :available-media-types ["application/json"]
   :post! (fn [ctx] {::user-issue-response
                     (service/update-user-issue (retrieve-token-user-id ctx) issue_id (retrieve-body ctx))})
-  :handle-created ::user-issue-response)
+  :handle-created ::user-issue-response
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource contact-form
   :service-available? {:representation {:media-type "application/json"}}
@@ -279,4 +304,6 @@
   :handle-created ::user-issue-emotional-response
   :handle-ok (fn [ctx]
                (service/get-user-issue-emotional-response issue_id
-                                                          (retrieve-token-user-id ctx))))
+                                                          (retrieve-token-user-id ctx)))
+  :handle-malformed {:error "Issue body is invalid."}
+  :handle-unauthorized {:error "Not Authorized"})
