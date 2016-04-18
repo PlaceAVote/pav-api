@@ -70,6 +70,7 @@
   :available-media-types ["application/json"]
   :post! (fn [ctx] (service/update-account-settings (retrieve-token-user-id ctx) (retrieve-body ctx)))
   :handle-malformed (fn [ctx] (get-in ctx [:errors]))
+  :handle-unauthorized {:error "Not Authorized"}
   :handle-ok (fn [ctx] (service/get-account-settings (retrieve-token-user-id ctx))))
 
 (defresource upload-profile-image
@@ -88,10 +89,13 @@
                               (service/password-matches?
                                (retrieve-token-user-id ctx)
                                (retrieve-body-param ctx :current_password))))
-  :malformed? (fn [ctx] (service/validate-password-change-payload (retrieve-body ctx)))
+  :malformed? (fn [ctx] (when-let [errors (service/validate-password-change-payload (retrieve-body ctx))]
+                          {::errors errors}))
   :allowed-methods [:post :get]
   :available-media-types ["application/json"]
-  :post! (fn [ctx] (service/change-password (retrieve-token-user-id ctx) (retrieve-body-param ctx :new_password))))
+  :post! (fn [ctx] (service/change-password (retrieve-token-user-id ctx) (retrieve-body-param ctx :new_password)))
+  :handle-unauthorized {:error "Not Authorized"}
+  :handle-malformed ::errors)
 
 (defresource user-profile
   :service-available? {:representation {:media-type "application/json"}}

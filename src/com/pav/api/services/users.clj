@@ -165,7 +165,8 @@ default-followers (:default-followers env))
   (validate-payload payload us/validate-settings-payload))
 
 (defn validate-password-change-payload [payload]
-  (validate-payload payload us/validate-change-password-payload))
+  (-> (validate-payload payload us/validate-change-password-payload)
+      wrap-validation-errors))
 
 (defn validate-password-reset-confirmation-payload [payload]
   (validate-payload payload us/validate-confirm-reset-password-payload))

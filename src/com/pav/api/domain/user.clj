@@ -16,6 +16,7 @@
       (assoc :user_id (.toString (UUID/randomUUID))
              :created_at (.getTime (Date.))
              :confirmation-token (.toString (UUID/randomUUID)))
+		  (update-in [:email] clojure.string/lower-case)
       (merge {:public true} (location-by-zip (:zipcode user-profile)))))
 
 (defn hash-password [user-profile]
