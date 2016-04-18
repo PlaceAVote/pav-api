@@ -31,7 +31,7 @@
             dob        "05/10/1984"
             topics     ["Defense"]
             gender     "male"
-            zipcode    "12345"}}]
+            zipcode    "90210"}}]
    {:email  email :password password :first_name first_name :last_name last_name :dob dob
     :topics topics :gender gender :zipcode zipcode})
   ([] (new-pav-user {})))

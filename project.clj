@@ -101,5 +101,6 @@
                             :cdn-url                             "https://cdn.placeavote.com"
                             :s3-region                           "us-west-1"
                             :default-followers                   "wam@stuff.com,wam2@pl.com"
-                            :sunlight-congress-apikey            "4a8d55c9cf12410e95ad2c09615a46a4"}
+                            :sunlight-congress-apikey            "4a8d55c9cf12410e95ad2c09615a46a4"
+                            :google-geolocation-apikey           "AIzaSyB2taZNvNDGG0Fvyur-o3Xf0g6vd8sYuUM"}
              :plugins      [[lein-midje "3.1.3"]]}})

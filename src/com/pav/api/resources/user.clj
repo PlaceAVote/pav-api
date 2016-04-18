@@ -240,7 +240,8 @@
   ;; on for PUT we have to implement 'handle-created'
   :put! (fn [ctx] {::user-issue-response
                    (service/create-bill-issue (retrieve-token-user-id ctx) (retrieve-body ctx))})
-  :handle-created ::user-issue-response)
+  :handle-created ::user-issue-response
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource get-user-issue [issue_id]
   :service-available? {:representation {:media-type "application/json"}}
@@ -260,7 +261,8 @@
   :available-media-types ["application/json"]
   :post! (fn [ctx] {::user-issue-response
                     (service/update-user-issue (retrieve-token-user-id ctx) issue_id (retrieve-body ctx))})
-  :handle-created ::user-issue-response)
+  :handle-created ::user-issue-response
+  :handle-unauthorized {:error "Not Authorized"})
 
 (defresource contact-form
   :service-available? {:representation {:media-type "application/json"}}
@@ -294,4 +296,6 @@
   :handle-created ::user-issue-emotional-response
   :handle-ok (fn [ctx]
                (service/get-user-issue-emotional-response issue_id
-                                                          (retrieve-token-user-id ctx))))
+                                                          (retrieve-token-user-id ctx)))
+  :handle-malformed {:error "Issue body is invalid."}
+  :handle-unauthorized {:error "Not Authorized"})

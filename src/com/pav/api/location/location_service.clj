@@ -4,6 +4,7 @@
             [com.pav.api.utils.utils :as u]))
 
 (def congress-api-key (:sunlight-congress-apikey env))
+(def google-geo-apikey (:google-geolocation-apikey env))
 
 (defn- to-address-country-code
   "Take string with address and country code and returns a map with
@@ -17,7 +18,7 @@
 (defn location-by-zip
   "Retrieve location data from googles api and retrieve congressional district from sunlights congress API."
   [zip]
-  (let [search-result (u/http-to-json (str "maps.googleapis.com/maps/api/geocode/json?address=" zip))
+  (let [search-result (u/http-to-json (str "maps.googleapis.com/maps/api/geocode/json?key=" google-geo-apikey "&address=" zip))
         lat-lng (get-in search-result [:geometry :location])
         district-info (u/http-to-json-sunlightfoundation-api
                        (format "/districts/locate?latitude=%s&longitude=%s&apikey=%s"
