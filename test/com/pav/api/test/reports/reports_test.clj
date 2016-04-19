@@ -22,5 +22,8 @@
             _ (pav-req :put "/bills/comments" token {:bill_id "hr2-114" :body "comment body"})
             {status :status body :body} (pav-req :get "/reports/activity?weeks=1")]
         status => 200
-        (count body) => 8
-        (last body) => (just {:date anything :vote_count 1 :comment_count 1 :signup_count 1} :in-any-order)))))
+        (:total_signups body) => 1
+        (:total_votes body) => 1
+        (:total_comments body) => 1
+        (count (:results body)) => 8
+        (last (:results body)) => (just {:date anything :vote_count 1 :comment_count 1 :signup_count 1} :in-any-order)))))

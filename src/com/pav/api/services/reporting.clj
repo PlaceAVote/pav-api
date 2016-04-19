@@ -16,16 +16,21 @@
          (t/days 1))
        (map #(-> (.toDateTime %)))))
 
+(defn- get-counts-for-date [date]
+  (let [start (c/to-long date)
+        end (c/to-long (t/plus date (t/hours 24)))]
+    {:date          (f/unparse date-key-formatter date)
+     :comment_count (dc/comment-count-between start end)
+     :vote_count    (dv/votes-count-between start end)
+     :signup_count    (du/user-count-between start end)}))
+
 (defn- activity-report-for-n-wks [wks]
   (when (number? wks)
-    (map (fn [date]
-           (let [start (c/to-long date)
-                 end (c/to-long (t/plus date (t/hours 24)))]
-             {:date          (f/unparse date-key-formatter date)
-              :comment_count (dc/comment-count-between start end)
-              :vote_count    (dv/votes-count-between start end)
-              :signup_count    (du/user-count-between start end)}))
-      (days-for-n-wks-ago wks))))
+    (let [data (map get-counts-for-date (days-for-n-wks-ago wks))]
+      {:results        data
+       :total_signups  (reduce + (map :signup_count data))
+       :total_comments (reduce + (map :comment_count data))
+       :total_votes    (reduce + (map :vote_count data))})))
 
 (defn generate-csv-report-n-wks [wks]
   (if (seq wks)
