@@ -16,6 +16,7 @@
             [clojure.edn :as edn]
             [clojure.string :refer [lower-case]]
             [com.pav.api.resources.legislator :refer [get-legislator]]
+            [com.pav.api.resources.reports :refer [activity-report]]
             [com.pav.api.resources.bill :refer [get-bill get-trending-bills create-comment update-comment get-comments
                                                 top-comments create-comment-reply like-comment dislike-comment]]
             [com.pav.api.resources.search :refer [search-term search-with-tag]]
@@ -105,6 +106,7 @@
   (POST "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))
   (DELETE "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))
   (POST "/user/validate" [] validate-user)
+  (GET "/reports/activity" [weeks] (activity-report weeks))
   (route/resources "/")
   (route/not-found "Not Found"))
 

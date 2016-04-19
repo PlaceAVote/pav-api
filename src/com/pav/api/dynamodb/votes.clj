@@ -33,3 +33,10 @@
 (defn get-votes-for-bill [bill-id]
   (far/query dy/client-opts dy/user-votes-table-name {:bill_id [:eq bill-id]}
     {:index "bill-user-idx" :return [:timestamp :created_at :bill_id :vote]}))
+
+(defn votes-count-between [start end]
+  (->
+    (far/scan dy/client-opts dy/user-votes-table-name
+      {:attr-conds {:created_at [:between [start end]]}})
+    meta
+    :count))

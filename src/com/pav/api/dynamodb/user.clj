@@ -459,3 +459,10 @@ new ID assigned as issue_id and timestamp stored in table."
       (recur (far/scan client-opts dy/user-table-name {:last-prim-kvs (:last-prim-kvs (meta user-records))})
         (into acc user-records))
       (into acc user-records))))
+
+(defn user-count-between [start end]
+  (->
+    (far/scan dy/client-opts dy/user-table-name
+      {:attr-conds {:created_at [:between [start end]]}})
+    meta
+    :count))

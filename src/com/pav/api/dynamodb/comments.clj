@@ -165,3 +165,9 @@
     (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id} op)
     (far/delete-item dy/client-opts dy/comment-user-scoring-table {:comment_id comment_id :user_id user_id})))
 
+(defn comment-count-between [start end]
+  (->
+    (far/scan dy/client-opts dy/comment-details-table-name
+      {:attr-conds {:timestamp [:between [start end]]}})
+    meta
+    :count))
