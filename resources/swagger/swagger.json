@@ -2034,6 +2034,28 @@
           }
         }
       },
+      "delete": {
+        "description": "Mark user issue as deleted.  Removes user issues from Timeline and Newsfeeds.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/IssueIDParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized"
+          }
+        }
+      },
       "post": {
         "description": "Create new user issue",
         "parameters": [

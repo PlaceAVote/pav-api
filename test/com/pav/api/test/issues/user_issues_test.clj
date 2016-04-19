@@ -252,7 +252,7 @@
             {body :body} (pav-req :get "/user/notifications" token {})
             {results :results} body]
         results => []))
-    
+
     (fact "Given an existing issue, When the user updates the comment body, Then verify updated body is in response."
       (let [{body :body} (pav-req :put "/user" (new-pav-user))
             {token :token} body
