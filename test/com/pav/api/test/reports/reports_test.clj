@@ -23,4 +23,4 @@
             {status :status body :body} (pav-req :get "/reports/activity?weeks=1")]
         status => 200
         (count body) => 8
-        (last body) => (just {:date anything :vote_count 1 :comment_count 1 :user_count 1} :in-any-order)))))
+        (last body) => (just {:date anything :vote_count 1 :comment_count 1 :signup_count 1} :in-any-order)))))

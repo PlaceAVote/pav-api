@@ -24,7 +24,7 @@
              {:date          (f/unparse date-key-formatter date)
               :comment_count (dc/comment-count-between start end)
               :vote_count    (dv/votes-count-between start end)
-              :user_count    (du/user-count-between start end)}))
+              :signup_count    (du/user-count-between start end)}))
       (days-for-n-wks-ago wks))))
 
 (defn generate-csv-report-n-wks [wks]
