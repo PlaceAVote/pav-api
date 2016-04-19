@@ -419,12 +419,14 @@ default-followers (:default-followers env))
       (select-keys (get-user-by-id user_id) [:first_name :last_name :img_url])
       (get-user-issue-emotional-response issue_id user_id))))
 
+(declare get-user-issue)
 (defn delete-user-issue
   "Mark user issue as deleted.  Removes issue from users personal timeline and each user who has a copy on there newsfeed."
   [user_id issue_id]
-  (dynamo-dao/mark-user-issue-for-deletion user_id issue_id)
-  (dynamo-dao/delete-user-issue-from-timeline user_id issue_id)
-  (dynamo-dao/delete-user-issue-from-feed issue_id))
+  (when-let [{:keys [issue_id timestamp]} (or (get-user-issue user_id issue_id) (get-user-issue user_id (utils/base64->uuidStr issue_id)))]
+    (dynamo-dao/mark-user-issue-for-deletion user_id issue_id)
+    (dynamo-dao/delete-user-issue-from-timeline user_id timestamp)
+    (dynamo-dao/delete-user-issue-from-feed issue_id)))
 
 (defn validate-user-issue-emotional-response
   "Check if emotional_response parameter is in valid range. Returns inverted logic
@@ -464,7 +466,9 @@ so it can be fed to ':malformed?' handler."
 
 (defn get-user-issue
   ([issue_id] (dynamo-dao/get-user-issue issue_id))
-  ([user_id issue_id] (dynamo-dao/get-user-issue user_id issue_id)))
+  ([user_id issue_id] (or
+                        (dynamo-dao/get-user-issue user_id issue_id)
+                        (dynamo-dao/get-user-issue user_id (utils/base64->uuidStr issue_id)))))
 
 (defn get-user-issue-feed-item
   "Retrieve Single User Issue in the same format as that displayed in a feed item."

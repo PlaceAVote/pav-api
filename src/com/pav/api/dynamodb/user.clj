@@ -334,9 +334,8 @@ new ID assigned as issue_id and timestamp stored in table."
 
 (defn delete-user-issue-from-timeline
   "Remove user issue from users personal timeline."
-  [user_id issue_id]
-  (when-let [{:keys [timestamp]} (get-user-issue user_id issue_id)]
-    (far/delete-item client-opts dy/timeline-table-name {:user_id user_id :timestamp timestamp})))
+  [user_id timestamp]
+  (far/delete-item client-opts dy/timeline-table-name {:user_id user_id :timestamp timestamp}))
 
 (defn delete-user-issue-from-feed
   "Remove user issue from users newsfeed.  Can be expensive operation."

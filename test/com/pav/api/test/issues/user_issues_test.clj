@@ -426,8 +426,8 @@
                                       :comment :emotional_response :type :event_id
                                       :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
-    (fact "Given an existing issue, When the author deletes the issue, Then verify it has been removed from the users feed
-          and timeline."
+    (fact "Given an existing issue, When the author deletes the issue with the short_issue_id,
+          Then verify it has been removed from the users feed and timeline."
       (let [{body :body} (pav-req :put "/user" (new-pav-user))
             {user1_token :token} body
             {body :body} (pav-req :put "/user" (new-pav-user))
@@ -435,11 +435,11 @@
             ;;publish issue
             {newissue :body} (pav-req :put "/user/issue" user2_token {:comment "Comment Body goes here"})
             _ (Thread/sleep 2000)
-            _ (println (pav-req :delete (str "/user/issue/" (:issue_id newissue)) user2_token {}))
+            _ (println (pav-req :delete (str "/user/issue/" (:short_issue_id newissue)) user2_token {}))
             _ (Thread/sleep 2000)
             ;;retrieve followers feed
             {status :status feed :body} (pav-req :get "/user/feed" user1_token {})
-            {issue :body} (pav-req :get (str "/user/issue/" (:issue_id newissue)) user2_token {})]
+            {issue :body} (pav-req :get (str "/user/issue/" (:short_issue_id newissue)) user2_token {})]
         status => 200
         (:results feed) => []
         (:deleted issue) => true))))
