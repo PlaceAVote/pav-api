@@ -25,7 +25,8 @@
                                                 follow following followers unfollow
                                                 user-profile validate-token reset-password confirm-password-reset
                                                 user-settings change-password questions upload-profile-image
-                                                create-user-issue get-user-issue user-issue-emotional-response
+                                                create-user-issue delete-user-issue get-user-issue
+                                                user-issue-emotional-response
                                                 update-user-issue feed contact-form validate-user]]
             [com.pav.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.api.resources.docs :refer [swagger-docs]]
@@ -80,6 +81,7 @@
   (POST "/password/change" _ change-password)
   (PUT "/user/issue" [] create-user-issue)
   (POST "/user/issue/:issue_id" [issue_id] (update-user-issue issue_id))
+  (DELETE "/user/issue/:issue_id" [issue_id] (delete-user-issue issue_id))
   (GET "/user/issue/:issue_id" [issue_id] (get-user-issue issue_id))
   (POST "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))
   (GET "/user/issue/:issue_id/response" [issue_id] (user-issue-emotional-response issue_id))

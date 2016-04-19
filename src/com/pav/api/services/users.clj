@@ -419,6 +419,13 @@ default-followers (:default-followers env))
       (select-keys (get-user-by-id user_id) [:first_name :last_name :img_url])
       (get-user-issue-emotional-response issue_id user_id))))
 
+(defn delete-user-issue
+  "Mark user issue as deleted.  Removes issue from users personal timeline and each user who has a copy on there newsfeed."
+  [user_id issue_id]
+  (dynamo-dao/mark-user-issue-for-deletion user_id issue_id)
+  (dynamo-dao/delete-user-issue-from-timeline user_id issue_id)
+  (dynamo-dao/delete-user-issue-from-feed issue_id))
+
 (defn validate-user-issue-emotional-response
   "Check if emotional_response parameter is in valid range. Returns inverted logic
 so it can be fed to ':malformed?' handler."

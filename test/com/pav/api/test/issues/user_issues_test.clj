@@ -8,12 +8,13 @@
                                                   new-pav-user
                                                   new-fb-user]]))
 
-(against-background [(before :contents (do
-                                         (flush-dynamo-tables)
-                                         (flush-redis)
-                                         (flush-es-indexes)
-                                         (bootstrap-bills-and-metadata)))]
-  (future-facts "Temporarily disabled."
+(against-background [(before :facts (do
+                                      (flush-dynamo-tables)
+                                      (flush-redis)
+                                      (flush-es-indexes)
+                                      (bootstrap-bills-and-metadata)))]
+
+  (facts "Temporarily disabled."
     (fact "Add new issue"
       (let [{body :body} (pav-req :put "/user" (new-pav-user))
             {token :token} body
@@ -251,7 +252,7 @@
             {body :body} (pav-req :get "/user/notifications" token {})
             {results :results} body]
         results => []))
-
+    
     (fact "Given an existing issue, When the user updates the comment body, Then verify updated body is in response."
       (let [{body :body} (pav-req :put "/user" (new-pav-user))
             {token :token} body
@@ -423,4 +424,22 @@
         (some nil? (vals response)) => nil
         (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :short_issue_id :author_id
                                       :comment :emotional_response :type :event_id
-                                      :positive_responses :negative_responses :neutral_responses] :in-any-order)))))
+                                      :positive_responses :negative_responses :neutral_responses] :in-any-order)))
+
+    (fact "Given an existing issue, When the author deletes the issue, Then verify it has been removed from the users feed
+          and timeline."
+      (let [{body :body} (pav-req :put "/user" (new-pav-user))
+            {user1_token :token} body
+            {body :body} (pav-req :put "/user" (new-pav-user))
+            {user2_token :token} body
+            ;;publish issue
+            {newissue :body} (pav-req :put "/user/issue" user2_token {:comment "Comment Body goes here"})
+            _ (Thread/sleep 2000)
+            _ (println (pav-req :delete (str "/user/issue/" (:issue_id newissue)) user2_token {}))
+            _ (Thread/sleep 2000)
+            ;;retrieve followers feed
+            {status :status feed :body} (pav-req :get "/user/feed" user1_token {})
+            {issue :body} (pav-req :get (str "/user/issue/" (:issue_id newissue)) user2_token {})]
+        status => 200
+        (:results feed) => []
+        (:deleted issue) => true))))

@@ -272,6 +272,15 @@
   :handle-created ::user-issue-response
   :handle-unauthorized {:error "Not Authorized"})
 
+(defresource delete-user-issue [issue_id]
+  :service-available? {:representation {:media-type "application/json"}}
+  :authorized? (fn [ctx] (and (service/is-authenticated? (retrieve-user-details ctx))
+                           (not (nil? (service/get-user-issue (retrieve-token-user-id ctx) issue_id)))))
+  :allowed-methods [:delete]
+  :available-media-types ["application/json"]
+  :delete! (fn [ctx] (service/delete-user-issue (retrieve-token-user-id ctx) issue_id))
+  :handle-unauthorized {:error "Not Authorized"})
+
 (defresource contact-form
   :service-available? {:representation {:media-type "application/json"}}
   :allowed-methods [:post]

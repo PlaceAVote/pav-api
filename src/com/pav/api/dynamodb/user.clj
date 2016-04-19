@@ -11,7 +11,7 @@
             [com.pav.api.utils.utils :refer [uuid->base64Str
                                              base64->uuidStr]]
             [clj-http.client :as http]
-            [clojure.core.async :refer [thread]]
+            [clojure.core.async :refer [thread go]]
             [com.pav.api.elasticsearch.user :as es])
   (:import [java.util Date UUID]))
 
@@ -303,6 +303,17 @@ new ID assigned as issue_id and timestamp stored in table."
     (far/put-item client-opts dy/user-issues-table-name issue-data)
     issue-data))
 
+(defn publish-batch-to-feed
+  "Batch up items and persist to dynamodb in batches of 25 items."
+  [batch]
+  (doseq [b (partition 25 25 nil batch)]
+    (far/batch-write-item client-opts {dy/userfeed-table-name {:put b}})))
+
+(defn batch-delete-from-feed
+  [batch]
+  (doseq [b (partition 25 25 nil batch)]
+    (far/batch-write-item client-opts {dy/userfeed-table-name {:delete b}})))
+
 (defn update-user-issue
   "Update user issue and return new issue."
   [user_id issue_id update-map]
@@ -312,6 +323,32 @@ new ID assigned as issue_id and timestamp stored in table."
        (for [[k v] update-map]
          [k [:put v]]))
      :return :all-new}))
+
+(defn mark-user-issue-for-deletion
+  "Mark user issue for deletion"
+  [user_id issue_id]
+  (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id user_id}
+    {:update-expr     "SET #deleted = :val, #updated = :updated"
+     :expr-attr-names {"#deleted" "deleted" "#updated" "updated_at"}
+     :expr-attr-vals  {":val" true ":updated" (.getTime (Date.))}}))
+
+(defn delete-user-issue-from-timeline
+  "Remove user issue from users personal timeline."
+  [user_id issue_id]
+  (when-let [{:keys [timestamp]} (get-user-issue user_id issue_id)]
+    (far/delete-item client-opts dy/timeline-table-name {:user_id user_id :timestamp timestamp})))
+
+(defn delete-user-issue-from-feed
+  "Remove user issue from users newsfeed.  Can be expensive operation."
+  [issue_id]
+  (go
+    (loop [issues (far/query client-opts dy/userfeed-table-name {:issue_id [:eq issue_id]} {:index "issueid-idx"})]
+      (when issues
+        (batch-delete-from-feed (map #(select-keys % [:user_id :timestamp]) issues))
+        (log/info (str "Deleting " (:count (meta issues)) " User Issues for " issue_id " from " dy/userfeed-table-name)))
+      (if (:last-prim-kvs (meta issues))
+        (recur (far/query client-opts dy/userfeed-table-name {:issue_id [:eq issue_id]}
+                 {:index "issueid-idx" :last-prim-kvs (:last-prim-kvs (meta issues))}))))))
 
 ;;Temporarily disabled.
 ;(defn populate-user-and-followers-feed-table
@@ -326,13 +363,6 @@ new ID assigned as issue_id and timestamp stored in table."
 ;        follower-and-author-evts (conj follower-evts author-event)]
 ;    (far/put-item client-opts dy/timeline-table-name (assoc author-event :event_id (.toString (UUID/randomUUID))))
 ;    (persist-to-newsfeed follower-and-author-evts)))
-
-
-(defn publish-batch-to-feed
-  "Batch up items and persist to dynamodb in batches of 25 items."
-  [batch]
-  (doseq [b (partition 25 25 nil batch)]
-    (far/batch-write-item client-opts {dy/userfeed-table-name {:put b}})))
 
 (defn publish-as-global-feed-item
   "Publish new issues to all users feeds.  This process is executed in seperate thread."

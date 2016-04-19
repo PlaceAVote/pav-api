@@ -101,7 +101,10 @@ It will NOT handle exceptions."
           :throughput {:read 5 :write 10}
           :block? true})
        (safe-create-table opts userfeed-table-name [:user_id :s]
-         {:range-keydef [:timestamp :n]
+         {:gsindexes [{:name "issueid-idx"
+                       :hash-keydef [:issue_id :s]
+                       :throughput {:read 5 :write 5}}]
+          :range-keydef [:timestamp :n]
           :throughput {:read 5 :write 10}
           :block? true})
        (safe-create-table opts following-table-name [:user_id :s]
