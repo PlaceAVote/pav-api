@@ -1034,6 +1034,14 @@
           "title": "User Disliked Comment?",
           "type": "boolean",
           "format": "boolean"
+        },
+        "updated_at": {
+          "type": "number",
+          "format": "number"
+        },
+        "deleted": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -2516,6 +2524,28 @@
             "schema": {
               "$ref": "#/definitions/BillCommentRecord"
             }
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Bills"
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "401": {
             "description": "Not Authorized (Check Authentication Token)"
