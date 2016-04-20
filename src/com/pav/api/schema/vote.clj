@@ -1,8 +1,9 @@
 (ns com.pav.api.schema.vote
-  (:require [schema.core :as s]))
+  (:require [schema.core :as s]
+            [com.pav.api.schema.common :refer :all]))
 
 (def VoteRecord
-  {:bill_id s/Str
+  {:bill_id str-schema
    :vote s/Bool})
 
 (defn new-vote-record-malformed? [vote]

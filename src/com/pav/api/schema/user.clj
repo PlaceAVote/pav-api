@@ -1,20 +1,7 @@
 (ns com.pav.api.schema.user
   (:require [schema.core :as s]
-            [clojure.tools.logging :as log])
-  (import (java.util Locale)))
-
-(defn retrieve-iso3-country-code [country]
-  (-> (Locale. "" country)
-      (.getISO3Country)))
-
-(def iso3-codes (into #{} (map retrieve-iso3-country-code (Locale/getISOCountries))))
-(def pwd-schema (s/both (s/pred (complement empty?)) s/Str #"^$|^\S.{4,}\S$"))
-(def email-schema (s/both (s/pred (complement empty?)) #"^[^@]+@[^@\\.]+[\\.].+"))
-(def dob-schema #"^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$")
-(def county-code-schema (s/both s/Str (s/pred (complement empty?)) (s/pred #(contains? iso3-codes %))))
-(def gender-schema (s/both s/Str (s/pred (complement empty?)) (s/enum "male" "female" "they")))
-(def str-schema (s/both (s/pred (complement empty?)) s/Str))
-(def zip-schema #"^[0-9]{5}")
+            [clojure.tools.logging :as log]
+            [com.pav.api.schema.common :refer :all]))
 
 (def User
   {:email                    email-schema

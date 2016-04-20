@@ -4,31 +4,7 @@
             [com.pav.api.services.comments :as cs]
             [com.pav.api.services.users :as us]
             [com.pav.api.utils.utils :as u]
-            [schema.core :as s]))
-
-(def CommentRecord
-  {:bill_id s/Str
-   :body s/Str})
-
-(def ScoringRecord
-  {:bill_id s/Str})
-
-(def CommentRecordUpdate
-  {:body s/Str})
-
-(defn valid-payload? [schema payload]
-  (if (nil? (s/check schema payload))
-    false
-    true))
-
-(defn new-score-malformed? [payload]
-  (valid-payload? ScoringRecord payload))
-
-(defn new-comment-malformed? [payload]
-  (valid-payload? CommentRecord payload))
-
-(defn comment-update-malformed? [payload]
-  (valid-payload? CommentRecordUpdate payload))
+            [com.pav.api.schema.comment :refer :all]))
 
 (defresource get-bill [bill_id]
   :service-available? {:representation {:media-type "application/json"}}
