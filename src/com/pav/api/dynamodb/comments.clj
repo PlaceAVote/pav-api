@@ -38,6 +38,7 @@
   (t/have (complement empty?) comment-ids)
   (->> ((keyword dy/comment-details-table-name)
          (far/batch-get-item dy/client-opts {dy/comment-details-table-name {:prim-kvs {:comment_id comment-ids}}}))
+    (mapv #(cond-> % (:deleted %) (dissoc :body)))
     (mapv #(associate-user-score % user_id))
     (mapv #(associate-user-img %))
     (sort-by sort-key >)))
