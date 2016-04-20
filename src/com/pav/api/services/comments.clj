@@ -62,6 +62,9 @@
 (defn update-bill-comment [payload comment_id]
   (dc/update-comment (:body payload) comment_id))
 
+(defn delete-bill-comment [comment_id user_id]
+  (dc/delete-comment comment_id user_id))
+
 (defn create-bill-comment [comment user]
   (let [author user
         new-comment-id (create-comments-key)
@@ -100,3 +103,8 @@
 
 (defn get-top-comments [bill-id user_id]
   ((memo/ttl dc/get-top-comments :ttl/threshold 1800000) bill-id user_id))
+
+(defn is-author? [comment_id user_id]
+  (if-let [{:keys [author]} (dc/get-bill-comment comment_id)]
+    (= author user_id)
+    false))

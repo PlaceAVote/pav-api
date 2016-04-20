@@ -41,7 +41,26 @@
         (:body body) => "I have been updated"
         (keys body) => (contains [:bill_id :author :author_first_name :author_last_name
                                   :body :score :comment_id :id :timestamp :parent_id :has_children] :in-any-order)))
-    
+
+    (fact "Update an existing comment, When the token does not belong to the author, Then throw 401."
+      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+            {comment_id :comment_id} body
+            {status :status} (pav-req :post (str "/comments/" comment_id)
+                               (create-auth-token {:user_id "678910"}) {:body "I'm not allowed to update this comment"})]
+        status => 401))
+
+    (fact "Deleting an existing comment, Then verify the comment is marked as deleted"
+      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+            {comment_id :comment_id} body
+            {status :status} (pav-req :delete (str "/comments/" comment_id) test-token {})]
+        status => 204))
+
+    (fact "Deleting an existing comment, When the token does not belong to the author, Then throw 401."
+      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+            {comment_id :comment_id} body
+            {status :status} (pav-req :delete (str "/comments/" comment_id) (create-auth-token {:user_id "678910"}) {})]
+        status => 401))
+
     (fact "Try creating a comment without a bill_id, should throw 400 HTTP Status code"
       (let [{status :status} (pav-req :put "/bills/comments" test-token {:body "comment goes here!!"})]
         status => 400))
@@ -85,7 +104,7 @@
                                           :body "reply to user1 comment"
                                           :has_children false})
         (:parent_id reply-response-body) => parent-comment-id))
-    
+
     (fact "Try replying to a comment without a body, should throw 400 HTTP Status code"
       (let [{status :status} (pav-req :put "/comments/comment:1/reply" test-token {:bill_id "hr2-114"})]
         status => 400))

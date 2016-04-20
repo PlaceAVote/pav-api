@@ -5,6 +5,7 @@
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.dynamodb.db :as dy :refer [client-opts]]
+            [com.pav.api.dynamodb.common :refer [batch-delete-from-feed]]
             [com.pav.api.dynamodb.comments :refer [associate-user-score get-bill-comment]]
             [com.pav.api.notifications.ws-handler :refer [publish-notification]]
             [com.pav.api.s3.user :as s3]
@@ -308,11 +309,6 @@ new ID assigned as issue_id and timestamp stored in table."
   [batch]
   (doseq [b (partition 25 25 nil batch)]
     (far/batch-write-item client-opts {dy/userfeed-table-name {:put b}})))
-
-(defn batch-delete-from-feed
-  [batch]
-  (doseq [b (partition 25 25 nil batch)]
-    (far/batch-write-item client-opts {dy/userfeed-table-name {:delete b}})))
 
 (defn update-user-issue
   "Update user issue and return new issue."

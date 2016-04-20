@@ -17,7 +17,8 @@
             [clojure.string :refer [lower-case]]
             [com.pav.api.resources.legislator :refer [get-legislator]]
             [com.pav.api.resources.reports :refer [activity-report]]
-            [com.pav.api.resources.bill :refer [get-bill get-trending-bills create-comment update-comment get-comments
+            [com.pav.api.resources.bill :refer [get-bill get-trending-bills create-comment update-comment
+                                                get-comments delete-comment
                                                 top-comments create-comment-reply like-comment dislike-comment]]
             [com.pav.api.resources.search :refer [search-term search-with-tag]]
             [com.pav.api.resources.vote :refer [cast-vote get-vote-count get-vote-records]]
@@ -102,6 +103,7 @@
   (PUT "/comments/:comment_id/reply" [comment_id] (create-comment-reply comment_id))
   (POST "/comments/:comment_id/like" [comment_id] (like-comment comment_id))
   (POST "/comments/:comment_id" [comment_id] (update-comment comment_id))
+  (DELETE "/comments/:comment_id" [comment_id] (delete-comment comment_id))
   (DELETE "/comments/:comment_id/like" [comment_id] (like-comment comment_id))
   (POST "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))
   (DELETE "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))

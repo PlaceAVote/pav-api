@@ -39,6 +39,13 @@
         (:total persisted-comment) => 1
         (get-in (first (:comments persisted-comment)) [:body]) => "updated comment body"))
 
+    (fact "Mark comment as deleted"
+      (let [new-comment {:score 5 :bill_id "hr2-114" :author "user1" :timestamp (.getTime (Date.))
+                         :comment_id "comment:1" :has_children false :parent_id nil
+                         :body "comment body goes here!!!"}
+            _ (dc/create-comment new-comment)]
+        (dc/delete-comment "comment:1" "user1") => (contains {:deleted true :updated_at anything} :in-any-order)))
+
     (fact "Persist new Bill Comment to DynamoDB & retrieve by id, When user_id is missing, Then verify comments are still present."
       (let [new-comment {:score 5 :bill_id "hr2-114"
                          :author     "user1" :timestamp (.getTime (Date.))

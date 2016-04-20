@@ -103,6 +103,9 @@ It will NOT handle exceptions."
        (safe-create-table opts userfeed-table-name [:user_id :s]
          {:gsindexes [{:name "issueid-idx"
                        :hash-keydef [:issue_id :s]
+                       :throughput {:read 5 :write 5}}
+                      {:name "commentid-idx"
+                       :hash-keydef [:comment_id :s]
                        :throughput {:read 5 :write 5}}]
           :range-keydef [:timestamp :n]
           :throughput {:read 5 :write 10}

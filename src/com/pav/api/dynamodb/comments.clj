@@ -1,7 +1,11 @@
 (ns com.pav.api.dynamodb.comments
   (:require [taoensso.faraday :as far]
             [com.pav.api.dynamodb.db :as dy]
-            [taoensso.truss :as t]))
+            [com.pav.api.dynamodb.common :refer [batch-delete-from-feed]]
+            [taoensso.truss :as t]
+            [clojure.tools.logging :as log]
+            [clojure.core.async :refer [go]])
+  (:import (java.util Date)))
 
 (defn create-bill-comment-thread-list-key [bill-id]
   (str "thread:" bill-id))
@@ -100,6 +104,35 @@
   (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}
     {:update-expr "SET #body = :body" :expr-attr-names {"#body" "body"} :expr-attr-vals {":body" new-body}
      :return :all-new}))
+
+(defn- mark-comment-for-deletion [comment_id]
+  (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}
+    {:update-expr     "SET #deleted = :val, #updated = :updated"
+     :expr-attr-names {"#deleted" "deleted" "#updated" "updated_at"}
+     :expr-attr-vals  {":val" true ":updated" (.getTime (Date.))}
+     :return :all-new}))
+
+(defn- remove-comment-from-timeline [user_id timestamp]
+  (far/delete-item dy/client-opts dy/timeline-table-name {:user_id user_id :timestamp timestamp}))
+
+(defn delete-comment-from-feed
+  "Remove user issue from users newsfeed.  Can be expensive operation."
+  [comment_id]
+  (go
+    (loop [comments (far/query dy/client-opts dy/userfeed-table-name {:comment_id [:eq comment_id]} {:index "commentid-idx"})]
+      (when comments
+        (batch-delete-from-feed (map #(select-keys % [:user_id :timestamp]) comments))
+        (log/info (str "Deleting " (:count (meta comments)) " Comments for " comment_id " from " dy/userfeed-table-name)))
+      (if (:last-prim-kvs (meta comments))
+        (recur (far/query dy/client-opts dy/userfeed-table-name {:comment_id [:eq comment_id]}
+                 {:index "commentid-idx" :last-prim-kvs (:last-prim-kvs (meta comments))}))))))
+
+(declare get-bill-comment)
+(defn delete-comment [comment_id user_id]
+  (when-let [{:keys [timestamp]} (get-bill-comment comment_id)]
+    (remove-comment-from-timeline user_id timestamp)
+    (delete-comment-from-feed comment_id)
+    (mark-comment-for-deletion comment_id)))
 
 (defn get-bill-comments
   "Retrieve comments for bill, if user_id is specified gather additional meta data."
