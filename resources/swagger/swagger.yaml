@@ -365,6 +365,54 @@ definitions:
       img_url:
         type: string
         format: string
+  CurrentUserProfileResponse:
+    title: UserProfile
+    type: object
+    properties:
+      user_id:
+        type: string
+        format: string
+      email:
+        type: string
+        format: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      gender:
+        type: string
+      created_at:
+        type: number
+      country_code:
+        type: string
+        format: USA
+      zipcode:
+        type: string
+        format: string
+      lat:
+        type: number
+        format: number
+      lng:
+        type: number
+        format: number
+      state:
+        type: string
+        format: string
+      district:
+        type: string
+        format: string
+      city:
+        type: string
+        format: string
+      following:
+        type: boolean
+        format: boolean
+      total_followers:
+        type: number
+        format: number
+      total_following:
+        type: number
+        format: number
   UserProfileResponse:
     title: UserProfile
     type: object
@@ -935,7 +983,7 @@ paths:
           description: Not Authorized (Check Authentication Token)
   /user/me/profile:
     get:
-      description: Given a user_id retrieve user profile in relation to current user.
+      description: Given a token retrieve user profile  Will return additional data as its the calling user.
       parameters:
         - $ref: '#/parameters/TokenParam'
       tags:
@@ -944,7 +992,7 @@ paths:
         '200':
           description: Successful response
           schema:
-            $ref: '#/definitions/UserProfileResponse'
+            $ref: '#/definitions/CurrentUserProfileResponse'
         '401':
           description: Not Authorized (Check Authentication Token)
   '/user/{user_id}/profile':
