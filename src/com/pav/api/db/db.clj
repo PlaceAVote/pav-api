@@ -18,7 +18,7 @@ This is only helper for easier table schema specification."
      (if additional
        `[~o :bigint :unsigned ~additional]
        `[~o :bigint :unsigned]))
-  ([o] (id-type o nil)))
+  ([o] `(id-type ~o nil)))
 
 (defn- table-exists?
   "Returns nil if given table does not exists."
@@ -67,6 +67,7 @@ just skipp it."
              "user_issue_responses"
              "user_issue_comments"
              "user_bill_comments"
+             "user_comment_scores"
              "user_issues"
              "comments"
              "topic"
@@ -103,31 +104,31 @@ just skipp it."
                      [[:facebook_id "varchar(128)" "NOT NULL" "PRIMARY KEY"]
                       (id-type :user_id)
                       ["FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE"]])
-  
+
   (safe-create-table "user_creds_pav"
                      [[:id :int "NOT NULL AUTO_INCREMENT PRIMARY KEY"]
                       (id-type :user_id)
                       [:password :text]
                       ["FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE"]])
-  
+
   (safe-create-table "topic"
                      [[:id :int "NOT NULL AUTO_INCREMENT PRIMARY KEY"]
                       [:name :text]])
-  
+
   (safe-create-table "user_topic"
                      [[:id :int "NOT NULL AUTO_INCREMENT PRIMARY KEY"]
                       (id-type :user_id)
                       [:topic_id :int]
                       ["FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE"]
                       ["FOREIGN KEY(topic_id) REFERENCES topic(id) ON DELETE SET NULL"]])
-  
+
   (safe-create-table "user_following_rel"
                      [[:id :int "NOT NULL AUTO_INCREMENT PRIMARY KEY"]
                       (id-type :user_id)
                       (id-type :following_id)
                       ["FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE"]
                       ["FOREIGN KEY(following_id) REFERENCES user_info(user_id) ON DELETE CASCADE"]])
-  
+
   (safe-create-table "user_votes"
                      [[:id :int "NOT NULL AUTO_INCREMENT PRIMARY KEY"]
                       (id-type :user_id)
@@ -135,7 +136,7 @@ just skipp it."
                       [:vote :bool]
                       [:created_at :int]
                       ["FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE"]])
-  
+
   (safe-create-table "user_issues"
                      [[:id :int "NOT NULL AUTO_INCREMENT PRIMARY KEY"]
                       [:short_issue_id "varchar(32)" "UNIQUE"]
@@ -156,7 +157,7 @@ just skipp it."
                      [[:id :int "NOT NULL AUTO_INCREMENT PRIMARY KEY"]
                       [:issue_id :int]
                       ["FOREIGN KEY(issue_id) REFERENCES user_issues(id) ON DELETE CASCADE"]])
-  
+
   (safe-create-table "user_issue_responses"
                      [[:id :int "NOT NULL AUTO_INCREMENT PRIMARY KEY"]
                       (id-type :user_id)
@@ -176,12 +177,22 @@ just skipp it."
                       [:updated_at :int]
                       [:deleted :bool]
                       ["FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE"]])
-  
+
   (safe-create-table "user_bill_comments"
                      [[:id :int "NOT NULL AUTO_INCREMENT PRIMARY KEY"]
                       [:comment_id :int]
                       [:bill_id "varchar(10)"]
                       ["FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE"]])
 
- 
+  (safe-create-table "user_comment_scores"
+                     [[:id :int "NOT NULL AUTO_INCREMENT PRIMARY KEY"]
+                      (id-type :user_id)
+                      [:comment_id :int]
+                      [:liked :int] ;; FIXME: only liked or liked/disliked??
+                      [:created_at :int]
+                      [:updated_at :int]
+                      [:bill_id "varchar(10)"]
+                      ["FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE"]
+                      ["FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE"]])
+
 )
