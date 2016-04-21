@@ -36,7 +36,9 @@
                                                                   com.amazonaws/aws-java-sdk-kms
                                                                   com.amazonaws/aws-java-sdk-core]]
                  [com.taoensso/encore "2.33.0"]
-                 [clj-time "0.11.0"]]
+                 [clj-time "0.11.0"]
+                 [org.clojure/java.jdbc "0.5.8"]
+                 [mysql/mysql-connector-java "5.1.38"]]
   :plugins [[lein-environ "1.0.0"]
 						[lein-release "1.0.5"]
             [lein-essthree "0.2.1"]]
@@ -70,6 +72,9 @@
                             :auth-priv-key-pwd                   "password"
                             :auth-pub-key                        "test-resources/pav_auth_pubkey.pem"
                             :auth-pub-key-pwd                    "password"
+                            :mysql-url                           "//127.0.0.1:3306/pav"
+                            :mysql-user                          "pavuser"
+                            :mysql-pwd                           "pavpass"
                             :redis-url                           "redis://127.0.0.1:6379"
                             :access-key                          "Whatever"
                             :secret-key                          "whatever"
