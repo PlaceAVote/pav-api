@@ -23,7 +23,8 @@
             _ (pav-req :put (str "/user/follow") caller-token {:user_id following})
             {status :status body :body} (pav-req :get (str "/user/" following "/profile") caller-token {})]
         status => 200
-        (set (keys body)) => (set [:user_id :first_name :last_name :country_code :state :public :total_followers :total_following :following])
+        (set (keys body)) => (set [:user_id :first_name :last_name :country_code :state :public
+                                   :total_followers :total_following :following])
         body => (contains {:total_followers 1 :total_following 0 :following true} :in-any-order)))
 
     (fact "Retrieve a users profile without an authentication token, Then verify user is returned."
@@ -32,7 +33,8 @@
             _ (pav-req :put (str "/user/follow") caller-token {:user_id following})
             {status :status body :body} (pav-req :get (str "/user/" following "/profile"))]
         status => 200
-        (set (keys body)) => (set [:user_id :first_name :last_name :country_code :state :public :total_followers :total_following :following])
+        (set (keys body)) => (set [:user_id :first_name :last_name :country_code :state :public
+                                   :total_followers :total_following :following])
         body => (contains {:total_followers 1 :total_following 0 :following false} :in-any-order)))
 
     (fact "Retrieve a user profile, when the user profile doesn't exist, Then return 404 error"
@@ -45,14 +47,18 @@
       (let [{user :body} (pav-req :put "/user" (new-pav-user))
             {status :status body :body} (pav-req :get "/user/me/profile" (:token user) {})]
         status => 200
-        (keys body) => (contains [:user_id :first_name :last_name :country_code :state :public :total_followers :total_following] :in-any-order)
+        (keys body) => (contains [:user_id :first_name :last_name :country_code :state :public
+                                  :total_followers :total_following
+                                  :email :zipcode :lat :lng :gender :created_at :district] :in-any-order)
         body => (contains {:total_followers 0 :total_following 0} :in-any-order)))
 
     (fact "Retrieve the current users profile when the users origin is facebook"
       (let [{caller :body} (pav-req :put "/user/facebook" (new-fb-user))
             {status :status body :body} (pav-req :get "/user/me/profile" (:token caller) {})]
         status => 200
-        (keys body) => (contains [:user_id :first_name :last_name :country_code :state :public :total_followers :img_url :total_following] :in-any-order)
+        (keys body) => (contains [:user_id :first_name :last_name :country_code :state :public
+                                  :total_followers :img_url :total_following
+                                  :email :zipcode :lat :lng :gender :created_at :district] :in-any-order)
         body => (contains {:total_followers 0 :total_following 0} :in-any-order)))
 
     (fact "Follow/following another user"

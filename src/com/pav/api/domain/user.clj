@@ -22,14 +22,15 @@
 (defn hash-password [user-profile]
   (update-in user-profile [:password] h/encrypt))
 
-(defn- extract-profile-info [profile]
-	(select-keys profile [:user_id :first_name :last_name :country_code :state :public :img_url :city]))
+(defn- extract-profile-info [profile private?]
+  (cond-> (select-keys profile [:user_id :first_name :last_name :country_code :state :public :img_url :city])
+    private? (merge (select-keys profile [:zipcode :lat :lng :email :district :gender :created_at]))))
 
 (defprotocol Profiles
   (presentable [profile]
     "Remove sensitive information from user profiles")
-	(profile-info [profile]
-		"Return user profile information")
+	(profile-info [profile private?]
+		"Return user profile information, if private option is provided then include additional sensitive information.")
 	(create-token-for [profile]
 		"Assign a new token to the profile")
 	(account-settings [profile]
@@ -42,8 +43,8 @@
   Profiles
   (presentable [profile]
     (dissoc profile :password :confirmation-token))
-	(profile-info [profile]
-		(extract-profile-info profile))
+	(profile-info [profile private?]
+    (extract-profile-info profile private?))
 	(create-token-for [profile]
 		(assign-new-token (dissoc profile :password :token)))
 	(account-settings [profile]
@@ -58,8 +59,8 @@
   Profiles
   (presentable [profile]
     (dissoc profile :facebook_token :confirmation-token))
-	(profile-info [profile]
-		(extract-profile-info profile))
+	(profile-info [profile private?]
+    (extract-profile-info profile private?))
 	(create-token-for [profile]
 		(assign-new-token (dissoc profile :token)))
 	(account-settings [profile]

@@ -285,13 +285,13 @@ default-followers (:default-followers env))
        (sort-by :follower_count >)))
 
 (defn get-user-profile
-  ([user_id]
+  ([user_id private?]
    (if-let [u (get-user-by-id user_id)]
-     (-> (profile-info u)
+     (-> (profile-info u private?)
          (assoc :total_followers (count-followers user_id))
          (assoc :total_following (count-following user_id)))))
-  ([current-user user_id]
-     (if-let [u (get-user-profile user_id)]
+  ([current-user user_id private?]
+     (if-let [u (get-user-profile user_id private?)]
        (assoc u :following
                 (if current-user
                   (following? current-user user_id)
@@ -301,11 +301,11 @@ default-followers (:default-followers env))
   "Retrieve user profile, option to include current user for extra meta data on the relationship between both users.
   Response includes response suitable for Liberator use."
   ([user_id]
-   (if-let [profile (get-user-profile user_id)]
+   (if-let [profile (get-user-profile user_id true)]
      [true {:record profile}]
      [false {:error {:error_message "User Profile does not exist"}}]))
   ([current-user user-viewing]
-   (if-let [profile (get-user-profile current-user user-viewing)]
+   (if-let [profile (get-user-profile current-user user-viewing false)]
      [true {:record profile}]
      [false {:error {:error_message "User Profile does not exist"}}])))
 
