@@ -5,7 +5,8 @@ similar API as dynamodb."
             [environ.core :refer [env]]
             [clojure.tools.logging :as log]))
 
-(def ^{:doc "Database access object."}
+(def ^{:doc "Database access object."
+       :public true}
   db {:subprotocol "mysql"
       :subname (:mysql-url env)
       :user (:mysql-user env)
