@@ -90,6 +90,8 @@
                             :dynamo-user-question-answers-table	 "user-question-answers"
                             :dynamo-user-issues-table            "user-issues"
                             :dynamo-user-issue-responses-table   "user-issue-responses"
+                            :dynamo-user-issue-comments-table-name "user-issue-comments"
+                            :dynamo-user-issue-comments-scoring-table "user-issue-scores"
                             :redis-notification-pubsub           "redis::notifications::pubsub"
                             :es-url                              "http://localhost:9200"
                             :email-mode                          "test"

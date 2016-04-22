@@ -2,11 +2,13 @@
  (:require [liberator.core :refer [resource defresource]]
            [liberator.representation :refer [ring-response]]
            [com.pav.api.services.users :as service]
+           [com.pav.api.services.comments :as comment-service]
            [com.pav.api.services.questions :as q-service]
            [com.pav.api.utils.utils :refer [record-in-ctx retrieve-body
 																								 retrieve-body-param retrieve-user-details
 																								 retrieve-token-user-id retrieve-request-param]]
 					 [com.pav.api.utils.utils :refer [decodeBase64ImageString]]
+           [com.pav.api.schema.comment :refer :all]
            [cheshire.core :as ch]))
 
 (def existing-user-error-msg {:error "A User already exists with this email"})
@@ -316,3 +318,22 @@
                                                           (retrieve-token-user-id ctx)))
   :handle-malformed {:error "Issue body is invalid."}
   :handle-unauthorized {:error "Not Authorized"})
+
+(defresource create-user-issue-comment
+  :service-available? {:representation {:media-type "application/json"}}
+  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+  :malformed? (fn [ctx] (new-issue-comment-malformed? (retrieve-body ctx)))
+  :allowed-methods [:put]
+  :available-media-types ["application/json"]
+  :put! (fn [ctx] {:record (comment-service/create-user-issue-comment (retrieve-body ctx) (retrieve-token-user-id ctx))})
+  :handle-malformed {:errors [{:body "Please specify a issue_id and body"}]}
+  :handle-created :record
+  :handle-unauthorized {:error "Not Authorized"})
+
+(defresource user-issue-comments [issue_id]
+  :service-available? {:representation {:media-type "application/json"}}
+  :allowed-methods [:get]
+  :available-media-types ["application/json"]
+  :handle-ok (fn [ctx] (comment-service/get-user-issue-comments issue_id (retrieve-token-user-id ctx)
+                         :sort-by (keyword (get-in ctx [:request :params :sort-by]))
+                         :last_comment_id (get-in ctx [:request :params :last_comment_id]))))

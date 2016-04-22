@@ -1,6 +1,7 @@
 (ns com.pav.api.services.users
   (:require [buddy.hashers :as h]
             [com.pav.api.schema.user :as us]
+            [com.pav.api.schema.comment :as cs]
             [com.pav.api.utils.utils :as utils]
             [com.pav.api.dynamodb.user :as dynamo-dao]
             [com.pav.api.redis.redis :as redis-dao]
@@ -490,3 +491,6 @@ so it can be fed to ':malformed?' handler."
 
 (defn send-contact-form-email [body]
   (mandril/send-contact-form-email body))
+
+(defn validate-user-issue-comment [payload]
+  ())

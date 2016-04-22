@@ -32,7 +32,7 @@
       (assoc comment :liked false :disliked true))
     (assoc comment :liked false :disliked false)))
 
-(defn- batch-get-comments
+(defn- batch-get-bill-comments
   "Given a collection of bill_ids then collect associated comments"
   [comment-ids sort-key & [user_id]]
   (t/have (complement empty?) comment-ids)
@@ -43,7 +43,7 @@
     (mapv #(associate-user-img %))
     (sort-by sort-key >)))
 
-(defn get-comments
+(defn get-bill-comments
   "Retrieve Parent level comments for bill-comment-idx"
   [bill_id sorted-by limit & {:keys [user_id last_comment_id]}]
   (t/have [:or keyword? nil?] sorted-by)
@@ -66,19 +66,19 @@
         parent-comments (far/query dy/client-opts dy/bill-comment-table-name {:id [:eq bill_id]} opts)
         comment_ids (->> parent-comments (mapv #(get-in % [:comment_id])))]
     (if-not (empty? comment_ids)
-      {:comments (batch-get-comments comment_ids (second index) user_id)
+      {:comments (batch-get-bill-comments comment_ids (second index) user_id)
        :last_comment_id (get-in (meta parent-comments) [:last-prim-kvs :comment_id])}
       {:comments [] :last_comment_id nil})))
 
-(defn retrieve-replies
+(defn retrieve-bill-comment-replies
   "If comment has children, then retrieve replies."
   [{:keys [has_children comment_id] :as comment} sort-by limit & [user_id]]
   (if has_children
-    (assoc comment :replies (mapv #(retrieve-replies % sort-by limit user_id)
-                              (:comments (get-comments (create-bill-comment-thread-list-key comment_id) sort-by limit :user_id user_id))))
+    (assoc comment :replies (mapv #(retrieve-bill-comment-replies % sort-by limit user_id)
+                              (:comments (get-bill-comments (create-bill-comment-thread-list-key comment_id) sort-by limit :user_id user_id))))
     (assoc comment :replies [])))
 
-(defn create-reply [{:keys [parent_id comment_id timestamp score] :as comment}]
+(defn create-bill-comment-reply [{:keys [parent_id comment_id timestamp score] :as comment}]
   (t/have integer? score)
   (t/have number? timestamp)
   ;update has_children attribute on parent
@@ -90,7 +90,7 @@
      :comment_id comment_id :timestamp  timestamp :score score})
   (far/put-item dy/client-opts dy/comment-details-table-name comment))
 
-(defn create-comment [{:keys [parent_id bill_id comment_id timestamp score] :as comment}]
+(defn create-bill-comment [{:keys [parent_id bill_id comment_id timestamp score] :as comment}]
   (t/have integer? score)
   (t/have number? timestamp)
   (if (nil? parent_id)
@@ -99,14 +99,14 @@
       (far/put-item dy/client-opts dy/bill-comment-table-name
         {:id bill_id :comment_id comment_id :timestamp timestamp :score score})
       (far/put-item dy/client-opts dy/comment-details-table-name comment))
-    (create-reply comment)))
+    (create-bill-comment-reply comment)))
 
-(defn update-comment [new-body comment_id]
+(defn update-bill-comment [new-body comment_id]
   (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}
     {:update-expr "SET #body = :body" :expr-attr-names {"#body" "body"} :expr-attr-vals {":body" new-body}
      :return :all-new}))
 
-(defn- mark-comment-for-deletion [comment_id]
+(defn- mark-bill-comment-for-deletion [comment_id]
   (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}
     {:update-expr     "SET #deleted = :val, #updated = :updated"
      :expr-attr-names {"#deleted" "deleted" "#updated" "updated_at"}
@@ -133,13 +133,13 @@
   (when-let [{:keys [timestamp]} (get-bill-comment comment_id)]
     (remove-comment-from-timeline user_id timestamp)
     (delete-comment-from-feed comment_id)
-    (mark-comment-for-deletion comment_id)))
+    (mark-bill-comment-for-deletion comment_id)))
 
 (defn get-bill-comments
   "Retrieve comments for bill, if user_id is specified gather additional meta data."
   [id & {:keys [user_id sort-by limit last_comment_id] :or {sort-by :highest-score limit 10}}]
-  (let [{:keys [comments last_comment_id]} (get-comments id sort-by limit :user_id user_id :last_comment_id last_comment_id)
-        comments (mapv #(retrieve-replies % sort-by limit user_id) comments)]
+  (let [{:keys [comments last_comment_id]} (get-bill-comments id sort-by limit :user_id user_id :last_comment_id last_comment_id)
+        comments (mapv #(retrieve-bill-comment-replies % sort-by limit user_id) comments)]
     {:total (count comments) :comments comments :last_comment_id last_comment_id}))
 
 (defn get-bill-comment [comment_id]
@@ -173,7 +173,7 @@
                                   (mapv :user_id)))
         users-against (into #{} (->> (filterv #(false? (:vote %)) bill-votes)
                                   (mapv :user_id)))
-        parent-comments (:comments (get-comments bill-id :score 10 :user_id user_id))
+        parent-comments (:comments (get-bill-comments bill-id :score 10 :user_id user_id))
         comments-for     (filterv #(contains? users-for (:author %)) parent-comments)
         comments-against (filterv #(contains? users-against (:author %)) parent-comments)]
 
@@ -205,3 +205,35 @@
       {:attr-conds {:timestamp [:between [start end]]}})
     meta
     :count))
+
+(defn create-issue-comment [comment]
+  (far/put-item dy/client-opts dy/user-issue-comments-table-name comment))
+
+(defn get-issue-comment [comment_id]
+  (far/get-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id}))
+
+(defn- assoc-user-issue-comment-scores [user_id comments]
+  (if user_id
+    comments
+    (mapv #(assoc % :liked false :disliked false) comments)))
+
+(defn get-user-issue-comments
+  "Retrieve user issue comments"
+  [issue_id & {:keys [user_id sort-by limit last_comment_id]
+               :or {sort-by :highest-score limit 10}}]
+  (let [index (case sort-by
+                :highest-score "issueid-score-idx"
+                :latest "issueid-timestamp-idx"
+                "issueid-score-idx")
+        last_comment (if last_comment_id
+                       (get-issue-comment last_comment_id))
+        opts (merge {:index index :limit limit :order :desc :span-reqs {:max 1}}
+               (if last_comment
+                 (case sort-by
+                   :highest-score {:last-prim-kvs (select-keys last_comment [:issue_id :score :comment_id])}
+                   :latest {:last-prim-kvs (select-keys last_comment [:issue_id :timestamp :comment_id])}
+                   {:last-prim-kvs (select-keys last_comment [:issue_id :score :comment_id])})))
+        comments (far/query dy/client-opts dy/user-issue-comments-table-name {:issue_id [:eq issue_id]} opts)]
+    {:total           (count comments)
+     :comments        (assoc-user-issue-comment-scores user_id comments)
+     :last_comment_id (:comment_id (:last-prim-kvs (meta comments)))}))

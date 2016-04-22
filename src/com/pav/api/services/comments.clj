@@ -13,7 +13,7 @@
             [com.pav.api.dynamodb.user :as du])
   (:import (java.util UUID Date)))
 
-(defn new-dynamo-comment [comment-id author comment]
+(defn- new-dynamo-comment [comment-id author comment]
   (-> comment
     (assoc :comment_id comment-id)
     (assoc :id comment-id)
@@ -25,6 +25,19 @@
            :author_first_name (:first_name author)
            :author_last_name (:last_name author))))
 
+(defn- new-issue-comment [comment author]
+  (let [timestamp (.getTime (Date.))]
+    (-> comment
+      (merge {:comment_id        (.toString (UUID/randomUUID))
+              :timestamp         timestamp
+              :updated_at        timestamp
+              :score             0
+              :author            (:user_id author)
+              :author_first_name (:first_name author)
+              :author_last_name  (:last_name author)
+              :author_img_url    (:img_url author)
+              :deleted           false}))))
+
 (defn assoc-bill-comment-count [comment]
   (dc/assoc-bill-comment-count comment))
 
@@ -35,7 +48,10 @@
   (.toString (UUID/randomUUID)))
 
 (defn persist-comment [comment]
-  (dc/create-comment comment))
+  (dc/create-bill-comment comment))
+
+(defn persist-issue-comment [comment]
+  (dc/create-issue-comment comment))
 
 (defn- publish-comment-reply-notifications [{:keys [bill_id parent_id] :as comment}]
   (let [notification_id (.toString (UUID/randomUUID))
@@ -60,7 +76,7 @@
       (catch Exception e (log/error "Error Occured processing comment events " e)))))
 
 (defn update-bill-comment [payload comment_id]
-  (dc/update-comment (:body payload) comment_id))
+  (dc/update-bill-comment (:body payload) comment_id))
 
 (defn delete-bill-comment [comment_id user_id]
   (dc/delete-comment comment_id user_id))
@@ -73,6 +89,13 @@
     (persist-comment new-dynamo-comment)
     (publish-comment-events new-dynamo-comment)
     {:record new-dynamo-comment}))
+
+(defn create-user-issue-comment [comment user_id]
+  (let [user (du/get-user-by-id user_id)
+        new-dynamo-comment (new-issue-comment comment user)
+        ]
+    (persist-issue-comment new-dynamo-comment)
+    (assoc new-dynamo-comment :liked false :disliked false)))
 
 (defn create-bill-comment-reply [comment-id reply user]
   (let [author user
@@ -108,3 +131,7 @@
   (if-let [{:keys [author]} (dc/get-bill-comment comment_id)]
     (= author user_id)
     false))
+
+(defn get-user-issue-comments [issue_id user_id & {:keys [sort-by last_comment_id]
+                                                   :or   {sort-by :highest-score last_comment_id nil}}]
+  (dc/get-user-issue-comments issue_id :user_id user_id :sort-by sort-by :last_comment_id last_comment_id))
