@@ -11,7 +11,7 @@ CREATE TABLE user_info (
   gender varchar(6),
   dob int,
   address text,
-  zipcode text,
+  zipcode varchar(5),
   state text,
   -- for lat/long we are going to use DECIMAL to skip rounding imposed by FLOAT/DOUBLE.
   -- See: http://stackoverflow.com/questions/12504208/what-mysql-data-type-should-be-used-for-latitude-longitude-with-8-decimal-place
@@ -20,7 +20,7 @@ CREATE TABLE user_info (
   public_profile bool,
   created_at int,
   updated_at int,
-  country_code text);
+  country_code varchar(3));
 
 CREATE TABLE user_creds_fb (
   -- about fb id length: http://stackoverflow.com/questions/7566672/whats-the-max-length-of-a-facebook-uid
