@@ -75,7 +75,7 @@
   [{:keys [has_children comment_id] :as comment} sort-by limit & [user_id]]
   (if has_children
     (assoc comment :replies (mapv #(retrieve-bill-comment-replies % sort-by limit user_id)
-                              (:comments (get-user-bill-comments (create-bill-comment-thread-list-key comment_id) sort-by limit :user_id user_id))))
+                              (:comments (get-bill-comments (create-bill-comment-thread-list-key comment_id) sort-by limit :user_id user_id))))
     (assoc comment :replies [])))
 
 (defn create-bill-comment-reply [{:keys [parent_id comment_id timestamp score] :as comment}]
