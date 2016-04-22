@@ -54,6 +54,11 @@ just skipp it."
                  (throw e))))))))
   ([table] (safe-drop-table table false)))
 
+(defn empty-table!
+  "Remove everything from the table."
+  [table]
+  (sql/db-do-commands db ["TRUNCATE TABLE ?" table]))
+
 (defn drop-all-tables!
   "For database cleanup. Mainly so it can be used from tests or REPL handling."
   []
