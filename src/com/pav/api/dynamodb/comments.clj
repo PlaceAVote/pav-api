@@ -173,7 +173,7 @@
                                   (mapv :user_id)))
         users-against (into #{} (->> (filterv #(false? (:vote %)) bill-votes)
                                   (mapv :user_id)))
-        parent-comments (:comments (get-user-bill-comments bill-id :score 10 :user_id user_id))
+        parent-comments (:comments (get-bill-comments bill-id :score 10 :user_id user_id))
         comments-for     (filterv #(contains? users-for (:author %)) parent-comments)
         comments-against (filterv #(contains? users-against (:author %)) parent-comments)]
 
