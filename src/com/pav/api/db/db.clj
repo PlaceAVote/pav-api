@@ -83,8 +83,8 @@ just skipp it."
                      [(id-type :user_id "NOT NULL AUTO_INCREMENT PRIMARY KEY")
                       ;; email length is up to 254 chars, according to RFC5321
                       [:email "varchar(255)" "NOT NULL UNIQUE"]
-                      [:first_name :text]
-                      [:last_name :text]
+                      [:first_name "varchar(255)"]
+                      [:last_name "varchar(255)"]
                       [:img_url :text]
                       [:gender "varchar(6)"]
                       [:dob :int]
@@ -95,7 +95,7 @@ just skipp it."
                       ;; See: http://stackoverflow.com/questions/12504208/what-mysql-data-type-should-be-used-for-latitude-longitude-with-8-decimal-place
                       [:latitude "decimal(10, 8)"]
                       [:longtitude "decimal(11, 8)"]
-                      [:public_profile :text]
+                      [:public_profile :bool]
                       [:created_at :int]
                       [:updated_at :int]
                       [:country_code :text]])
