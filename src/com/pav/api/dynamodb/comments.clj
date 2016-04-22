@@ -75,7 +75,7 @@
   [{:keys [has_children comment_id] :as comment} sort-by limit & [user_id]]
   (if has_children
     (assoc comment :replies (mapv #(retrieve-bill-comment-replies % sort-by limit user_id)
-                              (:comments (get-bill-comments (create-bill-comment-thread-list-key comment_id) sort-by limit :user_id user_id))))
+                              (:comments (get-user-bill-comments (create-bill-comment-thread-list-key comment_id) sort-by limit :user_id user_id))))
     (assoc comment :replies [])))
 
 (defn create-bill-comment-reply [{:keys [parent_id comment_id timestamp score] :as comment}]
@@ -135,7 +135,7 @@
     (delete-comment-from-feed comment_id)
     (mark-bill-comment-for-deletion comment_id)))
 
-(defn get-bill-comments
+(defn get-user-bill-comments
   "Retrieve comments for bill, if user_id is specified gather additional meta data."
   [id & {:keys [user_id sort-by limit last_comment_id] :or {sort-by :highest-score limit 10}}]
   (let [{:keys [comments last_comment_id]} (get-bill-comments id sort-by limit :user_id user_id :last_comment_id last_comment_id)
@@ -173,7 +173,7 @@
                                   (mapv :user_id)))
         users-against (into #{} (->> (filterv #(false? (:vote %)) bill-votes)
                                   (mapv :user_id)))
-        parent-comments (:comments (get-bill-comments bill-id :score 10 :user_id user_id))
+        parent-comments (:comments (get-user-bill-comments bill-id :score 10 :user_id user_id))
         comments-for     (filterv #(contains? users-for (:author %)) parent-comments)
         comments-against (filterv #(contains? users-against (:author %)) parent-comments)]
 

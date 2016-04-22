@@ -474,6 +474,6 @@
         (:total body) => 1
         (:last_comment_id body) => nil
         (keys (first (:comments body))) => (just [:issue_id :author :author_first_name :author_last_name :author_img_url
-                                                  :comment_id :timestamp :updated_at :deleted :score :body
-                                                  :liked :disliked] :in-any-order)))
+                                                  :comment_id :timestamp :updated_at :deleted :score :body :liked
+                                                  :disliked] :in-any-order)))
     ))

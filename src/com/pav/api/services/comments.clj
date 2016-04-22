@@ -110,7 +110,7 @@
 (defn get-bill-comments
   [user_id bill-id & {:keys [sort-by last_comment_id]
                       :or {sort-by :highest-score last_comment_id nil}}]
-  (dc/get-bill-comments bill-id :user_id user_id :sort-by sort-by :last_comment_id last_comment_id))
+  (dc/get-user-bill-comments bill-id :user_id user_id :sort-by sort-by :last_comment_id last_comment_id))
 
 (defn score-bill-comment [user_id comment-id operation]
   (dc/score-comment comment-id user_id operation)
