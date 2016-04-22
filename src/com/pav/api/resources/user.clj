@@ -330,6 +330,29 @@
   :handle-created :record
   :handle-unauthorized {:error "Not Authorized"})
 
+(defresource update-user-issue-comment [comment_id]
+  :service-available? {:representation {:media-type "application/json"}}
+  :authorized? (fn [ctx] (and
+                           (service/is-authenticated? (retrieve-user-details ctx))
+                           (comment-service/is-issue-author? comment_id (retrieve-token-user-id ctx))))
+  :malformed? (fn [ctx] (update-issue-comment-malformed? (retrieve-body ctx)))
+  :allowed-methods [:post]
+  :available-media-types ["application/json"]
+  :post! (fn [ctx]  {:record (comment-service/update-user-issue-comment comment_id (retrieve-body ctx))})
+  :handle-malformed {:errors [{:body "Please specify a comment body"}]}
+  :handle-created :record
+  :handle-unauthorized {:error "Not Authorized"})
+
+(defresource delete-user-issue-comment [comment_id]
+  :service-available? {:representation {:media-type "application/json"}}
+  :authorized? (fn [ctx] (and
+                           (service/is-authenticated? (retrieve-user-details ctx))
+                           (comment-service/is-issue-author? comment_id (retrieve-token-user-id ctx))))
+  :allowed-methods [:delete]
+  :available-media-types ["application/json"]
+  :delete! (fn [_]  {:record (comment-service/delete-user-issue-comment comment_id)})
+  :handle-unauthorized {:error "Not Authorized"})
+
 (defresource user-issue-comments [issue_id]
   :service-available? {:representation {:media-type "application/json"}}
   :allowed-methods [:get]

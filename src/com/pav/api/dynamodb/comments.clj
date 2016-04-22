@@ -209,6 +209,13 @@
 (defn create-issue-comment [comment]
   (far/put-item dy/client-opts dy/user-issue-comments-table-name comment))
 
+(defn update-user-issue-comment [new-body comment_id]
+  (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id}
+    {:update-expr     "SET #body = :body, #updated = :updated"
+     :expr-attr-names {"#body" "body" "#updated" "updated_at"}
+     :expr-attr-vals  {":body" new-body ":updated" (.getTime (Date.))}
+     :return :all-new}))
+
 (defn get-issue-comment [comment_id]
   (far/get-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id}))
 
@@ -225,10 +232,8 @@
                 :highest-score "issueid-score-idx"
                 :latest "issueid-timestamp-idx"
                 "issueid-score-idx")
-        last_comment (if last_comment_id
-                       (get-issue-comment last_comment_id))
         opts (merge {:index index :limit limit :order :desc :span-reqs {:max 1}}
-               (if last_comment
+               (when-let [last_comment (and last_comment_id (get-issue-comment last_comment_id))]
                  (case sort-by
                    :highest-score {:last-prim-kvs (select-keys last_comment [:issue_id :score :comment_id])}
                    :latest {:last-prim-kvs (select-keys last_comment [:issue_id :timestamp :comment_id])}
@@ -237,3 +242,10 @@
     {:total           (count comments)
      :comments        (assoc-user-issue-comment-scores user_id comments)
      :last_comment_id (:comment_id (:last-prim-kvs (meta comments)))}))
+
+(defn mark-user-issue-for-deletion [comment_id]
+  (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id}
+    {:update-expr     "SET #deleted = :deleted, #updated = :updated"
+     :expr-attr-names {"#deleted" "deleted" "#updated" "updated_at"}
+     :expr-attr-vals  {":deleted" true ":updated" (.getTime (Date.))}
+     :return :all-new}))

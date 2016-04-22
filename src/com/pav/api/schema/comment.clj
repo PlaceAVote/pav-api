@@ -10,6 +10,9 @@
   {:issue_id str-schema
    :body str-schema})
 
+(def IssueCommentRecordUpdate
+  {:body str-schema})
+
 (def BillCommentScoringRecord
   {:bill_id str-schema})
 
@@ -32,3 +35,6 @@
 
 (defn new-issue-comment-malformed? [payload]
   (valid-payload? IssueCommentRecord payload))
+
+(defn update-issue-comment-malformed? [payload]
+  (valid-payload? IssueCommentRecordUpdate payload))

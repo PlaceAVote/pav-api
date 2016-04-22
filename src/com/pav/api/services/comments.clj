@@ -97,6 +97,12 @@
     (persist-issue-comment new-dynamo-comment)
     (assoc new-dynamo-comment :liked false :disliked false)))
 
+(defn update-user-issue-comment [comment_id payload]
+  (dc/update-user-issue-comment (:body payload) comment_id))
+
+(defn delete-user-issue-comment [comment_id]
+  (dc/mark-user-issue-for-deletion comment_id))
+
 (defn create-bill-comment-reply [comment-id reply user]
   (let [author user
         new-comment-id (create-comments-key)
@@ -129,6 +135,11 @@
 
 (defn is-author? [comment_id user_id]
   (if-let [{:keys [author]} (dc/get-bill-comment comment_id)]
+    (= author user_id)
+    false))
+
+(defn is-issue-author? [comment_id user_id]
+  (if-let [{:keys [author]} (dc/get-issue-comment comment_id)]
     (= author user_id)
     false))
 
