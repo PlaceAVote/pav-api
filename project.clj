@@ -59,7 +59,8 @@
   :main system
   :aliases {"migrate"       ["run" "-m" "com.pav.api.db.migrations/migrate!"]
             "repair"        ["run" "-m" "com.pav.api.db.migrations/repair"]
-            "info"          ["run" "-m" "com.pav.api.db.migrations/info"]}
+            "info"          ["run" "-m" "com.pav.api.db.migrations/info"]
+            "drop-tables"   ["run" "-m" "com.pav.api.db.db/drop-all-tables!"]}
   :profiles
   {
    :uberjar {:jvm-opts     ^:replace ["-Xms256m" "-Xmx512m" "-Xss512k" "-XX:MaxMetaspaceSize=150m"]

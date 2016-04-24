@@ -75,11 +75,6 @@ CREATE TABLE user_issues (
   article_title text,
   article_img text,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
-  
-CREATE TABLE user_issue_comments (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  issue_id int,
-  FOREIGN KEY(issue_id) REFERENCES user_issues(id) ON DELETE CASCADE);
 
 CREATE TABLE user_issue_responses (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -101,6 +96,13 @@ CREATE TABLE comments (
   deleted bool,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(parent_id) REFERENCES comments(id) ON DELETE CASCADE);
+
+CREATE TABLE user_issue_comments (
+  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  issue_id int,
+  comment_id int,
+  FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE,
+  FOREIGN KEY(issue_id) REFERENCES user_issues(id) ON DELETE CASCADE);
 
 CREATE TABLE user_bill_comments (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
