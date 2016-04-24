@@ -497,4 +497,30 @@
         (keys (first (:comments body))) => (just [:issue_id :author :author_first_name :author_last_name :author_img_url
                                                   :comment_id :timestamp :updated_at :deleted :score :body :liked
                                                   :disliked] :in-any-order)))
+
+    (future-fact "Given an existing issue comment, When a user likes the comment, Then verify the new score has been recorded."
+      (let [{body :body} (pav-req :put "/user" (new-pav-user))
+            {token :token} body
+            ;;create issue
+            {newissue :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+            ;;create issue comment
+            _ (pav-req :put "/user/issue/comment" token {:issue_id (:issue_id newissue) :body "Issue comment"})
+            ;;like issue
+            _ (pav-req :post (str "/user/issue/comments/" (:comment_id body) "/like") token {})
+            {status :status body :body} (pav-req :get (str "/user/issue/" (:issue_id newissue) "/comments"))]
+        status => 200
+        (:score (first (:comments body))) => 1))
+
+    (future-fact "Given an existing issue comment, When a user dislikes the comment, Then verify the new score has been recorded."
+      (let [{body :body} (pav-req :put "/user" (new-pav-user))
+            {token :token} body
+            ;;create issue
+            {newissue :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+            ;;create issue comment
+            _ (pav-req :put "/user/issue/comment" token {:issue_id (:issue_id newissue) :body "Issue comment"})
+            ;;like issue
+            _ (pav-req :post (str "/user/issue/comments/" (:comment_id body) "/dislike") token {})
+            {status :status body :body} (pav-req :get (str "/user/issue/" (:issue_id newissue) "/comments"))]
+        status => 200
+        (:score (first (:comments body))) => 1))
     ))
