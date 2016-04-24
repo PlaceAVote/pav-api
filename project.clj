@@ -57,6 +57,9 @@
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
   :main system
+  :aliases {"migrate"       ["run" "-m" "com.pav.api.db.migrations/migrate!"]
+            "repair"        ["run" "-m" "com.pav.api.db.migrations/repair"]
+            "info"          ["run" "-m" "com.pav.api.db.migrations/info"]}
   :profiles
   {
    :uberjar {:jvm-opts     ^:replace ["-Xms256m" "-Xmx512m" "-Xss512k" "-XX:MaxMetaspaceSize=150m"]

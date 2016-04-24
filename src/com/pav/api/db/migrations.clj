@@ -55,5 +55,7 @@ explanation."
 (defn info
   "Return detail information about done or pending migrations."
   ([obj]
-     (map get-migration-detail (-> obj flyway-setup .info .all)))
+   (let [i (map get-migration-detail (-> obj flyway-setup .info .all))]
+     (log/info i)
+     i))
   ([] (info db/db)))
