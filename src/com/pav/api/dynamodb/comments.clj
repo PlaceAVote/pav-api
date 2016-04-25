@@ -219,9 +219,17 @@
 (defn get-issue-comment [comment_id]
   (far/get-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id}))
 
+(defn- assoc-issue-comment-score [{:keys [comment_id] :as comment} user_id]
+  (let [{liked? :liked} (and user_id (far/get-item dy/client-opts dy/user-issue-comments-scoring-table
+                                      {:comment_id comment_id :user_id user_id}))]
+    (cond-> comment
+      (nil? liked?)   (assoc :liked false :disliked false)
+      (true? liked?)  (assoc :liked true)
+      (false? liked?) (assoc :disliked false))))
+
 (defn- assoc-user-issue-comment-scores [user_id comments]
   (if user_id
-    comments
+    (mapv #(assoc-issue-comment-score % user_id) comments)
     (mapv #(assoc % :liked false :disliked false) comments)))
 
 (defn get-user-issue-comments
