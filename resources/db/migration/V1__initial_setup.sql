@@ -1,4 +1,4 @@
--- Initial tables. See https://drive.google.com/a/placeavote.com/file/d/0Byv1njCQKnxYVkNvTnVFdVRjXzg/view?usp=sharing 
+-- Initial setup. See https://drive.google.com/a/placeavote.com/file/d/0Byv1njCQKnxYVkNvTnVFdVRjXzg/view?usp=sharing
 -- for starting schema.
 
 CREATE TABLE user_info (
@@ -39,21 +39,21 @@ CREATE TABLE user_creds_pav (
 CREATE TABLE topic (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name text);
- 
+
 CREATE TABLE user_topic (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
   topic_id int,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(topic_id) REFERENCES topic(id) ON DELETE SET NULL);
-  
+
 CREATE TABLE user_following_rel (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
   following_id bigint unsigned,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(following_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
-  
+
 CREATE TABLE user_votes (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
@@ -94,7 +94,7 @@ CREATE TABLE comments (
   has_children bool,
   score int,
   created_at int,
-  updated_at int,		
+  updated_at int,
   deleted bool,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(parent_id) REFERENCES comments(id) ON DELETE CASCADE);
