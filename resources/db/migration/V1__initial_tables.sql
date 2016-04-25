@@ -122,3 +122,24 @@ CREATE TABLE user_comment_scores (
   bill_id varchar(10),
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE);
+
+CREATE TABLE activity_event_type (
+  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name varchar(50) NOT NULL UNIQUE,
+  source_table varchar(50) NOT NULL UNIQUE);
+
+CREATE TABLE user_activity_feed (
+  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id bigint unsigned,
+  activity_id int,
+  event_type_id int,
+  created_at int,
+  FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
+  FOREIGN KEY(event_type_id) REFERENCES activity_event_type(id) ON DELETE CASCADE);
+
+CREATE TABLE activity_feed_subscribers (
+  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id bigint unsigned,
+  activity_feed_id int,
+  FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
+  FOREIGN KEY(activity_feed_id) REFERENCES user_activity_feed(id) ON DELETE CASCADE);

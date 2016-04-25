@@ -73,6 +73,9 @@ Works fast, but can yield malformed constraints."
              "comments"
              "topic"
              "user_info"
+             "activity_event_type"
+             "user_activity_feed"
+             "activity_feed_subscribers"
              "schema_version" ;; this is flyway metadata
              ]]
     (safe-drop-table t true)))
