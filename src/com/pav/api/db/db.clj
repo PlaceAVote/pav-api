@@ -72,10 +72,10 @@ Works fast, but can yield malformed constraints."
              "user_issues"
              "comments"
              "topic"
-             "user_info"
-             "activity_event_type"
-             "user_activity_feed"
              "activity_feed_subscribers"
+             "user_activity_feed"
+             "activity_event_type"
+             "user_info"
              "schema_version" ;; this is flyway metadata
              ]]
     (safe-drop-table t true)))
