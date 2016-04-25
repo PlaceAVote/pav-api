@@ -1603,6 +1603,21 @@ paths:
       description: Retrieve user comments for issue.
       parameters:
         - $ref: '#/parameters/IssueIDParam'
+        - name: sort-by
+          in: query
+          description: "Parameter used sorting.  Specify 'latest' or 'highest-score'.  If you omit this parameter it will sort comments by highest score"
+          required: false
+          type: string
+          format: string
+          enum:
+            - latest
+            - highest-score
+        - name: last_comment_id
+          in: query
+          description: Include the last comment_id specified in the response payload for pagination support
+          required: false
+          type: string
+          format: string
       tags:
         - Users
       responses:
