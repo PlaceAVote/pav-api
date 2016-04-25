@@ -199,6 +199,10 @@ It will NOT handle exceptions."
                        :throughput {:read 5 :write 10}}]
           :throughput {:read 5 :write 10}
           :block? true})
+       (safe-create-table opts user-issue-comments-scoring-table [:comment_id :s]
+         {:range-keydef [:user_id :s]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (log/debug "Creating tables done")
        (catch Exception e 
          (log/error e (str "Failed with creating one of the tables with: " opts)))))
@@ -239,6 +243,7 @@ It will handle exceptions, so it can be safely called inside 'delete-all-tables!
      (safe-delete-table opts user-question-answers-table-name)
      (safe-delete-table opts user-issues-table-name)
      (safe-delete-table opts user-issue-comments-table-name)
+     (safe-delete-table opts user-issue-comments-scoring-table)
      (safe-delete-table opts user-issue-responses-table-name))
   ([] (delete-all-tables! client-opts)))
 

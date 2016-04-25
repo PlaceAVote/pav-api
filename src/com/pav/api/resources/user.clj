@@ -360,3 +360,23 @@
   :handle-ok (fn [ctx] (comment-service/get-user-issue-comments issue_id (retrieve-token-user-id ctx)
                          :sort-by (keyword (get-in ctx [:request :params :sort-by]))
                          :last_comment_id (get-in ctx [:request :params :last_comment_id]))))
+
+(defresource like-user-issue-comment [comment_id]
+  :service-available? {:representation {:media-type "application/json"}}
+  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+  :allowed-methods [:post :delete]
+  :available-media-types ["application/json"]
+  :post! (fn [ctx] {:record (comment-service/score-issue-comment (retrieve-token-user-id ctx) comment_id :like)})
+  :delete! (fn [ctx] (comment-service/revoke-issue-score (retrieve-token-user-id ctx) comment_id :dislike))
+  :handle-created :record
+  :handle-unauthorized {:error "Not Authorized"})
+
+(defresource dislike-user-issue-comment [comment_id]
+  :service-available? {:representation {:media-type "application/json"}}
+  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+  :allowed-methods [:post :delete]
+  :available-media-types ["application/json"]
+  :post! (fn [ctx] {:record (comment-service/score-issue-comment (retrieve-token-user-id ctx) comment_id :dislike)})
+  :delete! (fn [ctx] (comment-service/revoke-issue-score (retrieve-token-user-id ctx) comment_id :like))
+  :handle-created :record
+  :handle-unauthorized {:error "Not Authorized"})

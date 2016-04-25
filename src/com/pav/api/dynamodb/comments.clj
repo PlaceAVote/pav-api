@@ -249,3 +249,13 @@
      :expr-attr-names {"#deleted" "deleted" "#updated" "updated_at"}
      :expr-attr-vals  {":deleted" true ":updated" (.getTime (Date.))}
      :return :all-new}))
+
+(defn score-issue-comment [comment_id user_id operation]
+  (let [op (get-scoring-operation operation)]
+    (far/put-item dy/client-opts dy/user-issue-comments-scoring-table (new-user-scoring-record comment_id user_id operation))
+    (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id} (merge op {:return :all-new}))))
+
+(defn revoke-issue-score [user_id comment_id operation]
+  (let [op (get-scoring-operation operation)]
+    (far/delete-item dy/client-opts dy/user-issue-comments-scoring-table {:comment_id comment_id :user_id user_id})
+    (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id} (merge op {:return :all-new}))))

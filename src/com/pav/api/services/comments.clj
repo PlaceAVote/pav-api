@@ -146,3 +146,9 @@
 (defn get-user-issue-comments [issue_id user_id & {:keys [sort-by last_comment_id]
                                                    :or   {sort-by :highest-score last_comment_id nil}}]
   (dc/get-user-issue-comments issue_id :user_id user_id :sort-by sort-by :last_comment_id last_comment_id))
+
+(defn score-issue-comment [user_id comment_id operation]
+  (dc/score-issue-comment comment_id user_id operation))
+
+(defn revoke-issue-score [user_id comment_id operation]
+  (dc/revoke-issue-score user_id comment_id operation))
