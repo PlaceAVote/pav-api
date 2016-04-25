@@ -29,7 +29,7 @@ CREATE TABLE user_creds_fb (
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
 
 CREATE TABLE user_creds_pav (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  email varchar(255) NOT NULL PRIMARY KEY,
   user_id bigint unsigned,
   password text,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
