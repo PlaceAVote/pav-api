@@ -123,9 +123,9 @@ default-followers (:default-followers env))
     (case origin
       :pav      (do (redis-dao/update-token user_id new-token)
                     (dynamo-dao/update-user-token user_id new-token))
-      :facebook (do (->> (fb/generate-long-lived-token token)
-                         (redis-dao/update-facebook-token user_id new-token)
-                         (dynamo-dao/update-facebook-user-token user_id new-token))
+      :facebook (do (when-let [fb-token (fb/generate-long-lived-token token)]
+                      (redis-dao/update-facebook-token user_id new-token fb-token)
+                      (dynamo-dao/update-facebook-user-token user_id new-token fb-token))
                     (when-not facebook_id
                       (dynamo-dao/assign-facebook-id user_id id)
                       (redis-dao/assign-facebook-id user_id id))))
