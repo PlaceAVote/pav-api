@@ -54,14 +54,17 @@
 (defn update-user-token [user_id new-token]
   (try
     (far/update-item client-opts dy/user-table-name {:user_id user_id}
-      {:update-map {:token [:put (:token new-token)]}})
+      {:update-expr     "SET #token = :token"
+       :expr-attr-names {"#token" "token"}
+       :expr-attr-vals  {":token" new-token}})
     (catch Exception e (log/info (str "Error occured updating user token " e)))))
 
 (defn update-facebook-user-token [user_id new-token new-facebook-token]
   (try
     (far/update-item client-opts dy/user-table-name {:user_id user_id}
-      {:update-map {:token          [:put (:token new-token)]
-                    :facebook_token [:put new-facebook-token]}})
+      {:update-expr     "SET #token = :token, #facebook_token = :facebook_token"
+       :expr-attr-names {"#token" "token" "#facebook_token" "facebook_token"}
+       :expr-attr-vals  {":token" new-token ":facebook_token" new-facebook-token}})
     (catch Exception e (log/info (str "Error occured updating user token " e)))))
 
 (defn get-confirmation-token [token]
