@@ -8,7 +8,7 @@
             [com.pav.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject get-bill-info]]
             [com.pav.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.api.mandril.mandril :as mandril :refer [send-password-reset-email send-welcome-email]]
-            [com.pav.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
+            [com.pav.api.domain.user :refer [new-user-profile presentable profile-info assign-token-for
                                                   account-settings indexable-profile]]
             [com.pav.api.graph.graph-parser :as gp]
             [com.pav.api.s3.user :as s3]
@@ -119,13 +119,13 @@ default-followers (:default-followers env))
                                                          :facebook (or (get-user-by-facebook-id id)
                                                                        (get-user-by-email email))
                                                          :pav (get-user-by-email email))
-        {new-token :token} (create-token-for current-user)]
+        {:keys [pav-token] :as new-token} (assign-token-for current-user)]
     (case origin
-      :pav      (do (redis-dao/update-token user_id new-token)
-                    (dynamo-dao/update-user-token user_id new-token))
+      :pav      (do (redis-dao/update-token user_id pav-token)
+                    (dynamo-dao/update-user-token user_id pav-token))
       :facebook (do (when-let [fb-token (fb/generate-long-lived-token token)]
-                      (redis-dao/update-facebook-token user_id new-token fb-token)
-                      (dynamo-dao/update-facebook-user-token user_id new-token fb-token))
+                      (redis-dao/update-facebook-token user_id pav-token fb-token)
+                      (dynamo-dao/update-facebook-user-token user_id pav-token fb-token))
                     (when-not facebook_id
                       (dynamo-dao/assign-facebook-id user_id id)
                       (redis-dao/assign-facebook-id user_id id))))

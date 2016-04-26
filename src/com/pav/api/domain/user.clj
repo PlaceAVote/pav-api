@@ -32,7 +32,7 @@
     "Remove sensitive information from user profiles")
 	(profile-info [profile private?]
 		"Return user profile information, if private option is provided then include additional sensitive information.")
-	(create-token-for [profile]
+	(assign-token-for [profile]
 		"Assign a new token to the profile")
 	(account-settings [profile]
 		"Retrieve account settings for user")
@@ -46,7 +46,7 @@
     (dissoc profile :password :confirmation-token))
 	(profile-info [profile private?]
     (extract-profile-info profile private?))
-	(create-token-for [profile]
+	(assign-token-for [profile]
 		(assign-new-token (dissoc profile :password :token)))
 	(account-settings [profile]
 		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url :city])
@@ -62,7 +62,7 @@
     (dissoc profile :facebook_token :confirmation-token))
 	(profile-info [profile private?]
     (extract-profile-info profile private?))
-	(create-token-for [profile]
+	(assign-token-for [profile]
 		(assign-new-token (dissoc profile :token)))
 	(account-settings [profile]
 		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url :city])
