@@ -106,6 +106,7 @@
                             :default-followers                   "wam@stuff.com,wam2@pl.com"
                             :sunlight-congress-apikey            "4a8d55c9cf12410e95ad2c09615a46a4"
                             :google-geolocation-apikey           "AIzaSyB2taZNvNDGG0Fvyur-o3Xf0g6vd8sYuUM"
-                            :facebook-app-id                     "1624230887838566"
-                            :facebook-client-app-secret          "86029b94e83ed92d21d363d3f53e9f95"}
+                            :facebook-mode                       "test"
+                            :facebook-app-id                     "TEST"
+                            :facebook-client-app-secret          "TEST"}
              :plugins      [[lein-midje "3.1.3"]]}})
