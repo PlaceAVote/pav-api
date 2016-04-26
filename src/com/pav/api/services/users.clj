@@ -119,7 +119,7 @@ default-followers (:default-followers env))
                                                          :facebook (or (get-user-by-facebook-id id)
                                                                        (get-user-by-email email))
                                                          :pav (get-user-by-email email))
-        new-token (create-token-for current-user)]
+        {new-token :token} (create-token-for current-user)]
     (case origin
       :pav      (do (redis-dao/update-token user_id new-token)
                     (dynamo-dao/update-user-token user_id new-token))
