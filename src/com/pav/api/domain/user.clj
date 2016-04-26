@@ -2,7 +2,8 @@
   (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
             [com.pav.api.authentication.authentication :refer [create-auth-token]]
-						[com.pav.api.location.location-service :refer [retrieve-location-by-zip]])
+						[com.pav.api.location.location-service :refer [retrieve-location-by-zip]]
+            [com.pav.api.facebook.facebook-service :refer [generate-long-lived-token]])
   (:import (java.util UUID)
            (java.util Date)))
 
@@ -79,7 +80,8 @@
     :facebook (map->FacebookUserProfile (->
 																					user-profile
 																					assoc-common-attributes
-																					(merge {:facebook_token (:token user-profile) :facebook_id (:id user-profile)})
+																					(merge {:facebook_token (generate-long-lived-token (:token user-profile))
+                                                  :facebook_id (:id user-profile)})
 																					assign-new-token))
     nil))
 

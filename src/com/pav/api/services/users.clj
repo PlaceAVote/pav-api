@@ -13,6 +13,7 @@
             [com.pav.api.graph.graph-parser :as gp]
             [com.pav.api.s3.user :as s3]
             [com.pav.api.location.location-service :as loc]
+            [com.pav.api.facebook.facebook-service :as fb]
             [com.pav.api.events.handler :refer [process-event]]
             [com.pav.api.events.user :refer [create-followinguser-timeline-event]]
             [clojure.core.async :refer [thread]]
@@ -122,8 +123,9 @@ default-followers (:default-followers env))
     (case origin
       :pav      (do (redis-dao/update-token user_id new-token)
                     (dynamo-dao/update-user-token user_id new-token))
-      :facebook (do (redis-dao/update-facebook-token user_id token new-token)
-                    (dynamo-dao/update-facebook-user-token user_id token new-token)
+      :facebook (do (->> (fb/generate-long-lived-token token)
+                         (redis-dao/update-facebook-token user_id new-token)
+                         (dynamo-dao/update-facebook-user-token user_id new-token))
                     (when-not facebook_id
                       (dynamo-dao/assign-facebook-id user_id id)
                       (redis-dao/assign-facebook-id user_id id))))
@@ -491,6 +493,3 @@ so it can be fed to ':malformed?' handler."
 
 (defn send-contact-form-email [body]
   (mandril/send-contact-form-email body))
-
-(defn validate-user-issue-comment [payload]
-  ())

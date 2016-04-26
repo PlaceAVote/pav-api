@@ -54,7 +54,7 @@
 (defn update-token [user_id new-token]
   (wcar redis-conn (car/hmset (upk user_id) :token (:token new-token))))
 
-(defn update-facebook-token [user_id new-facebook-token new-token]
+(defn update-facebook-token [user_id new-token new-facebook-token]
   (wcar redis-conn (car/hmset (upk user_id) :token (:token new-token) :facebook_token new-facebook-token)))
 
 (defn create-password-reset-token [email reset-token]
