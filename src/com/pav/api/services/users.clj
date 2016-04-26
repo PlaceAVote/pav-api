@@ -119,17 +119,17 @@ default-followers (:default-followers env))
                                                          :facebook (or (get-user-by-facebook-id id)
                                                                        (get-user-by-email email))
                                                          :pav (get-user-by-email email))
-        {:keys [pav-token] :as new-token} (assign-token-for current-user)]
+        updated-user (assign-token-for current-user)]
     (case origin
-      :pav      (do (redis-dao/update-token user_id pav-token)
-                    (dynamo-dao/update-user-token user_id pav-token))
+      :pav      (do (redis-dao/update-token user_id (:token updated-user))
+                    (dynamo-dao/update-user-token user_id (:token updated-user)))
       :facebook (do (when-let [fb-token (fb/generate-long-lived-token token)]
-                      (redis-dao/update-facebook-token user_id pav-token fb-token)
-                      (dynamo-dao/update-facebook-user-token user_id pav-token fb-token))
+                      (redis-dao/update-facebook-token user_id (:token updated-user) fb-token)
+                      (dynamo-dao/update-facebook-user-token user_id (:token updated-user) fb-token))
                     (when-not facebook_id
                       (dynamo-dao/assign-facebook-id user_id id)
                       (redis-dao/assign-facebook-id user_id id))))
-    new-token))
+    updated-user))
 
 (defn wrap-validation-errors [result]
   "Wrap validation errors or return nil"
