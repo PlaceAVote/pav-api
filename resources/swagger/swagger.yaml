@@ -427,6 +427,12 @@ definitions:
       total_following:
         type: number
         format: number
+      total_votes:
+        type: number
+        format: number
+      last_activity:
+        type: number
+        format: number
   UserProfileResponse:
     title: UserProfile
     type: object
@@ -454,6 +460,12 @@ definitions:
         type: number
         format: number
       total_following:
+        type: number
+        format: number
+      total_votes:
+        type: number
+        format: number
+      last_activity:
         type: number
         format: number
   NewUserProfileResponse:

@@ -559,6 +559,14 @@
         "total_following": {
           "type": "number",
           "format": "number"
+        },
+        "total_votes": {
+          "type": "number",
+          "format": "number"
+        },
+        "last_activity": {
+          "type": "number",
+          "format": "number"
         }
       }
     },
@@ -597,6 +605,14 @@
           "format": "number"
         },
         "total_following": {
+          "type": "number",
+          "format": "number"
+        },
+        "total_votes": {
+          "type": "number",
+          "format": "number"
+        },
+        "last_activity": {
           "type": "number",
           "format": "number"
         }
