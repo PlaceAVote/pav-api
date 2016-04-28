@@ -488,9 +488,10 @@ so it can be fed to ':malformed?' handler."
 (defn get-user-issue-feed-item
   "Retrieve Single User Issue in the same format as that displayed in a feed item."
   ([issue_id & [user_id]]
-   (when-let [issue (or (get-user-issue issue_id)
-                        ;; To accomdate social sharing we might need to retrieve an issue id by short_issue_id field
-                        (get-user-issue (utils/base64->uuidStr issue_id)))]
+   (when-let [issue (and issue_id
+                      (or (get-user-issue issue_id)
+                      ;; To accomdate social sharing we might need to retrieve an issue id by short_issue_id field
+                          (get-user-issue (utils/base64->uuidStr issue_id))))]
      (merge
        (if (empty? (:short_issue_id issue))
          (assoc issue :short_issue_id (utils/uuid->base64Str (UUID/fromString issue_id)))
