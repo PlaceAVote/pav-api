@@ -79,7 +79,9 @@
                             :auth-pub-key                        "test-resources/pav_auth_pubkey.pem"
                             :auth-pub-key-pwd                    "password"
                             ;; db url should be in form: mysql://url/db or h2:file:///tmp/pav
-                            :db-url                              "mysql://127.0.0.1:3306/pav"
+                            ;:db-url                              "mysql://127.0.0.1:3306/pav"
+                            ;:db-url                              "h2:file:///tmp/pav"
+                            :db-url                              "h2:mem:pav;DB_CLOSE_DELAY=-1"
                             :db-user                             "pavuser"
                             :db-pwd                              "pavpass"
                             :redis-url                           "redis://127.0.0.1:6379"

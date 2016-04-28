@@ -82,8 +82,13 @@ Works fast, but can yield malformed constraints."
 (defn empty-all-tables-unsafe!
   "Empty all tables using 'SHOW TABLES' and 'empty-table-unsafe!'."
   []
+  (log/infof "Cleaning ALL tables in %s database" (:subprotocol db))
   (doseq [t (sql/query db ["SHOW TABLES"])]
-    (-> t first val empty-table-unsafe!)))
+    ;; ignore errors to skip some visible but not deleteable tables,
+    ;; like schema_version, on H2
+    (try
+      (-> t first val empty-table-unsafe!)
+      (catch Exception _))))
 
 (defn drop-all-tables!
   "For database cleanup. Mainly so it can be used from tests or REPL handling."

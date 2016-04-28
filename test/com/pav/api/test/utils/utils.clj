@@ -14,7 +14,9 @@
            [clojurewerkz.elastisch.rest.bulk :as erb]
            [clojurewerkz.elastisch.common.bulk :as ecb]
            [clojure.edn :as edn]
-           [com.pav.api.dynamodb.db :as db]))
+           [com.pav.api.dynamodb.db :as db]
+           [com.pav.api.db.migrations :as sql-migrations]
+           [com.pav.api.db.db :as sql-db]))
 
 (defn new-pav-user
   ([{:keys [email password first_name last_name dob topics gender zipcode]
@@ -130,3 +132,7 @@
     (esi/create es-connection "congress")
     (catch Exception e
       (println "Error while connecting to ElasticSearch: " e))))
+
+(defn flush-sql-tables []
+  (sql-migrations/migrate!)
+  (sql-db/empty-all-tables-unsafe!))

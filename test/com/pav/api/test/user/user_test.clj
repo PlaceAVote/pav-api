@@ -1,17 +1,17 @@
 (ns com.pav.api.test.user.user-test
   (:use midje.sweet)
   (:require [com.pav.api.test.utils.utils :refer [flush-dynamo-tables
+                                                  flush-sql-tables
                                                   flush-redis
                                                   flush-es-indexes
                                                   bootstrap-bills-and-metadata
                                                   pav-req
                                                   new-pav-user
                                                   new-fb-user]]
-            [com.pav.api.resources.user :refer [existing-user-error-msg login-error-msg]]
-            [com.pav.api.db.db :refer [empty-all-tables-unsafe!]]))
+            [com.pav.api.resources.user :refer [existing-user-error-msg login-error-msg]]))
 
 (against-background [(before :contents (do (flush-dynamo-tables)
-                                           (empty-all-tables-unsafe!)
+                                           (flush-sql-tables)
                                            (flush-redis)
                                            (flush-es-indexes)
                                            (bootstrap-bills-and-metadata)))]
