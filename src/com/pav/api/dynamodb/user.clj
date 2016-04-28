@@ -230,6 +230,20 @@
     (far/put-item client-opts dy/following-table-name following-record)
     (far/put-item client-opts dy/follower-table-name follower-record)))
 
+(defn apply-default-followers [follower-ids following-id]
+  (when (seq follower-ids)
+    (let [created_at (.getTime (Date.))
+          following-records (map #({:user_id (:user_id %) :following following-id :timestamp created_at}) follower-ids)
+          follower-records (map #({:user_id following-id :following (:user_id %) :timestamp created_at}) follower-ids)]
+      (log/info (str "Adding default followers " follower-ids " to " following-id))
+      (try
+        (far/batch-write-item client-opts
+          {dy/following-table-name {:put following-records}
+           dy/follower-table-name  {:put follower-records}})
+        (catch Exception e
+          (log/error (str "Error occured persisting default followers for " following-id
+                          " with following records " following-records " and follower records" follower-records) e))))))
+
 (defn unfollow-user [follower following]
   (far/delete-item client-opts dy/following-table-name {:user_id follower :following following})
   (far/delete-item client-opts dy/follower-table-name {:user_id following :follower follower}))

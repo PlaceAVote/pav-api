@@ -67,6 +67,10 @@ default-followers (:default-followers env))
     (if (seq feed-items)
       (du/persist-to-newsfeed feed-items))))
 
+(defn- add-default-followers [followers following]
+  (du/apply-default-followers
+    (map :user_id followers) following))
+
 (defn- persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
   (when profile
@@ -75,6 +79,7 @@ default-followers (:default-followers env))
       (redis-dao/create-user-profile profile)
       (index-user (indexable-profile profile))
       (pre-populate-newsfeed profile)
+      (add-default-followers (cached-followers default-followers) user_id)
       (send-welcome-email profile)
       (catch Exception e
         (log/errorf e "Error occured persisting user profile for '%s'" user_id)))
