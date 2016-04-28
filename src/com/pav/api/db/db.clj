@@ -9,11 +9,20 @@ similar API as dynamodb."
   "Expects url in form 'mysql://address' or 'h2://path' and return
 a map with :subprotocol and :subname as appropriate url. Only takes into
 account first column; other columns are ignored, so db type for H2 can
-be specified."
+be specified.
+
+It also does one more thing for H2 database: sets it to MySQL mode by
+appending 'mode=mysql' to url, if not given."
   [url]
   {:post [(and (contains? % :subprotocol)
                (contains? % :subname))]}
-  (zipmap [:subprotocol :subname] (.split url ":" 2)))
+  (let [[subproto path] (-> url .toLowerCase (.split ":" 2))
+        mysql-mode-str "mode=mysql"
+        ret {:subprotocol subproto, :subname path}]
+    (if (and (= "h2" subproto)
+             (not (.contains path mysql-mode-str)))
+      (update-in ret [:subname] #(str % ";" mysql-mode-str))
+      ret)))
 
 (def ^{:doc "Database access object."
        :public true}
