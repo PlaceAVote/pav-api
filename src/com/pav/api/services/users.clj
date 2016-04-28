@@ -68,8 +68,7 @@ default-followers (:default-followers env))
       (du/persist-to-newsfeed feed-items))))
 
 (defn- add-default-followers [followers following]
-  (du/apply-default-followers
-    (map :user_id followers) following))
+  (du/apply-default-followers (map :user_id followers) following))
 
 (defn- persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."

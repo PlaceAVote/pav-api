@@ -233,8 +233,8 @@
 (defn apply-default-followers [follower-ids following-id]
   (when (seq follower-ids)
     (let [created_at (.getTime (Date.))
-          following-records (map #({:user_id (:user_id %) :following following-id :timestamp created_at}) follower-ids)
-          follower-records (map #({:user_id following-id :following (:user_id %) :timestamp created_at}) follower-ids)]
+          following-records (map #(assoc {} :user_id % :following following-id :timestamp created_at) follower-ids)
+          follower-records  (map #(assoc {} :user_id following-id :following % :timestamp created_at) follower-ids)]
       (log/info (str "Adding default followers " follower-ids " to " following-id))
       (try
         (far/batch-write-item client-opts
