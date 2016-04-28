@@ -30,7 +30,7 @@ information."
      (-> obj flyway-setup .migrate))
   ([] (migrate! db/db)))
 
-(defn repair
+(defn repair!
   "Repair failed migration(s), by fixing Flyway metadata table. See
 https://flywaydb.org/documentation/api/javadoc/org/flywaydb/core/Flyway.html#repair-- for detail
 explanation."

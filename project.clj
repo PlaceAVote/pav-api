@@ -59,7 +59,7 @@
   :javac-options ["-target" "1.8" "-source" "1.8"]
   :main system
   :aliases {"migrate"       ["run" "-m" "com.pav.api.db.migrations/migrate!"]
-            "repair"        ["run" "-m" "com.pav.api.db.migrations/repair"]
+            "repair"        ["run" "-m" "com.pav.api.db.migrations/repair!"]
             "info"          ["run" "-m" "com.pav.api.db.migrations/info"]
             "drop-tables"   ["run" "-m" "com.pav.api.db.db/drop-all-tables!"]}
   :profiles
