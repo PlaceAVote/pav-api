@@ -9,7 +9,7 @@ CREATE TABLE user_info (
   last_name varchar(255),
   img_url text,
   gender varchar(6),
-  dob int,
+  dob bigint,
   address text,
   zipcode varchar(5),
   state text,
