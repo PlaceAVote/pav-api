@@ -40,3 +40,9 @@
       {:attr-conds {:created_at [:between [start end]]}})
     meta
     :count))
+
+(defn count-user-votes [user_id]
+  (->
+    (far/query dy/client-opts dy/user-votes-table-name {:user_id [:eq user_id]}
+      {:index "user-bill-idx"})
+    meta :count))
