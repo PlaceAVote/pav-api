@@ -57,7 +57,7 @@ Returns user id if everything went fine."
              (create-confirmation-record d id))
         id))
     (catch Exception e
-      (log/error e "Error occured persisting new user-profile to table with details" user-profile))))
+      (log/error e "Error occured persisting new user-profile to SQL table with details:" user-profile))))
 
 (defn delete-user [user_id]
   (sql/delete! db/db "user_info" ["user_id = ?" user_id]))

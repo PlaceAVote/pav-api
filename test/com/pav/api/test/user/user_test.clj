@@ -7,9 +7,11 @@
                                                   pav-req
                                                   new-pav-user
                                                   new-fb-user]]
-            [com.pav.api.resources.user :refer [existing-user-error-msg login-error-msg]]))
+            [com.pav.api.resources.user :refer [existing-user-error-msg login-error-msg]]
+            [com.pav.api.db.db :refer [empty-all-tables-unsafe!]]))
 
 (against-background [(before :contents (do (flush-dynamo-tables)
+                                           (empty-all-tables-unsafe!)
                                            (flush-redis)
                                            (flush-es-indexes)
                                            (bootstrap-bills-and-metadata)))]
@@ -19,15 +21,15 @@
       status => 201
       (keys body) => (contains [:user_id :token] :in-any-order)))
 
-;  (fact "Create new user, When zip+4 contains only 2 characters, Then return 400 exception"
-;    (let [{status :status body :body} (pav-req :put "/user" (new-pav-user {:zipcode "77"}))]
-;      status => 400
-;      body => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
-;
-;  (fact "Create new user, When zip+4 code doesn't correspond to a state and district, Then return 400 exception"
-;    (let [{status :status body :body} (pav-req :put "/user" (new-pav-user {:zipcode "00045"}))]
-;      status => 400
-;      body => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
+  (fact "Create new user, When zip+4 contains only 2 characters, Then return 400 exception"
+    (let [{status :status body :body} (pav-req :put "/user" (new-pav-user {:zipcode "77"}))]
+      status => 400
+      body => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
+
+  (fact "Create new user, When zip+4 code doesn't correspond to a state and district, Then return 400 exception"
+    (let [{status :status body :body} (pav-req :put "/user" (new-pav-user {:zipcode "00045"}))]
+      status => 400
+      body => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
 ;
 ;   (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
 ;         (let [{status :status body :body} (pav-req :put "/user/facebook" (new-fb-user))]

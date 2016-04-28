@@ -79,6 +79,12 @@ Works fast, but can yield malformed constraints."
                        (str "TRUNCATE TABLE " table)
                        "SET FOREIGN_KEY_CHECKS = 1"]))
 
+(defn empty-all-tables-unsafe!
+  "Empty all tables using 'SHOW TABLES' and 'empty-table-unsafe!'."
+  []
+  (doseq [t (sql/query db ["SHOW TABLES"])]
+    (-> t first val empty-table-unsafe!)))
+
 (defn drop-all-tables!
   "For database cleanup. Mainly so it can be used from tests or REPL handling."
   []
