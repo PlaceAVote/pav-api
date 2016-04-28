@@ -256,8 +256,11 @@
   (-> (far/query client-opts dy/following-table-name {:user_id [:eq user_id]}) meta :count))
 
 (defn last-activity-timestamp [user_id]
-  (if-let [t (first (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]}
-                      {:limit 1 :span-reqs {:max 1} :return [:timestamp]}))]
+  (if-let [t (->
+               (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]}
+                 {:limit 1 :span-reqs {:max 1} :return [:timestamp]})
+               first
+               :timestamp)]
     t))
 
 (defn update-user-password [user_id password]
