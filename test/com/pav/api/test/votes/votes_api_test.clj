@@ -3,7 +3,7 @@
   (:require [com.pav.api.test.utils.utils :as u :refer [pav-req
                                                         new-pav-user]]))
 
-(against-background [(before :contents (do (u/flush-dynamo-tables) (u/flush-redis)))]
+(against-background [(before :facts (do (u/flush-dynamo-tables) (u/flush-redis)))]
   (facts "Test cases to cover votes API."
 
     (fact "Given a vote request, process vote and return a 201 HTTP response"
