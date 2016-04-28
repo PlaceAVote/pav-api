@@ -18,8 +18,8 @@ CREATE TABLE user_info (
   latitude decimal(10, 8),
   longtitude decimal(11, 8),
   public_profile bool,
-  created_at int,
-  updated_at int,
+  created_at bigint,
+  updated_at bigint,
   country_code varchar(3));
 
 CREATE INDEX by_email_address ON user_info (`email`);
@@ -28,6 +28,7 @@ CREATE TABLE user_confirmation_tokens (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
   token varchar(36),
+  created_at bigint,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
 
 CREATE TABLE user_creds_fb (
@@ -65,15 +66,15 @@ CREATE TABLE user_votes (
   user_id bigint unsigned,
   bill_id varchar(10),
   vote bool,
-  created_at int,
+  created_at bigint,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
 
 CREATE TABLE user_issues (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   short_issue_id varchar(32) UNIQUE,
   user_id bigint unsigned,
-  updated_at int,
-  created_at int,
+  created_at bigint,
+  updated_at bigint,
   comment_body text,
   negative_responses int unsigned,
   neutral_responses int unsigned,
@@ -99,8 +100,8 @@ CREATE TABLE comments (
   body text,
   has_children bool,
   score int,
-  created_at int,
-  updated_at int,
+  created_at bigint,
+  updated_at bigint,
   deleted bool,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(parent_id) REFERENCES comments(id) ON DELETE CASCADE);
@@ -123,8 +124,8 @@ CREATE TABLE user_comment_scores (
   user_id bigint unsigned,
   comment_id int,
   liked bool,
-  created_at int,
-  updated_at int,
+  created_at bigint,
+  updated_at bigint,
   bill_id varchar(10),
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE);
@@ -139,7 +140,7 @@ CREATE TABLE user_activity_feed (
   user_id bigint unsigned,
   activity_id int,
   event_type_id int,
-  created_at int,
+  created_at bigint,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(event_type_id) REFERENCES activity_event_type(id) ON DELETE CASCADE);
 
