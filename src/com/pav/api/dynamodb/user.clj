@@ -255,6 +255,11 @@
 (defn count-following [user_id]
   (count (far/query client-opts dy/following-table-name {:user_id [:eq user_id]})))
 
+(defn last-activity-timestamp [user_id]
+  (if-let [t (first (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]}
+                      {:limit 1 :span-reqs {:max 1} :return [:timestamp]}))]
+    t))
+
 (defn update-user-password [user_id password]
   (far/update-item client-opts dy/user-table-name {:user_id user_id}
     {:update-map {:password [:put password]}}))

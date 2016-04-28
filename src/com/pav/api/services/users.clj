@@ -280,6 +280,9 @@ default-followers (:default-followers env))
 (defn count-user-votes [user_id]
   (dv/count-user-votes user_id))
 
+(defn last-activity-timestamp [user_id]
+  (du/last-activity-timestamp user_id))
+
 (defn user-followers [user_id]
   (->> (du/user-followers user_id)
        (mapv #(assoc % :follower_count (count-followers (:user_id %))))
@@ -296,7 +299,8 @@ default-followers (:default-followers env))
      (-> (profile-info u private?)
          (assoc :total_followers (count-followers user_id))
          (assoc :total_following (count-following user_id))
-         (assoc :total_votes     (count-user-votes user_id)))))
+         (assoc :total_votes     (count-user-votes user_id))
+         (assoc :last_activity   (last-activity-timestamp user_id)))))
   ([current-user user_id private?]
      (if-let [u (get-user-profile user_id private?)]
        (assoc u :following
