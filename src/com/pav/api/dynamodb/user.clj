@@ -250,10 +250,10 @@
     true))
 
 (defn count-followers [user_id]
-  (count (far/query client-opts dy/follower-table-name {:user_id [:eq user_id]})))
+  (-> (far/query client-opts dy/follower-table-name {:user_id [:eq user_id]}) meta :count))
 
 (defn count-following [user_id]
-  (count (far/query client-opts dy/following-table-name {:user_id [:eq user_id]})))
+  (-> (far/query client-opts dy/following-table-name {:user_id [:eq user_id]}) meta :count))
 
 (defn last-activity-timestamp [user_id]
   (if-let [t (first (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]}
