@@ -110,3 +110,26 @@ without 'http(s)://'."
 http or https, depending on Java version. Make sure suburl to start with slash."
   [suburl]
   (http-to-json (str "congress.api.sunlightfoundation.com" suburl) (is-java7-or-6?)))
+
+(defn reload-env!
+  "Force 'env' to be reloaded. This is using some trickery behind clojure's back
+and should be used only from REPL (that is mainly designed for).
+
+'env' is notorious because you can't reload it in runtime, when you change e.g. system
+property, and this function fixes that. Param 'require-opts' is a list of require
+statement for loading 'env' object and is options since it will introduce 'env' var
+in your namespace, the way you'd like. For example, you can use it as:
+
+  (reload-env! '[environ.core :refer [env]])
+
+to introduce it as 'env' or:
+
+  (reload-env! '[environ.core :as ec])
+
+to introduce it as 'ec/env'.
+
+Note that calling this function without arguments will bring 'env' in your namespace."
+  ([require-opts]
+     (.unbindRoot (ns-resolve 'environ.core 'env))
+     (require require-opts :reload))
+  ([] (reload-env! '[environ.core :refer [env]])))
