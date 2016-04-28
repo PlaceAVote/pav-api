@@ -87,6 +87,7 @@ Works fast, but can yield malformed constraints."
   ;; not, so throw this so dev knows something is wrong.
   (doseq [t ["user_following_rel"
              "user_creds_fb"
+             "user_confirmation_tokens"
              "user_creds_pav"
              "user_topic"
              "user_votes"
