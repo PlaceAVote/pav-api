@@ -234,8 +234,8 @@
   (when (seq follower-ids)
     (let [created_at (.getTime (Date.))
           following-records (map #(assoc {} :user_id % :following following-id :timestamp created_at) follower-ids)
-          follower-records  (map #(assoc {} :user_id following-id :following % :timestamp created_at) follower-ids)]
-      (log/info (str "Adding default followers " follower-ids " to " following-id))
+          follower-records  (map #(assoc {} :user_id following-id :follower % :timestamp created_at) follower-ids)]
+      (log/info (str "Adding default follower records " following-records ", " follower-records " to " following-id))
       (try
         (far/batch-write-item client-opts
           {dy/following-table-name {:put following-records}
