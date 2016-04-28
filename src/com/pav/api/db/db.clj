@@ -34,7 +34,13 @@ appending 'mode=mysql' to url, if not given."
 (defn- table-exists?
   "Returns nil if given table does not exists."
   [table]
-  (-> db (sql/query ["SHOW TABLES LIKE ?" table]) seq))
+  (if (= "mysql" (:subprotocol db))
+    (-> db (sql/query ["SHOW TABLES LIKE ?" table]) seq)
+    (try
+      ;; fallback, since H2 does not understaind above construct
+      (sql/query db [(str "SELECT 1 FROM " table)])
+      (catch java.sql.SQLException _
+        nil))))
 
 (defn- safe-create-table
   "Create table, but only if not created before. If table exists,
