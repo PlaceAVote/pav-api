@@ -26,8 +26,8 @@ CREATE INDEX by_email_address ON user_info (`email`);
 
 CREATE TABLE user_confirmation_tokens (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  user_int bigint unsigned,
-  token varchar(36)
+  user_id bigint unsigned,
+  token varchar(36),
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
 
 CREATE TABLE user_creds_fb (
