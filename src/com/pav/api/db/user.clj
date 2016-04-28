@@ -25,8 +25,14 @@ Returns nil if not found."
   (first 
    (sql/query db/db ["SELECT * FROM user_info WHERE email = ? LIMIT 1" email])))
 
-(defn get-user-profile-by-facebook-id [facebook_id]
-  )
+(defn get-user-profile-by-facebook-id
+  "Return full user details by given facebook id."
+  [facebook_id]
+  (first 
+   (sql/query db/db [(str "SELECT * FROM user_info AS u "
+                          "JOIN user_creds_fb AS c "
+                          "ON u.user_id = c.user_id "
+                          "WHERE c.facebook_id = ?") facebook_id])))
 
 (defn- create-confirmation-record
   "Helper to insert confirmation token. Be careful with calling
@@ -43,9 +49,7 @@ Returns user id if everything went fine."
   [user-profile]
   (try
     (sql/with-db-transaction [d db/db]
-      (let [;; cleanup from entries, expecting compatibility with DynamoDB tables, except
-            ;; :confirmation-token which is resued in create-confirmation-record
-            data (apply dissoc user-profile [:user_id :confirmation-token])
+      (let [data (dissoc user-profile :confirmation-token)
             id (extract-value
                 (sql/insert! d "user_info" data))]
         (->> user-profile

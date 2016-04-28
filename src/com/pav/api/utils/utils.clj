@@ -133,3 +133,10 @@ Note that calling this function without arguments will bring 'env' in your names
      (.unbindRoot (ns-resolve 'environ.core 'env))
      (require require-opts :reload))
   ([] (reload-env! '[environ.core :refer [env]])))
+
+(defmacro prog1
+  "Evaluate all expressions (like begin), but return result of first expression."
+  [& body]
+  `(let [ret# ~(first body)]
+     ~@(rest body)
+     ret#))

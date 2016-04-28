@@ -36,7 +36,7 @@ https://flywaydb.org/documentation/api/javadoc/org/flywaydb/core/Flyway.html#rep
 explanation."
   ([obj]
      (-> obj flyway-setup .repair))
-  ([] (repair db/db)))
+  ([] (repair! db/db)))
 
 (defn- get-migration-detail
   "Return a map with the details about given migration."

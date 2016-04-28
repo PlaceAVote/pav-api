@@ -20,6 +20,7 @@ CREATE TABLE user_info (
   public_profile bool,
   created_at bigint,
   updated_at bigint,
+  old_user_id varchar(36),
   country_code varchar(3));
 
 CREATE INDEX by_email_address ON user_info (`email`);

@@ -3,6 +3,7 @@
             [com.pav.api.schema.user :as us]
             [com.pav.api.utils.utils :as utils]
             [com.pav.api.dynamodb.user :as dynamo-dao]
+            [com.pav.api.dbwrapper.user :as dbw]
             [com.pav.api.redis.redis :as redis-dao]
             [com.pav.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject get-bill-info]]
             [com.pav.api.authentication.authentication :refer [token-valid? create-auth-token]]
@@ -69,7 +70,7 @@ default-followers (:default-followers env))
   "Create new user profile profile to dynamo and redis."
   (when profile
     (try
-      (dynamo-dao/create-user profile)
+      (dbw/create-user profile)
       (redis-dao/create-user-profile profile)
       (index-user (indexable-profile profile))
       (pre-populate-newsfeed profile)
