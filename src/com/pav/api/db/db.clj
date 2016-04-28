@@ -5,12 +5,22 @@ similar API as dynamodb."
             [environ.core :refer [env]]
             [clojure.tools.logging :as log]))
 
+(defn- parse-url
+  "Expects url in form 'mysql://address' or 'h2://path' and return
+a map with :subprotocol and :subname as appropriate url. Only takes into
+account first column; other columns are ignored, so db type for H2 can
+be specified."
+  [url]
+  {:post [(and (contains? % :subprotocol)
+               (contains? % :subname))]}
+  (zipmap [:subprotocol :subname] (.split url ":" 2)))
+
 (def ^{:doc "Database access object."
        :public true}
-  db {:subprotocol "mysql"
-      :subname (:mysql-url env)
-      :user (:mysql-user env)
-      :password (:mysql-pwd env)})
+  db (merge
+      (parse-url (:db-url env))
+      {:user (:db-user env)
+       :password (:db-pwd env)}))
 
 (defn- table-exists?
   "Returns nil if given table does not exists."

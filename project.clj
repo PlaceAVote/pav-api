@@ -38,6 +38,7 @@
                  [com.taoensso/encore "2.33.0"]
                  [clj-time "0.11.0"]
                  [org.clojure/java.jdbc "0.5.8"]
+                 [com.h2database/h2 "1.4.191"]
                  [mysql/mysql-connector-java "5.1.38"]
                  [org.flywaydb/flyway-core "4.0"]]
   :plugins [[lein-environ "1.0.0"]
@@ -77,9 +78,10 @@
                             :auth-priv-key-pwd                   "password"
                             :auth-pub-key                        "test-resources/pav_auth_pubkey.pem"
                             :auth-pub-key-pwd                    "password"
-                            :mysql-url                           "//127.0.0.1:3306/pav"
-                            :mysql-user                          "pavuser"
-                            :mysql-pwd                           "pavpass"
+                            ;; db url should be in form: mysql://url/db or h2:file:///tmp/pav
+                            :db-url                              "mysql://127.0.0.1:3306/pav"
+                            :db-user                             "pavuser"
+                            :db-pwd                              "pavpass"
                             :redis-url                           "redis://127.0.0.1:6379"
                             :access-key                          "Whatever"
                             :secret-key                          "whatever"
