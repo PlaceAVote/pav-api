@@ -106,8 +106,11 @@
 
 (defn flush-dynamo-tables []
   (time-log "flush-dynamo-tables"
-    (db/delete-all-tables! client-opts)
-    (db/create-all-tables! client-opts)))
+    (db/recreate-all-tables! client-opts)))
+
+(defn flush-selected-dynamo-tables [tables]
+  (time-log "flush-selected-dynamo-tables"
+    (db/recreate-tables! client-opts tables)))
 
 (defn make-request
   ([method url payload]

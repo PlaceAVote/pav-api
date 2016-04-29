@@ -223,29 +223,44 @@ It will handle exceptions, so it can be safely called inside 'delete-all-tables!
         (log/error e (str "Unable to delete table: " table))
         false))))
 
+(defn delete-tables!
+  "Delete tables in given list."
+  ([opts tables]
+     (doseq [t tables]
+       (safe-delete-table opts t)))
+  ([tables] (delete-tables! client-opts tables)))
+
 (defn delete-all-tables!
   "Clear all dynamodb tables."
   ([opts]
      (log/debug "Deleting all dynamo tables...")
-     (safe-delete-table opts user-table-name)
-     (safe-delete-table opts user-confirm-table-name)
-     (safe-delete-table opts notification-table-name)
-     (safe-delete-table opts timeline-table-name)
-     (safe-delete-table opts follower-table-name)
-     (safe-delete-table opts following-table-name)
-     (safe-delete-table opts userfeed-table-name)
-     (safe-delete-table opts vote-count-table-name)
-     (safe-delete-table opts user-votes-table-name)
-     (safe-delete-table opts bill-comment-table-name)
-     (safe-delete-table opts comment-details-table-name)
-     (safe-delete-table opts comment-user-scoring-table)
-     (safe-delete-table opts question-table-name)
-     (safe-delete-table opts user-question-answers-table-name)
-     (safe-delete-table opts user-issues-table-name)
-     (safe-delete-table opts user-issue-comments-table-name)
-     (safe-delete-table opts user-issue-comments-scoring-table)
-     (safe-delete-table opts user-issue-responses-table-name))
+     (delete-tables! opts [user-table-name
+                           user-confirm-table-name
+                           notification-table-name
+                           timeline-table-name
+                           follower-table-name
+                           following-table-name
+                           userfeed-table-name
+                           vote-count-table-name
+                           user-votes-table-name
+                           bill-comment-table-name
+                           comment-details-table-name
+                           comment-user-scoring-table
+                           question-table-name
+                           user-question-answers-table-name
+                           user-issues-table-name
+                           user-issue-comments-table-name
+                           user-issue-comments-scoring-table
+                           user-issue-responses-table-name]))
   ([] (delete-all-tables! client-opts)))
+
+(defn recreate-tables!
+  "Clears and create given tables."
+  ([opts tables]
+     (delete-tables! opts tables)
+     ;; safe, since existing tables will not be created
+     (create-all-tables! opts))
+  ([tables] (recreate-tables! client-opts tables)))
 
 (defn recreate-all-tables!
   "Clears and create all tables."
