@@ -22,7 +22,7 @@
 (defresource create-comment [bill_id]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (us/is-authenticated? (u/retrieve-user-details ctx)))
-  :malformed? (fn [ctx] (new-comment-malformed? (get-in ctx [:request :body])))
+  :malformed? (fn [ctx] (new-bill-comment-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
   :put! (fn [ctx] (cs/create-bill-comment (u/retrieve-body ctx) (u/retrieve-user-details ctx)))
@@ -34,7 +34,7 @@
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (and (us/is-authenticated? (u/retrieve-user-details ctx))
                               (cs/is-author? comment_id (u/retrieve-token-user-id ctx))))
-  :malformed? (fn [ctx] (comment-update-malformed? (get-in ctx [:request :body])))
+  :malformed? (fn [ctx] (bill-comment-update-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:post]
   :available-media-types ["application/json"]
   :post! (fn [ctx] {::record (cs/update-bill-comment (u/retrieve-body ctx) comment_id)})
@@ -54,7 +54,7 @@
 (defresource create-comment-reply [comment-id]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (us/is-authenticated? (u/retrieve-user-details ctx)))
-  :malformed? (fn [ctx] (new-comment-malformed? (get-in ctx [:request :body])))
+  :malformed? (fn [ctx] (new-bill-comment-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
   :put! (fn [ctx] (cs/create-bill-comment-reply comment-id (u/retrieve-body ctx) (u/retrieve-user-details ctx)))
@@ -79,7 +79,7 @@
 (defresource like-comment [comment_id]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (us/is-authenticated? (u/retrieve-user-details ctx)))
-  :malformed? (fn [ctx] (new-score-malformed? (get-in ctx [:request :body])))
+  :malformed? (fn [ctx] (new-bill-score-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:post :delete]
   :available-media-types ["application/json"]
   :post! (fn [ctx] (cs/score-bill-comment (u/retrieve-token-user-id ctx) comment_id :like))
@@ -91,7 +91,7 @@
 (defresource dislike-comment [comment_id]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (us/is-authenticated? (u/retrieve-user-details ctx)))
-  :malformed? (fn [ctx] (new-score-malformed? (get-in ctx [:request :body])))
+  :malformed? (fn [ctx] (new-bill-score-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:post :delete]
   :available-media-types ["application/json"]
   :post! (fn [ctx] (cs/score-bill-comment (u/retrieve-token-user-id ctx) comment_id :dislike))

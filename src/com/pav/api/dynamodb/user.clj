@@ -54,14 +54,17 @@
 (defn update-user-token [user_id new-token]
   (try
     (far/update-item client-opts dy/user-table-name {:user_id user_id}
-      {:update-map {:token [:put (:token new-token)]}})
+      {:update-expr     "SET #token = :token"
+       :expr-attr-names {"#token" "token"}
+       :expr-attr-vals  {":token" new-token}})
     (catch Exception e (log/info (str "Error occured updating user token " e)))))
 
-(defn update-facebook-user-token [user_id new-facebook-token new-token]
+(defn update-facebook-user-token [user_id new-token new-facebook-token]
   (try
     (far/update-item client-opts dy/user-table-name {:user_id user_id}
-      {:update-map {:token          [:put (:token new-token)]
-                    :facebook_token [:put new-facebook-token]}})
+      {:update-expr     "SET #token = :token, #facebook_token = :facebook_token"
+       :expr-attr-names {"#token" "token" "#facebook_token" "facebook_token"}
+       :expr-attr-vals  {":token" new-token ":facebook_token" new-facebook-token}})
     (catch Exception e (log/info (str "Error occured updating user token " e)))))
 
 (defn get-confirmation-token [token]
@@ -227,6 +230,20 @@
     (far/put-item client-opts dy/following-table-name following-record)
     (far/put-item client-opts dy/follower-table-name follower-record)))
 
+(defn apply-default-followers [follower-ids following-id]
+  (when (seq follower-ids)
+    (let [created_at (.getTime (Date.))
+          following-records (map #(assoc {} :user_id % :following following-id :timestamp created_at) follower-ids)
+          follower-records  (map #(assoc {} :user_id following-id :follower % :timestamp created_at) follower-ids)]
+      (log/info (str "Adding default follower records " following-records ", " follower-records " to " following-id))
+      (try
+        (far/batch-write-item client-opts
+          {dy/following-table-name {:put following-records}
+           dy/follower-table-name  {:put follower-records}})
+        (catch Exception e
+          (log/error (str "Error occured persisting default followers for " following-id
+                          " with following records " following-records " and follower records" follower-records) e))))))
+
 (defn unfollow-user [follower following]
   (far/delete-item client-opts dy/following-table-name {:user_id follower :following following})
   (far/delete-item client-opts dy/follower-table-name {:user_id following :follower follower}))
@@ -247,10 +264,18 @@
     true))
 
 (defn count-followers [user_id]
-  (count (far/query client-opts dy/follower-table-name {:user_id [:eq user_id]})))
+  (-> (far/query client-opts dy/follower-table-name {:user_id [:eq user_id]}) meta :count))
 
 (defn count-following [user_id]
-  (count (far/query client-opts dy/following-table-name {:user_id [:eq user_id]})))
+  (-> (far/query client-opts dy/following-table-name {:user_id [:eq user_id]}) meta :count))
+
+(defn last-activity-timestamp [user_id]
+  (if-let [t (->
+               (far/query client-opts dy/timeline-table-name {:user_id [:eq user_id]}
+                 {:limit 1 :span-reqs {:max 1} :return [:timestamp] :order :desc})
+               first
+               :timestamp)]
+    t))
 
 (defn update-user-password [user_id password]
   (far/update-item client-opts dy/user-table-name {:user_id user_id}

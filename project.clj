@@ -1,4 +1,4 @@
-(defproject pav-user-api "0.1.39-SNAPSHOT"
+(defproject pav-user-api "0.1.42-SNAPSHOT"
   :description "User API for registering, authenticating and managing user profiles"
   :url "https://github.com/PlaceAVote/pav-user-api"
   :dependencies [[org.clojure/clojure "1.8.0"]
@@ -104,6 +104,8 @@
                             :dynamo-user-question-answers-table	 "user-question-answers"
                             :dynamo-user-issues-table            "user-issues"
                             :dynamo-user-issue-responses-table   "user-issue-responses"
+                            :dynamo-user-issue-comments-table-name "user-issue-comments"
+                            :dynamo-user-issue-comments-scoring-table "user-issue-scores"
                             :redis-notification-pubsub           "redis::notifications::pubsub"
                             :es-url                              "http://localhost:9200"
                             :email-mode                          "test"
@@ -117,5 +119,8 @@
                             :s3-region                           "us-west-1"
                             :default-followers                   "wam@stuff.com,wam2@pl.com"
                             :sunlight-congress-apikey            "4a8d55c9cf12410e95ad2c09615a46a4"
-                            :google-geolocation-apikey           "AIzaSyB2taZNvNDGG0Fvyur-o3Xf0g6vd8sYuUM"}
+                            :google-geolocation-apikey           "AIzaSyB2taZNvNDGG0Fvyur-o3Xf0g6vd8sYuUM"
+                            :facebook-mode                       "test"
+                            :facebook-app-id                     "TEST"
+                            :facebook-client-app-secret          "TEST"}
              :plugins      [[lein-midje "3.1.3"]]}})

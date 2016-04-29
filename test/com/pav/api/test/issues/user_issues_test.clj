@@ -14,7 +14,7 @@
                                       (flush-es-indexes)
                                       (bootstrap-bills-and-metadata)))]
 
-  (facts "Temporarily disabled."
+  (facts
     (fact "Add new issue"
       (let [{body :body} (pav-req :put "/user" (new-pav-user))
             {token :token} body
@@ -442,4 +442,90 @@
             {issue :body} (pav-req :get (str "/user/issue/" (:short_issue_id newissue)) user2_token {})]
         status => 200
         (:results feed) => []
-        (:deleted issue) => true))))
+        (:deleted issue) => true))
+
+    (fact "Given an issue, When the user comments on the issue, Then verify the comment is associated with the issue"
+      (let [{body :body} (pav-req :put "/user" (new-pav-user))
+            {token :token} body
+            {newissue :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+            {create-status :status body :body} (pav-req :put "/user/issue/comment" token {:issue_id (:issue_id newissue) :body "Issue comment"})]
+        create-status => 201
+        (keys body) => (just [:comment_id :issue_id :author :author_first_name :author_last_name :author_img_url
+                              :body :score :timestamp :liked :disliked :updated_at :deleted] :in-any-order)))
+
+    (fact "Given an existing issue comment, When author updates comment, Then verify update has taken affect"
+      (let [{body :body} (pav-req :put "/user" (new-pav-user))
+            {token :token} body
+            {newissue :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+            {body :body} (pav-req :put "/user/issue/comment" token {:issue_id (:issue_id newissue) :body "Issue comment"})
+            {update-status :status body :body}
+              (pav-req :post (str "/user/issue/comments/" (:comment_id body)) token {:body "Issue comment has been updated"})]
+        update-status => 201
+        (:body body) => "Issue comment has been updated"
+        (keys body) => (just [:comment_id :issue_id :author :author_first_name :author_last_name :author_img_url
+                              :body :score :timestamp :updated_at :deleted] :in-any-order)))
+
+    (fact "Given an existing issue comment, When the author deletes the comment, Then verify a 204"
+      (let [{body :body} (pav-req :put "/user" (new-pav-user))
+            {token :token} body
+            {newissue :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+            {body :body} (pav-req :put "/user/issue/comment" token {:issue_id (:issue_id newissue) :body "Issue comment"})
+            {delete-status :status}
+            (pav-req :delete (str "/user/issue/comments/" (:comment_id body)) token {})]
+        delete-status => 204))
+
+    (fact "Given a new issue, When the user specifies an invalid token, Then return 401"
+      (let [{create-status :status} (pav-req :put "/user/issue/comment" "rubbish" {:issue_id "10" :body "Issue comment"})]
+        create-status => 401))
+
+    (fact "Given a new issue, When the comment payload is empty, Then return 400 error"
+      (let [{body :body} (pav-req :put "/user" (new-pav-user))
+            {token :token} body
+            _ (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+            {create-status :status} (pav-req :put "/user/issue/comment" token {})]
+        create-status => 400))
+
+    (fact "Given an existing issue, Then retrieve all comments associated with that issue."
+      (let [{body :body} (pav-req :put "/user" (new-pav-user))
+            {token :token} body
+            {newissue :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+            _ (pav-req :put "/user/issue/comment" token {:issue_id (:issue_id newissue) :body "Issue comment"})
+            {status :status body :body} (pav-req :get (str "/user/issue/" (:issue_id newissue) "/comments"))]
+        status => 200
+        (:total body) => 1
+        (:last_comment_id body) => nil
+        (keys (first (:comments body))) => (just [:issue_id :author :author_first_name :author_last_name :author_img_url
+                                                  :comment_id :timestamp :updated_at :deleted :score :body :liked
+                                                  :disliked] :in-any-order)))
+
+    (fact "Given an existing issue comment, When a user likes the comment, Then verify the new score has been recorded."
+      (let [{body :body} (pav-req :put "/user" (new-pav-user))
+            {token :token} body
+            ;;create issue
+            {newissue :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+            ;;create issue comment
+            {body :body} (pav-req :put "/user/issue/comment" token {:issue_id (:issue_id newissue) :body "Issue comment"})
+            ;;like issue
+            _ (pav-req :post (str "/user/issue/comments/" (:comment_id body) "/like") token {})
+            {status :status body :body} (pav-req :get (str "/user/issue/" (:issue_id newissue) "/comments") token {})
+            {score :score liked :liked disliked :disliked} (first (:comments body))]
+        status => 200
+        liked true
+        disliked false
+        score => 1))
+
+    (fact "Given an existing issue comment, When a user dislikes the comment, Then verify the new score has been recorded."
+      (let [{body :body} (pav-req :put "/user" (new-pav-user))
+            {token :token} body
+            ;;create issue
+            {newissue :body} (pav-req :put "/user/issue" token {:comment "Comment Body goes here"})
+            ;;create issue comment
+            {body :body} (pav-req :put "/user/issue/comment" token {:issue_id (:issue_id newissue) :body "Issue comment"})
+            ;;like issue
+            _ (pav-req :post (str "/user/issue/comments/" (:comment_id body) "/dislike") token {})
+            {status :status body :body} (pav-req :get (str "/user/issue/" (:issue_id newissue) "/comments") token {})
+            {score :score liked :liked disliked :disliked} (first (:comments body))]
+        status => 200
+        liked false
+        disliked true
+        score => -1))))

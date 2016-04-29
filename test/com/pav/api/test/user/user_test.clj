@@ -10,11 +10,10 @@
                                                   new-fb-user]]
             [com.pav.api.resources.user :refer [existing-user-error-msg login-error-msg]]))
 
-(against-background [(before :contents (do (flush-dynamo-tables)
-                                           (flush-sql-tables)
-                                           (flush-redis)
-                                           (flush-es-indexes)
-                                           (bootstrap-bills-and-metadata)))]
+(against-background [(before :facts (do (flush-dynamo-tables)
+                                        (flush-redis)
+                                        (flush-es-indexes)
+                                        (bootstrap-bills-and-metadata)))]
 
   (fact "Create a new user, will return 201 status and newly created token"
     (let [{status :status body :body} (pav-req :put "/user" (new-pav-user))]

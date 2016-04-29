@@ -22,8 +22,8 @@
                          :comment_id "comment:1" :has_children false
                          :parent_id nil
                          :body       "comment body goes here!!!"}
-            _ (dc/create-comment new-comment)
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1")]
+            _ (dc/create-bill-comment new-comment)
+            persisted-comment (dc/get-user-bill-comments "hr2-114" :user_id "user1")]
         (:total persisted-comment) => 1
         (:comments persisted-comment) => (contains (assoc new-comment :replies [] :liked false :disliked false))))
 
@@ -33,9 +33,9 @@
                          :comment_id "comment:1" :has_children false
                          :parent_id nil
                          :body       "comment body goes here!!!"}
-            _ (dc/create-comment new-comment)
-            _ (dc/update-comment "updated comment body" "comment:1")
-            persisted-comment (dc/get-bill-comments "hr2-114")]
+            _ (dc/create-bill-comment new-comment)
+            _ (dc/update-bill-comment "updated comment body" "comment:1")
+            persisted-comment (dc/get-user-bill-comments "hr2-114")]
         (:total persisted-comment) => 1
         (get-in (first (:comments persisted-comment)) [:body]) => "updated comment body"))
 
@@ -43,9 +43,9 @@
       (let [new-comment {:score 5 :bill_id "hr2-114" :author "user1" :timestamp (.getTime (Date.))
                          :comment_id "comment:1" :has_children false :parent_id nil
                          :body "comment body goes here!!!"}
-            _ (dc/create-comment new-comment)]
+            _ (dc/create-bill-comment new-comment)]
         (dc/delete-comment "comment:1" "user1") => (contains {:deleted true :updated_at anything} :in-any-order)
-        (get-in (:comments (dc/get-bill-comments "hr2-114")) [:body]) => nil))
+        (get-in (:comments (dc/get-user-bill-comments "hr2-114")) [:body]) => nil))
 
     (fact "Persist new Bill Comment to DynamoDB & retrieve by id, When user_id is missing, Then verify comments are still present."
       (let [new-comment {:score 5 :bill_id "hr2-114"
@@ -53,8 +53,8 @@
                          :comment_id "comment:1" :has_children false
                          :parent_id nil
                          :body       "comment body goes here!!!"}
-            _ (dc/create-comment new-comment)
-            persisted-comment (dc/get-bill-comments "hr2-114")]
+            _ (dc/create-bill-comment new-comment)
+            persisted-comment (dc/get-user-bill-comments "hr2-114")]
         (:total persisted-comment) => 1
         (:comments persisted-comment) => (contains (assoc new-comment :replies [] :liked false :disliked false))))
 
@@ -74,10 +74,10 @@
                               :comment_id "comment:3" :has_children false
                               :parent_id "comment:2"
                               :body "Comment 2 Reply body goes here!!!"}
-            _ (dc/create-comment parent-comment)
-            _ (dc/create-comment reply-to-parent)
-            _ (dc/create-comment reply-to-comment)
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1")]
+            _ (dc/create-bill-comment parent-comment)
+            _ (dc/create-bill-comment reply-to-parent)
+            _ (dc/create-bill-comment reply-to-comment)
+            persisted-comment (dc/get-user-bill-comments "hr2-114" :user_id "user1")]
         (:total persisted-comment) => 1
         (first (:comments persisted-comment)) => (contains {:has_children true})
         (first (get-in (first (:comments persisted-comment)) [:replies])) =>
@@ -100,9 +100,9 @@
                            :comment_id "comment:2" :has_children false
                            :parent_id nil
                            :body "comment 2 body goes here!!!"}
-            _ (dc/create-comment lowest-scored)
-            _ (dc/create-comment higher-scored)
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :highest-score)]
+            _ (dc/create-bill-comment lowest-scored)
+            _ (dc/create-bill-comment higher-scored)
+            persisted-comment (dc/get-user-bill-comments "hr2-114" :user_id "user1" :sort-by :highest-score)]
         (:total persisted-comment) => 2
         (:comments persisted-comment) => [(assoc higher-scored :replies [] :liked false :disliked false)
                                           (assoc lowest-scored :replies [] :liked false :disliked false)]))
@@ -118,9 +118,9 @@
                          :comment_id "comment:2" :has_children false
                          :parent_id nil
                          :body "comment 2 body goes here!!!"}
-            _ (dc/create-comment least-recent)
-            _ (dc/create-comment most-recent)
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :latest)]
+            _ (dc/create-bill-comment least-recent)
+            _ (dc/create-bill-comment most-recent)
+            persisted-comment (dc/get-user-bill-comments "hr2-114" :user_id "user1" :sort-by :latest)]
         (:total persisted-comment) => 2
         (:comments persisted-comment) => [(assoc most-recent :replies [] :liked false :disliked false)
                                           (assoc least-recent :replies [] :liked false :disliked false)]))
@@ -136,9 +136,9 @@
                            :comment_id "comment:2" :has_children false
                            :parent_id nil
                            :body "comment 2 body goes here!!!"}
-            _ (dc/create-comment lowest-scored)
-            _ (dc/create-comment higher-scored)
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :highest-score)]
+            _ (dc/create-bill-comment lowest-scored)
+            _ (dc/create-bill-comment higher-scored)
+            persisted-comment (dc/get-user-bill-comments "hr2-114" :user_id "user1" :sort-by :highest-score)]
         (:total persisted-comment) => 2))
 
     (fact "Like a comment and ensure correct ordering by score"
@@ -147,17 +147,17 @@
                          :comment_id "comment:0" :has_children false
                          :parent_id nil
                          :body "comment body goes here!!!"}
-            _ (dc/create-comment new-comment)
+            _ (dc/create-bill-comment new-comment)
             _ (dc/score-comment "comment:0" "user1" :like)
             ;;create number of comment replies to ensure there is more than one comment in the result payload.
             _ (dotimes [n 11]
-                (dc/create-comment
+                (dc/create-bill-comment
                   {:score      0 :bill_id "hr2-114"
                    :author     "user1" :timestamp (.getTime (Date.))
                    :comment_id (str "comment:" (inc n)) :has_children false
                    :parent_id  "comment:0"
                    :body       "comment body goes here!!!"}))
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1")]
+            persisted-comment (dc/get-user-bill-comments "hr2-114" :user_id "user1")]
         (first (:comments persisted-comment)) => (contains {:score 1})))
 
     (fact "Dislike a comment"
@@ -166,17 +166,17 @@
                          :comment_id "comment:0" :has_children false
                          :parent_id nil
                          :body "comment body goes here!!!"}
-            _ (dc/create-comment new-comment)
+            _ (dc/create-bill-comment new-comment)
             _ (dc/score-comment "comment:0" "user1" :dislike)
             ;;create number of comment replies to ensure there is more than one comment in the result payload.
             _ (dotimes [n 11]
-                (dc/create-comment
+                (dc/create-bill-comment
                   {:score      0 :bill_id "hr2-114"
                    :author     "user1" :timestamp (.getTime (Date.))
                    :comment_id (str "comment:" (inc n)) :has_children false
                    :parent_id  "comment:0"
                    :body       "comment body goes here!!!"}))
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1")]
+            persisted-comment (dc/get-user-bill-comments "hr2-114" :user_id "user1")]
         (:total persisted-comment) => 1
         (first (:comments persisted-comment)) => (contains {:score -1})))
 
@@ -206,11 +206,11 @@
                                    :comment_id "comment:5" :has_children false
                                    :parent_id nil
                                    :body "I haven't voted dummy !!!"}
-            _ (dc/create-comment comment-for)
-            _ (dc/create-comment comment-against)
-            _ (dc/create-comment comment-against2)
-            _ (dc/create-comment comment-with-no-vote)
-            _ (dc/create-comment comment2-with-no-vote)
+            _ (dc/create-bill-comment comment-for)
+            _ (dc/create-bill-comment comment-against)
+            _ (dc/create-bill-comment comment-against2)
+            _ (dc/create-bill-comment comment-with-no-vote)
+            _ (dc/create-bill-comment comment2-with-no-vote)
             top-comments (dc/get-top-comments "hr2-114" "5678")]
         top-comments => {:for-comment     (assoc comment-for :liked false :disliked false)
                          :against-comment (assoc comment-against2 :liked false :disliked false)}))
@@ -241,11 +241,11 @@
                                    :comment_id "comment:5" :has_children false
                                    :parent_id nil
                                    :body "I haven't voted dummy !!!"}
-            _ (dc/create-comment comment-for)
-            _ (dc/create-comment comment-against)
-            _ (dc/create-comment comment-against2)
-            _ (dc/create-comment comment-with-no-vote)
-            _ (dc/create-comment comment2-with-no-vote)
+            _ (dc/create-bill-comment comment-for)
+            _ (dc/create-bill-comment comment-against)
+            _ (dc/create-bill-comment comment-against2)
+            _ (dc/create-bill-comment comment-with-no-vote)
+            _ (dc/create-bill-comment comment2-with-no-vote)
             top-comments (dc/get-top-comments "hr2-114")]
         top-comments => {:for-comment     (assoc comment-for :liked false :disliked false)
                          :against-comment (assoc comment-against2 :liked false :disliked false)}))
@@ -256,7 +256,7 @@
                          :comment_id "comment:1" :has_children false
                          :parent_id nil
                          :body "I love this bill!!!"}
-            _ (dc/create-comment comment-for)
+            _ (dc/create-bill-comment comment-for)
             top-comments (dc/get-top-comments "hr2-114" "5678")]
         top-comments => {:for-comment []
                          :against-comment []}))
@@ -267,7 +267,7 @@
                              :comment_id "comment:2" :has_children false
                              :parent_id nil
                              :body "I hate this bill !!!"}
-            _ (dc/create-comment comment-against)
+            _ (dc/create-bill-comment comment-against)
             top-comments (dc/get-top-comments "hr2-114" "5678")]
         top-comments => {:for-comment []
                          :against-comment []}))
@@ -284,10 +284,10 @@
                            :comment_id "comment:2" :has_children false
                            :parent_id nil
                            :body "comment 2 body goes here!!!"}
-            _ (dc/create-comment lowest-scored)
-            _ (dc/create-comment higher-scored)
-            {last_comment_id :last_comment_id} (dc/get-bill-comments "hr2-114" :user_id "user1" :highest-score :latest :limit 1)
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :highest-score :last_comment_id last_comment_id)]
+            _ (dc/create-bill-comment lowest-scored)
+            _ (dc/create-bill-comment higher-scored)
+            {last_comment_id :last_comment_id} (dc/get-user-bill-comments "hr2-114" :user_id "user1" :highest-score :latest :limit 1)
+            persisted-comment (dc/get-user-bill-comments "hr2-114" :user_id "user1" :sort-by :highest-score :last_comment_id last_comment_id)]
         (:total persisted-comment) => 1
         (:comments persisted-comment) => [(assoc lowest-scored :replies [] :liked false :disliked false)]))
 
@@ -303,10 +303,10 @@
                           :comment_id "comment:2" :has_children false
                           :parent_id nil
                           :body "comment 2 body goes here!!!"}
-            _ (dc/create-comment least-recent)
-            _ (dc/create-comment most_recent)
-            {last_comment_id :last_comment_id} (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :latest :limit 1)
-            persisted-comment (dc/get-bill-comments "hr2-114" :user_id "user1" :sort-by :latest :last_comment_id last_comment_id)]
+            _ (dc/create-bill-comment least-recent)
+            _ (dc/create-bill-comment most_recent)
+            {last_comment_id :last_comment_id} (dc/get-user-bill-comments "hr2-114" :user_id "user1" :sort-by :latest :limit 1)
+            persisted-comment (dc/get-user-bill-comments "hr2-114" :user_id "user1" :sort-by :latest :last_comment_id last_comment_id)]
         (:total persisted-comment) => 1
         (:comments persisted-comment) => [(assoc least-recent :replies [] :liked false :disliked false)]))))
 

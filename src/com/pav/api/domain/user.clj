@@ -2,7 +2,8 @@
   (:require [environ.core :refer [env]]
             [buddy.hashers :as h]
             [com.pav.api.authentication.authentication :refer [create-auth-token]]
-						[com.pav.api.location.location-service :refer [retrieve-location-by-zip]])
+						[com.pav.api.location.location-service :refer [retrieve-location-by-zip]]
+            [com.pav.api.facebook.facebook-service :refer [generate-long-lived-token]])
   (:import (java.util UUID)
            (java.util Date)))
 
@@ -22,15 +23,16 @@
 (defn hash-password [user-profile]
   (update-in user-profile [:password] h/encrypt))
 
-(defn- extract-profile-info [profile]
-	(select-keys profile [:user_id :first_name :last_name :country_code :state :public :img_url :city]))
+(defn- extract-profile-info [profile private?]
+  (cond-> (select-keys profile [:user_id :first_name :last_name :country_code :state :public :img_url :city])
+    private? (merge (select-keys profile [:zipcode :lat :lng :email :district :gender :created_at]))))
 
 (defprotocol Profiles
   (presentable [profile]
     "Remove sensitive information from user profiles")
-	(profile-info [profile]
-		"Return user profile information")
-	(create-token-for [profile]
+	(profile-info [profile private?]
+		"Return user profile information, if private option is provided then include additional sensitive information.")
+	(assign-token-for [profile]
 		"Assign a new token to the profile")
 	(account-settings [profile]
 		"Retrieve account settings for user")
@@ -42,9 +44,9 @@
   Profiles
   (presentable [profile]
     (dissoc profile :password :confirmation-token))
-	(profile-info [profile]
-		(extract-profile-info profile))
-	(create-token-for [profile]
+	(profile-info [profile private?]
+    (extract-profile-info profile private?))
+	(assign-token-for [profile]
 		(assign-new-token (dissoc profile :password :token)))
 	(account-settings [profile]
 		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url :city])
@@ -58,9 +60,9 @@
   Profiles
   (presentable [profile]
     (dissoc profile :facebook_token :confirmation-token))
-	(profile-info [profile]
-		(extract-profile-info profile))
-	(create-token-for [profile]
+	(profile-info [profile private?]
+    (extract-profile-info profile private?))
+	(assign-token-for [profile]
 		(assign-new-token (dissoc profile :token)))
 	(account-settings [profile]
 		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url :city])
@@ -78,7 +80,8 @@
     :facebook (map->FacebookUserProfile (->
 																					user-profile
 																					assoc-common-attributes
-																					(merge {:facebook_token (:token user-profile) :facebook_id (:id user-profile)})
+																					(merge {:facebook_token (generate-long-lived-token (:token user-profile))
+                                                  :facebook_id (:id user-profile)})
 																					assign-new-token))
     nil))
 

@@ -2,17 +2,19 @@
   (:require [buddy.hashers :as h]
             [com.pav.api.schema.user :as us]
             [com.pav.api.utils.utils :as utils]
-            [com.pav.api.dynamodb.user :as dynamo-dao]
             [com.pav.api.dbwrapper.user :as dbw]
+            [com.pav.api.dynamodb.user :as du]
+            [com.pav.api.dynamodb.votes :as dv]
             [com.pav.api.redis.redis :as redis-dao]
             [com.pav.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject get-bill-info]]
             [com.pav.api.authentication.authentication :refer [token-valid? create-auth-token]]
             [com.pav.api.mandril.mandril :as mandril :refer [send-password-reset-email send-welcome-email]]
-            [com.pav.api.domain.user :refer [new-user-profile presentable profile-info create-token-for
+            [com.pav.api.domain.user :refer [new-user-profile presentable profile-info assign-token-for
                                                   account-settings indexable-profile]]
             [com.pav.api.graph.graph-parser :as gp]
             [com.pav.api.s3.user :as s3]
             [com.pav.api.location.location-service :as loc]
+            [com.pav.api.facebook.facebook-service :as fb]
             [com.pav.api.events.handler :refer [process-event]]
             [com.pav.api.events.user :refer [create-followinguser-timeline-event]]
             [clojure.core.async :refer [thread]]
@@ -44,7 +46,7 @@ default-followers (:default-followers env))
 (defn get-default-issues
   "Retrieve top 2 issue events per user"
   [followers]
-  (->> (map #(dynamo-dao/get-issues-by-user (:user_id %) 2) followers)
+  (->> (map #(du/get-issues-by-user (:user_id %) 2) followers)
        flatten
        (map #(construct-issue-feed-object (get-user-by-id (:user_id %)) %))))
 
@@ -64,7 +66,10 @@ default-followers (:default-followers env))
         issues       (map add-timestamp (cached-issues (cached-followers default-followers)))
         feed-items   (mapv #(assoc % :event_id (.toString (UUID/randomUUID)) :user_id user_id) (into cached-bills issues))]
     (if (seq feed-items)
-      (dynamo-dao/persist-to-newsfeed feed-items))))
+      (du/persist-to-newsfeed feed-items))))
+
+(defn- add-default-followers [followers following]
+  (du/apply-default-followers (map :user_id followers) following))
 
 (defn- persist-user-profile [{:keys [user_id] :as profile}]
   "Create new user profile profile to dynamo and redis."
@@ -74,6 +79,7 @@ default-followers (:default-followers env))
       (redis-dao/create-user-profile profile)
       (index-user (indexable-profile profile))
       (pre-populate-newsfeed profile)
+      (add-default-followers (cached-followers default-followers) user_id)
       (send-welcome-email profile)
       (catch Exception e
         (log/errorf e "Error occured persisting user profile for '%s'" user_id)))
@@ -84,14 +90,14 @@ default-followers (:default-followers env))
   {:record (-> (new-user-profile user (or origin :pav)) persist-user-profile (select-keys [:token :user_id]))})
 
 (defn delete-user [{:keys [user_id] :as user_profile}]
-  (dynamo-dao/delete-user user_id)
+  (du/delete-user user_id)
   (redis-dao/delete-user-profile user_profile))
 
 (defn get-user-by-id [user_id]
   "Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
   (if-let [user-from-redis (redis-dao/get-user-profile user_id)]
     user-from-redis
-    (when-let [user-from-dynamodb (dynamo-dao/get-user-by-id user_id)]
+    (when-let [user-from-dynamodb (du/get-user-by-id user_id)]
       (redis-dao/create-user-profile user-from-dynamodb)
       user-from-dynamodb)))
 
@@ -99,7 +105,7 @@ default-followers (:default-followers env))
   "Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
   (if-let [user-from-redis (redis-dao/get-user-profile-by-email email)]
     user-from-redis
-    (when-let [user-from-dynamodb (dynamo-dao/get-user-by-email email)]
+    (when-let [user-from-dynamodb (du/get-user-by-email email)]
       (redis-dao/create-user-profile user-from-dynamodb)
       user-from-dynamodb)))
 
@@ -107,7 +113,7 @@ default-followers (:default-followers env))
   "Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
   (if-let [user-from-redis (redis-dao/get-user-profile-by-facebook-id facebook_id)]
     user-from-redis
-    (when-let [user-from-dynamodb (dynamo-dao/get-user-profile-by-facebook-id facebook_id)]
+    (when-let [user-from-dynamodb (du/get-user-profile-by-facebook-id facebook_id)]
       (redis-dao/create-user-profile user-from-dynamodb)
       user-from-dynamodb)))
 
@@ -118,16 +124,17 @@ default-followers (:default-followers env))
                                                          :facebook (or (get-user-by-facebook-id id)
                                                                        (get-user-by-email email))
                                                          :pav (get-user-by-email email))
-        new-token (create-token-for current-user)]
+        updated-user (assign-token-for current-user)]
     (case origin
-      :pav      (do (redis-dao/update-token user_id new-token)
-                    (dynamo-dao/update-user-token user_id new-token))
-      :facebook (do (redis-dao/update-facebook-token user_id token new-token)
-                    (dynamo-dao/update-facebook-user-token user_id token new-token)
+      :pav      (do (redis-dao/update-token user_id (:token updated-user))
+                    (du/update-user-token user_id (:token updated-user)))
+      :facebook (do (when-let [fb-token (fb/generate-long-lived-token token)]
+                      (redis-dao/update-facebook-token user_id (:token updated-user) fb-token)
+                      (du/update-facebook-user-token user_id (:token updated-user) fb-token))
                     (when-not facebook_id
-                      (dynamo-dao/assign-facebook-id user_id id)
+                      (du/assign-facebook-id user_id id)
                       (redis-dao/assign-facebook-id user_id id))))
-    new-token))
+    updated-user))
 
 (defn wrap-validation-errors [result]
   "Wrap validation errors or return nil"
@@ -221,7 +228,7 @@ default-followers (:default-followers env))
 (defn valid-user? [user origin]
   (let [user (update-in user [:email] clojure.string/lower-case)]
     (case origin
-     :pav (check-pwd (:password user) (:password (dynamo-dao/get-user-by-email (:email user))))
+     :pav (check-pwd (:password user) (:password (du/get-user-by-email (:email user))))
      :facebook (user-exist? user))))
 
 (defn authenticate-user [user origin]
@@ -234,24 +241,24 @@ default-followers (:default-followers env))
     false))
 
 (defn update-registration [token]
-  (dynamo-dao/update-registration token))
+  (du/update-registration token))
 
 (defn confirm-token-valid? [token]
-  (if-not (nil? (dynamo-dao/get-confirmation-token token))
+  (if-not (nil? (du/get-confirmation-token token))
     true
     false))
 
 (defn mark-notification [id]
-  (dynamo-dao/mark-notification id))
+  (du/mark-notification id))
 
 (defn get-notifications [user from]
-  (dynamo-dao/get-notifications user from))
+  (du/get-notifications user from))
 
 (defn get-timeline [user from]
-  (dynamo-dao/get-user-timeline user from))
+  (du/get-user-timeline user from))
 
 (defn get-feed [user from]
-  (dynamo-dao/get-user-feed user from))
+  (du/get-user-feed user from))
 
 (defn publish-following-event [follower following]
   (thread
@@ -259,40 +266,48 @@ default-followers (:default-followers env))
      (process-event (create-followinguser-timeline-event following-event)))))
 
 (defn following? [follower following]
-  (dynamo-dao/following? follower following))
+  (du/following? follower following))
 
 (defn follow-user [follower following]
   (if-not (following? follower following)
-    (do (dynamo-dao/follow-user follower following)
+    (do (du/follow-user follower following)
         (publish-following-event follower following))))
 
 (defn unfollow-user [follower following]
-  (dynamo-dao/unfollow-user follower following))
+  (du/unfollow-user follower following))
 
 (defn count-followers [user_id]
-  (dynamo-dao/count-followers user_id))
+  (du/count-followers user_id))
 
 (defn count-following [user_id]
-  (dynamo-dao/count-following user_id))
+  (du/count-following user_id))
+
+(defn count-user-votes [user_id]
+  (dv/count-user-votes user_id))
+
+(defn last-activity-timestamp [user_id]
+  (du/last-activity-timestamp user_id))
 
 (defn user-followers [user_id]
-  (->> (dynamo-dao/user-followers user_id)
+  (->> (du/user-followers user_id)
        (mapv #(assoc % :follower_count (count-followers (:user_id %))))
        (sort-by :follower_count >)))
 
 (defn user-following [user_id]
-  (->> (dynamo-dao/user-following user_id)
+  (->> (du/user-following user_id)
        (mapv #(assoc % :follower_count (count-followers (:user_id %))))
        (sort-by :follower_count >)))
 
 (defn get-user-profile
-  ([user_id]
+  ([user_id private?]
    (if-let [u (get-user-by-id user_id)]
-     (-> (profile-info u)
+     (-> (profile-info u private?)
          (assoc :total_followers (count-followers user_id))
-         (assoc :total_following (count-following user_id)))))
-  ([current-user user_id]
-     (if-let [u (get-user-profile user_id)]
+         (assoc :total_following (count-following user_id))
+         (assoc :total_votes     (count-user-votes user_id))
+         (assoc :last_activity   (last-activity-timestamp user_id)))))
+  ([current-user user_id private?]
+     (if-let [u (get-user-profile user_id private?)]
        (assoc u :following
                 (if current-user
                   (following? current-user user_id)
@@ -302,11 +317,11 @@ default-followers (:default-followers env))
   "Retrieve user profile, option to include current user for extra meta data on the relationship between both users.
   Response includes response suitable for Liberator use."
   ([user_id]
-   (if-let [profile (get-user-profile user_id)]
+   (if-let [profile (get-user-profile user_id true)]
      [true {:record profile}]
      [false {:error {:error_message "User Profile does not exist"}}]))
   ([current-user user-viewing]
-   (if-let [profile (get-user-profile current-user user-viewing)]
+   (if-let [profile (get-user-profile current-user user-viewing false)]
      [true {:record profile}]
      [false {:error {:error_message "User Profile does not exist"}}])))
 
@@ -318,7 +333,7 @@ default-followers (:default-followers env))
 
 (defn update-account-settings [user_id param-map]
   (when (seq param-map)
-    (dynamo-dao/update-account-settings user_id param-map)
+    (du/update-account-settings user_id param-map)
     (redis-dao/update-account-settings user_id param-map)
     (update-user-profile user_id param-map)))
 
@@ -334,7 +349,7 @@ default-followers (:default-followers env))
 
 (defn update-user-password [user_id new-password]
   (let [hashed-pwd (h/encrypt new-password)]
-    (dynamo-dao/update-user-password user_id hashed-pwd)
+    (du/update-user-password user_id hashed-pwd)
     (redis-dao/update-user-password user_id hashed-pwd)))
 
 (defn issue-password-reset-request [email]
@@ -402,11 +417,11 @@ default-followers (:default-followers env))
   [user_id details]
   (when-let [user (get-user-by-id user_id)]
     (let [details (merge {:user_id user_id} (merge-open-graph details) (retrieve-bill-title (:bill_id details)))
-          new-issue (dynamo-dao/create-bill-issue details)
+          new-issue (du/create-bill-issue details)
           to-populate (construct-issue-feed-object user new-issue)]
       ;; populate followers table as the last action
-      (dynamo-dao/publish-as-global-feed-item to-populate)
-      (dynamo-dao/publish-to-timeline user_id to-populate)
+      (du/publish-as-global-feed-item to-populate)
+      (du/publish-to-timeline user_id to-populate)
       (merge new-issue {:emotional_response "none"} (select-keys user [:first_name :last_name :img_url])))))
 
 (declare get-user-issue-emotional-response)
@@ -416,7 +431,7 @@ default-followers (:default-followers env))
   (let [update-map (merge (merge-open-graph update-map) (retrieve-bill-title (:bill_id update-map)))]
     (println "Updated map" update-map)
     (merge
-      (dynamo-dao/update-user-issue user_id issue_id update-map)
+      (du/update-user-issue user_id issue_id update-map)
       (select-keys (get-user-by-id user_id) [:first_name :last_name :img_url])
       (get-user-issue-emotional-response issue_id user_id))))
 
@@ -425,9 +440,9 @@ default-followers (:default-followers env))
   "Mark user issue as deleted.  Removes issue from users personal timeline and each user who has a copy on there newsfeed."
   [user_id issue_id]
   (when-let [{:keys [issue_id timestamp]} (or (get-user-issue user_id issue_id) (get-user-issue user_id (utils/base64->uuidStr issue_id)))]
-    (dynamo-dao/mark-user-issue-for-deletion user_id issue_id)
-    (dynamo-dao/delete-user-issue-from-timeline user_id timestamp)
-    (dynamo-dao/delete-user-issue-from-feed issue_id)))
+    (du/mark-user-issue-for-deletion user_id issue_id)
+    (du/delete-user-issue-from-timeline user_id timestamp)
+    (du/delete-user-issue-from-feed issue_id)))
 
 (defn validate-user-issue-emotional-response
   "Check if emotional_response parameter is in valid range. Returns inverted logic
@@ -445,7 +460,7 @@ so it can be fed to ':malformed?' handler."
   "Set emotional response for given issue_id."
   [issue_id user_id body]
   (when-let [resp (:emotional_response body)]
-    (dynamo-dao/update-user-issue-emotional-response issue_id user_id resp)
+    (du/update-user-issue-emotional-response issue_id user_id resp)
     ;; return body as is, since we already check it's content with
     ;; 'validate-user-issue-emotional-response'
     body))
@@ -453,38 +468,41 @@ so it can be fed to ':malformed?' handler."
 (defn get-user-issue-emotional-response
   "Retrieve emotional response for given issue_id."
   [issue_id user_id]
-  (select-keys (dynamo-dao/get-user-issue-emotional-response issue_id user_id)
+  (select-keys (du/get-user-issue-emotional-response issue_id user_id)
                [:emotional_response]))
 
 (defn delete-user-issue-emotional-response
   "Delete emotional response for given issue_id and user_id"
   [issue_id user_id]
-  (select-keys (dynamo-dao/delete-user-issue-emotional-response issue_id user_id)
+  (select-keys (du/delete-user-issue-emotional-response issue_id user_id)
     [:emotional_response]))
 
 (defn user-issue-exist? [issue_id]
-  (not (empty? (dynamo-dao/get-user-issue issue_id))))
+  (not (empty? (du/get-user-issue issue_id))))
 
 (defn get-user-issue
-  ([issue_id] (dynamo-dao/get-user-issue issue_id))
+  ([issue_id] (du/get-user-issue issue_id))
   ([user_id issue_id] (or
-                        (dynamo-dao/get-user-issue user_id issue_id)
-                        (dynamo-dao/get-user-issue user_id (utils/base64->uuidStr issue_id)))))
+                        (du/get-user-issue user_id issue_id)
+                        (du/get-user-issue user_id (utils/base64->uuidStr issue_id)))))
 
 (defn get-user-issue-feed-item
   "Retrieve Single User Issue in the same format as that displayed in a feed item."
   ([issue_id & [user_id]]
-   (when-let [issue (or (get-user-issue issue_id)
-                        ;; To accomdate social sharing we might need to retrieve an issue id by short_issue_id field
-                        (get-user-issue (utils/base64->uuidStr issue_id)))]
-     (merge
-       (if (empty? (:short_issue_id issue))
-         (assoc issue :short_issue_id (utils/uuid->base64Str (UUID/fromString issue_id)))
-         issue)
-       (select-keys (get-user-by-id (:user_id issue)) [:first_name :last_name :img_url])
-       (if user_id
-         (select-keys (dynamo-dao/get-user-issue-emotional-response issue_id user_id) [:emotional_response])
-         {:emotional_response "none"})))))
+   (try
+     (when-let [issue (and issue_id
+                        (or (get-user-issue issue_id)
+                          ;; To accomdate social sharing we might need to retrieve an issue id by short_issue_id field
+                          (get-user-issue (utils/base64->uuidStr issue_id))))]
+       (merge
+         (if (empty? (:short_issue_id issue))
+           (assoc issue :short_issue_id (utils/uuid->base64Str (UUID/fromString issue_id)))
+           issue)
+         (select-keys (get-user-by-id (:user_id issue)) [:first_name :last_name :img_url])
+         (if user_id
+           (select-keys (du/get-user-issue-emotional-response issue_id user_id) [:emotional_response])
+           {:emotional_response "none"})))
+     (catch Exception e (log/error "Error occured retrieving user issue" e)))))
 
 (defn contact-form-email-malformed? [body]
   (us/validate-contact-form body))

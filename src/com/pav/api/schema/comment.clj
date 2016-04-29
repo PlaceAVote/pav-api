@@ -2,14 +2,21 @@
   (:require [schema.core :as s]
             [com.pav.api.schema.common :refer :all]))
 
-(def CommentRecord
+(def BillCommentRecord
   {:bill_id str-schema
    :body str-schema})
 
-(def ScoringRecord
+(def IssueCommentRecord
+  {:issue_id str-schema
+   :body str-schema})
+
+(def IssueCommentRecordUpdate
+  {:body str-schema})
+
+(def BillCommentScoringRecord
   {:bill_id str-schema})
 
-(def CommentRecordUpdate
+(def BilllCommentRecordUpdate
   {:body str-schema})
 
 (defn valid-payload? [schema payload]
@@ -17,11 +24,17 @@
     false
     true))
 
-(defn new-score-malformed? [payload]
-  (valid-payload? ScoringRecord payload))
+(defn new-bill-score-malformed? [payload]
+  (valid-payload? BillCommentScoringRecord payload))
 
-(defn new-comment-malformed? [payload]
-  (valid-payload? CommentRecord payload))
+(defn new-bill-comment-malformed? [payload]
+  (valid-payload? BillCommentRecord payload))
 
-(defn comment-update-malformed? [payload]
-  (valid-payload? CommentRecordUpdate payload))
+(defn bill-comment-update-malformed? [payload]
+  (valid-payload? BilllCommentRecordUpdate payload))
+
+(defn new-issue-comment-malformed? [payload]
+  (valid-payload? IssueCommentRecord payload))
+
+(defn update-issue-comment-malformed? [payload]
+  (valid-payload? IssueCommentRecordUpdate payload))

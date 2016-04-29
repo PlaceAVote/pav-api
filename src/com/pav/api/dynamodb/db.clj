@@ -60,6 +60,12 @@
 (def ^{:doc "Bill issue responses."}
   user-issue-responses-table-name (:dynamo-user-issue-responses-table env))
 
+(def ^{:doc "User ISSUE comments table."}
+  user-issue-comments-table-name (:dynamo-user-issue-comments-table-name env))
+
+(def ^{:doc "Record users scoring per comment."}
+  user-issue-comments-scoring-table (:dynamo-user-issue-comments-scoring-table env))
+
 ;;; code
 
 (defn- safe-create-table
@@ -182,6 +188,21 @@ It will NOT handle exceptions."
          {:range-keydef [:user_id :s]
           :throughput {:read 5 :write 10}
           :block? true})
+       (safe-create-table opts user-issue-comments-table-name [:comment_id :s]
+         {:gsindexes [{:name "issueid-timestamp-idx"
+                       :hash-keydef [:issue_id :s]
+                       :range-keydef [:timestamp :n]
+                       :throughput {:read 5 :write 10}}
+                      {:name "issueid-score-idx"
+                       :hash-keydef [:issue_id :s]
+                       :range-keydef [:score :n]
+                       :throughput {:read 5 :write 10}}]
+          :throughput {:read 5 :write 10}
+          :block? true})
+       (safe-create-table opts user-issue-comments-scoring-table [:comment_id :s]
+         {:range-keydef [:user_id :s]
+          :throughput {:read 5 :write 10}
+          :block? true})
        (log/debug "Creating tables done")
        (catch Exception e 
          (log/error e (str "Failed with creating one of the tables with: " opts)))))
@@ -221,6 +242,8 @@ It will handle exceptions, so it can be safely called inside 'delete-all-tables!
      (safe-delete-table opts question-table-name)
      (safe-delete-table opts user-question-answers-table-name)
      (safe-delete-table opts user-issues-table-name)
+     (safe-delete-table opts user-issue-comments-table-name)
+     (safe-delete-table opts user-issue-comments-scoring-table)
      (safe-delete-table opts user-issue-responses-table-name))
   ([] (delete-all-tables! client-opts)))
 

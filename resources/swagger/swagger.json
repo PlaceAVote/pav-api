@@ -74,6 +74,24 @@
         "$ref": "#/definitions/NewVoteRecord"
       }
     },
+    "NewIssueCommentRecordParam": {
+      "name": "issue comment record",
+      "in": "body",
+      "description": "New Issue Comment Record",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/NewIssueCommentRecord"
+      }
+    },
+    "UpdateIssueCommentRecordParam": {
+      "name": "update issue comment record",
+      "in": "body",
+      "description": "Update Issue Comment Record",
+      "required": true,
+      "schema": {
+        "$ref": "#/definitions/UpdateIssueCommentRecord"
+      }
+    },
     "BillIDQueryParam": {
       "name": "bill-id",
       "in": "query",
@@ -478,6 +496,80 @@
         }
       }
     },
+    "CurrentUserProfileResponse": {
+      "title": "UserProfile",
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "number"
+        },
+        "country_code": {
+          "type": "string",
+          "format": "USA"
+        },
+        "zipcode": {
+          "type": "string",
+          "format": "string"
+        },
+        "lat": {
+          "type": "number",
+          "format": "number"
+        },
+        "lng": {
+          "type": "number",
+          "format": "number"
+        },
+        "state": {
+          "type": "string",
+          "format": "string"
+        },
+        "district": {
+          "type": "string",
+          "format": "string"
+        },
+        "city": {
+          "type": "string",
+          "format": "string"
+        },
+        "following": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "total_followers": {
+          "type": "number",
+          "format": "number"
+        },
+        "total_following": {
+          "type": "number",
+          "format": "number"
+        },
+        "total_votes": {
+          "type": "number",
+          "format": "number"
+        },
+        "last_activity": {
+          "type": "number",
+          "format": "number"
+        }
+      }
+    },
     "UserProfileResponse": {
       "title": "UserProfile",
       "type": "object",
@@ -513,6 +605,14 @@
           "format": "number"
         },
         "total_following": {
+          "type": "number",
+          "format": "number"
+        },
+        "total_votes": {
+          "type": "number",
+          "format": "number"
+        },
+        "last_activity": {
           "type": "number",
           "format": "number"
         }
@@ -972,6 +1072,25 @@
         }
       }
     },
+    "IssueCommentRecords": {
+      "type": "object",
+      "properties": {
+        "last_comment_id": {
+          "type": "string",
+          "format": "string"
+        },
+        "total": {
+          "type": "number",
+          "format": "number"
+        },
+        "comments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IssueCommentRecord"
+          }
+        }
+      }
+    },
     "BillCommentRecord": {
       "type": "object",
       "properties": {
@@ -1045,6 +1164,74 @@
         }
       }
     },
+    "IssueCommentRecord": {
+      "type": "object",
+      "properties": {
+        "comment_id": {
+          "title": "comment_id",
+          "type": "string",
+          "format": "string"
+        },
+        "author": {
+          "title": "author",
+          "type": "string",
+          "format": "string"
+        },
+        "author_first_name": {
+          "title": "authors first name",
+          "type": "string",
+          "format": "string"
+        },
+        "author_last_name": {
+          "title": "authors last name",
+          "type": "string",
+          "format": "string"
+        },
+        "author_img_url": {
+          "title": "author_img_url",
+          "type": "string",
+          "format": "string"
+        },
+        "body": {
+          "title": "body",
+          "type": "string",
+          "format": "string"
+        },
+        "score": {
+          "title": "score",
+          "type": "number",
+          "format": "number"
+        },
+        "timestamp": {
+          "title": "timestamp",
+          "type": "number",
+          "format": "number"
+        },
+        "has_children": {
+          "title": "has_children",
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "liked": {
+          "title": "User Liked Comment?",
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "disliked": {
+          "title": "User Disliked Comment?",
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "updated_at": {
+          "type": "number",
+          "format": "number"
+        },
+        "deleted": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
     "NewCommentRecord": {
       "type": "object",
       "properties": {
@@ -1075,6 +1262,31 @@
       "properties": {
         "bill_id": {
           "title": "bill_id",
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "NewIssueCommentRecord": {
+      "type": "object",
+      "properties": {
+        "issue_id": {
+          "title": "issue_id",
+          "type": "string",
+          "format": "string"
+        },
+        "body": {
+          "title": "body",
+          "type": "string",
+          "format": "string"
+        }
+      }
+    },
+    "UpdateIssueCommentRecord": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "title": "body",
           "type": "string",
           "format": "string"
         }
@@ -1319,7 +1531,7 @@
     },
     "/user/me/profile": {
       "get": {
-        "description": "Given a user_id retrieve user profile in relation to current user.",
+        "description": "Given a token retrieve user profile  Will return additional data as its the calling user.",
         "parameters": [
           {
             "$ref": "#/parameters/TokenParam"
@@ -1332,7 +1544,7 @@
           "200": {
             "description": "Successful response",
             "schema": {
-              "$ref": "#/definitions/UserProfileResponse"
+              "$ref": "#/definitions/CurrentUserProfileResponse"
             }
           },
           "401": {
@@ -2158,6 +2370,224 @@
           },
           "401": {
             "description": "Token invalid"
+          }
+        }
+      }
+    },
+    "/user/issue/{issue_id}/comments": {
+      "get": {
+        "description": "Retrieve user comments for issue.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/IssueIDParam"
+          },
+          {
+            "name": "sort-by",
+            "in": "query",
+            "description": "Parameter used sorting.  Specify 'latest' or 'highest-score'.  If you omit this parameter it will sort comments by highest score",
+            "required": false,
+            "type": "string",
+            "format": "string",
+            "enum": [
+              "latest",
+              "highest-score"
+            ]
+          },
+          {
+            "name": "last_comment_id",
+            "in": "query",
+            "description": "Include the last comment_id specified in the response payload for pagination support",
+            "required": false,
+            "type": "string",
+            "format": "string"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/IssueCommentRecords"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/user/issue/comment": {
+      "put": {
+        "description": "Create new issue comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/NewIssueCommentRecordParam"
+          },
+          {
+            "$ref": "#/parameters/TokenParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/IssueCommentRecord"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/user/issue/comments/{comment_id}": {
+      "post": {
+        "description": "Update Issue Comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UpdateIssueCommentRecordParam"
+          },
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/IssueCommentRecord"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete Issue Comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/user/issue/comments/{comment_id}/like": {
+      "post": {
+        "description": "Like a comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      },
+      "delete": {
+        "description": "Revoke a Liked comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
+    "/user/issue/comments/{comment_id}/dislike": {
+      "post": {
+        "description": "Dislike a comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      },
+      "delete": {
+        "description": "Revoke a disliked comment",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "$ref": "#/parameters/CommentIDParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
           }
         }
       }
