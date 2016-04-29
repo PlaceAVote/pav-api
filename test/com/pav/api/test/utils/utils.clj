@@ -16,7 +16,8 @@
            [clojure.edn :as edn]
            [com.pav.api.dynamodb.db :as db]
            [com.pav.api.db.migrations :as sql-migrations]
-           [com.pav.api.db.db :as sql-db]))
+           [com.pav.api.db.db :as sql-db]
+           [com.pav.api.utils.utils :refer [time-log]]))
 
 (defn new-pav-user
   ([{:keys [email password first_name last_name dob topics gender zipcode]
@@ -98,13 +99,15 @@
   (bootstrap-wizard-questions wizard-questions))
 
 (defn flush-redis []
-  (wcar redis-conn
-        (car/flushall)
-        (car/flushdb)))
+  (time-log "flush-redis"
+    (wcar redis-conn
+          (car/flushall)
+          (car/flushdb))))
 
 (defn flush-dynamo-tables []
-  (db/delete-all-tables! client-opts)
-  (db/create-all-tables! client-opts))
+  (time-log "flush-dynamo-tables"
+    (db/delete-all-tables! client-opts)
+    (db/create-all-tables! client-opts)))
 
 (defn make-request
   ([method url payload]
@@ -126,13 +129,15 @@
 
 (defn flush-es-indexes []
   (try
-    (esi/delete es-connection "pav")
-    (esi/delete es-connection "congress")
-    (esi/create es-connection "pav")
-    (esi/create es-connection "congress")
+    (time-log "flush-es-indexes"
+      (esi/delete es-connection "pav")
+      (esi/delete es-connection "congress")
+      (esi/create es-connection "pav")
+      (esi/create es-connection "congress"))
     (catch Exception e
       (println "Error while connecting to ElasticSearch: " e))))
 
 (defn flush-sql-tables []
-  (sql-migrations/migrate!)
-  (sql-db/empty-all-tables-unsafe!))
+  (time-log "flush-sql-tables"
+    (sql-migrations/migrate!)
+    (sql-db/empty-all-tables-unsafe!)))

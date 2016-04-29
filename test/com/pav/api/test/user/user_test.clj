@@ -13,6 +13,7 @@
 (against-background [(before :facts (do (flush-dynamo-tables)
                                         (flush-redis)
                                         (flush-es-indexes)
+                                        (flush-sql-tables)
                                         (bootstrap-bills-and-metadata)))]
 
   (fact "Create a new user, will return 201 status and newly created token"

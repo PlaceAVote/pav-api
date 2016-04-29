@@ -2,7 +2,8 @@
   (:require [msgpack.core :as msg]
             [msgpack.clojure-extensions]
             [clj-http.client :as http]
-            [cheshire.core :as ch])
+            [cheshire.core :as ch]
+            [clojure.tools.logging :as log])
   (:import (java.io ByteArrayInputStream)
            (org.apache.commons.codec.binary Base64)
            (java.nio ByteBuffer)
@@ -139,4 +140,14 @@ Note that calling this function without arguments will bring 'env' in your names
   [& body]
   `(let [ret# ~(first body)]
      ~@(rest body)
+     ret#))
+
+(defmacro time-log
+  "Same as clojure 'time', except it will take as input function (or block)
+name and output time result to log/info log. Returns value of last evaluated expression."
+  [label & body]
+  `(let [start# (. System (nanoTime))
+         ret# (do ~@body)]
+     (log/infof "Elapsed time for %s: %s msecs"
+                ~label (/ (double (- (. System (nanoTime)) start#)) 1000000.0))
      ret#))
