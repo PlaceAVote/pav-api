@@ -36,17 +36,12 @@
 (defn- convert-user-profile
   "Convert it from dynamodb schema to sql db schema."
   [user-profile]
-  ;; FIXME: password is not handled yet!!
-  (let [mp (select-keys user-profile [:email :first_name :last_name
-                                      :img_url :gender :address :zipcode
-                                      :state :created_at :updated_at
-                                      :confirmation-token :country_code])]
-    (assoc mp
-      :old_user_id (:user_id user-profile)
-      :latitude (:lat user-profile)
-      :longtitude (:lng user-profile)
-      :public_profile (:public user-profile)
-      :dob (-> user-profile :dob parse-dob))))
+  (assoc user-profile
+    :old_user_id (:user_id user-profile)
+    :latitude (:lat user-profile)
+    :longtitude (:lng user-profile)
+    :public_profile (:public user-profile)
+    :dob (-> user-profile :dob parse-dob)))
 
 (defn create-user [user-profile]
   (prog1
