@@ -60,7 +60,13 @@ not unique. Returns user id if everything went fine."
               (contains? user-profile :confirmation-token))]}
   (try
     (sql/with-db-transaction [d db/db]
-      (let [data (dissoc user-profile :confirmation-token)
+      ;; Select only those keys that matches table columns, or database will throw exception.
+      ;; The reason for this is because 'user-profile' contains (and can contain) more details
+      ;; shared beteween multiple tables, necessary for user storage, like password or confirmation-token.
+      (let [data (select-keys user-profile [:email :first_name :last_name :img_url :gender
+                                            :dob :address :zipcode :state :latitude :longtitude
+                                            :public_profile :created_at :updated_at :country_code
+                                            :old_user_id])
             id (extract-value
                 (sql/insert! d "user_info" data))]
         (->> user-profile
