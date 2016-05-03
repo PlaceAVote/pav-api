@@ -4,10 +4,11 @@
             [clj-http.client :as http]
             [cheshire.core :as ch]
             [clojure.tools.logging :as log])
-  (:import (java.io ByteArrayInputStream)
-           (org.apache.commons.codec.binary Base64)
-           (java.nio ByteBuffer)
-           (java.util UUID)))
+  (:import java.io.ByteArrayInputStream
+           org.apache.commons.codec.binary.Base64
+           java.nio.ByteBuffer
+           java.util.UUID
+           java.util.Date))
 
 (defn record-in-ctx [ctx]
   (get ctx :record))
@@ -115,7 +116,7 @@ http or https, depending on Java version. Make sure suburl to start with slash."
 (defn- unkeywordize
   "Convert it to uppercase, environment-like name."
   [s]
-  (-> s name str/upper-case (.replaceAll "-" "_")))
+  (-> s name .toUpperCase (.replaceAll "-" "_")))
 
 (defn reload-env!
   "Force 'env' to be reloaded. This is using some trickery behind clojure's back
@@ -146,6 +147,11 @@ variable, but variable usable from 'environ'."
   [var val]
   (System/setProperty (unkeywordize var) val)
   (reload-env!))
+
+(defn current-time
+  "Current system time as Long number."
+  []
+  (.getTime (Date.)))
 
 (defmacro prog1
   "Evaluate all expressions (like begin), but return result of first expression."
