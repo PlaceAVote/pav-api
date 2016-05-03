@@ -7,7 +7,7 @@
             [com.pav.api.domain.user :refer [assoc-common-attributes]]
             [com.pav.api.dynamodb.db :refer [user-table-name]]))
 
-(against-background [(before :facts (do (flush-selected-dynamo-tables user-table-name)
+(against-background [(before :facts (do (flush-selected-dynamo-tables [user-table-name])
                                         (flush-sql-tables)))]
 
   (fact "Create a new user and validate data in both databases."
