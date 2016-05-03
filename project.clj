@@ -100,6 +100,7 @@
                             :mandril-pwd-reset-template          "password-reset-template-dev"
                             :mandril-welcome-email-template      "welcome-email-dev"
                             :mandril-comment-reply-template      "comment-reply-template-dev"
+                            :mandril-email-confirmation-template "confirm-email-dev"
                             :cdn-bucket-name                     "placeavote-cdn"
                             :cdn-url                             "https://cdn.placeavote.com"
                             :s3-region                           "us-west-1"

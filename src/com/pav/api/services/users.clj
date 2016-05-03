@@ -7,7 +7,8 @@
             [com.pav.api.redis.redis :as redis-dao]
             [com.pav.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject get-bill-info]]
             [com.pav.api.authentication.authentication :refer [token-valid? create-auth-token]]
-            [com.pav.api.mandril.mandril :as mandril :refer [send-password-reset-email send-welcome-email]]
+            [com.pav.api.mandril.mandril :as mandril :refer [send-password-reset-email send-welcome-email
+                                                             send-email-confirmation-email]]
             [com.pav.api.domain.user :refer [new-user-profile presentable profile-info assign-token-for
                                                   account-settings indexable-profile]]
             [com.pav.api.graph.graph-parser :as gp]
@@ -80,6 +81,7 @@ default-followers (:default-followers env))
       (pre-populate-newsfeed profile)
       (add-default-followers (cached-followers default-followers) user_id)
       (send-welcome-email profile)
+      (send-email-confirmation-email profile)
       (catch Exception e
         (log/errorf e "Error occured persisting user profile for '%s'" user_id)))
     profile))
