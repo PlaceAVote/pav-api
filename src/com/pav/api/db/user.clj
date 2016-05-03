@@ -2,8 +2,8 @@
   "Functions for dealing with user database access."
   (:require [com.pav.api.db.db :as db]
             [clojure.java.jdbc :as sql]
-            [clojure.tools.logging :as log])
-  (:import java.util.Date))
+            [clojure.tools.logging :as log]
+            [com.pav.api.utils.utils :as u]))
 
 (defn- extract-value
   "Extract value returned from query result, where we are interested only
@@ -41,12 +41,23 @@ safely called in 'create-user' transaction."
   [trans-db user_id token]
   (sql/insert! trans-db "user_confirmation_tokens" {:user_id user_id
                                                     :token token
-                                                    :created_at (.getTime (Date.))}))
+                                                    :created_at (u/current-time)}))
+
+(defn- store-user-password
+  "Use given email, id and password hash and store it in user_creds_pav table. Do
+that in a given transaction."
+  [trans-db email id password]
+  (sql/insert! trans-db "user_creds_pav" {:email email
+                                          :user_id id
+                                          :password password}))
 
 (defn create-user
-  "Create user with given map. Can throw constraint exception if email is not unique.
-Returns user id if everything went fine."
+  "Create user with given map. Can throw constraint exception from database if email is
+not unique. Returns user id if everything went fine."
   [user-profile]
+  {:pre [(and (contains? user-profile :email)
+              (contains? user-profile :password)
+              (contains? user-profile :confirmation-token))]}
   (try
     (sql/with-db-transaction [d db/db]
       (let [data (dissoc user-profile :confirmation-token)
@@ -55,6 +66,7 @@ Returns user id if everything went fine."
         (->> user-profile
              :confirmation-token
              (create-confirmation-record d id))
+        (store-user-password d (:email user-profile) id (:password user-profile))
         id))
     (catch Exception e
       (log/error e "Error occured persisting new user-profile to SQL table with details:" user-profile))))
