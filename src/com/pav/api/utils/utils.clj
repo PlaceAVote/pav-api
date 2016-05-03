@@ -112,6 +112,11 @@ http or https, depending on Java version. Make sure suburl to start with slash."
   [suburl]
   (http-to-json (str "congress.api.sunlightfoundation.com" suburl) (is-java7-or-6?)))
 
+(defn- unkeywordize
+  "Convert it to uppercase, environment-like name."
+  [s]
+  (-> s name str/upper-case (.replaceAll "-" "_")))
+
 (defn reload-env!
   "Force 'env' to be reloaded. This is using some trickery behind clojure's back
 and should be used only from REPL (that is mainly designed for).
@@ -134,6 +139,13 @@ Note that calling this function without arguments will bring 'env' in your names
      (.unbindRoot (ns-resolve 'environ.core 'env))
      (require require-opts :reload))
   ([] (reload-env! '[environ.core :refer [env]])))
+
+(defn set-env!
+  "Set environment variable in runtime. This will not set actual system environment
+variable, but variable usable from 'environ'."
+  [var val]
+  (System/setProperty (unkeywordize var) val)
+  (reload-env!))
 
 (defmacro prog1
   "Evaluate all expressions (like begin), but return result of first expression."
