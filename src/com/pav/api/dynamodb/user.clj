@@ -75,7 +75,9 @@
     (let [{user_id :user_id} (get-confirmation-token token)]
       (if-not (empty? user_id)
         (far/update-item client-opts dy/user-table-name {:user_id user_id}
-          {:update-map {:registered [:put true]}})))
+          {:update-expr     "SET #registered = :registered"
+           :expr-attr-names {"#registered" "registered"}
+           :expr-attr-vals  {":registered" true}})))
     (catch Exception e (log/info (str "Error occured updating registeration status for token " token " " e)))))
 
 (defn add-bill-comment-count [{:keys [bill_id] :as feed-event}]

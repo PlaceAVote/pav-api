@@ -9,6 +9,7 @@
 (def password-reset-template (:mandril-pwd-reset-template env))
 (def welcome-email-template (:mandril-welcome-email-template env))
 (def comment-reply-template (:mandril-comment-reply-template env))
+(def email-confirmation-template (:mandril-email-confirmation-template env))
 
 (defn build-email-header
   ([api-key template]
@@ -34,6 +35,18 @@
                  :important  true
                  :inline_css true}}
     (merge message)))
+
+(defn build-email-confirmation-body
+  [message {:keys [email confirmation-token first_name last_name]}]
+  (-> {:message {:to                [{:email email :type "to"}]
+                 :important         false
+                 :inline_css        true
+                 :merge             true
+                 :merge_language    "handlebars"
+                 :global_merge_vars [{:name "first_name" :content first_name}
+                                     {:name "last_name" :content last_name}
+                                     {:name "confirm_token" :content confirmation-token}]}}
+      (merge message)))
 
 (defn build-comment-reply-body
   [message {:keys [email author_first_name author_last_name
@@ -84,6 +97,12 @@
 (defn send-welcome-email [user]
   (-> (build-email-header mandril-api-key welcome-email-template)
       (build-welcome-email-body user)
+      ch/generate-string
+      send-template-email))
+
+(defn send-email-confirmation-email [user]
+  (-> (build-email-header mandril-api-key email-confirmation-template)
+      (build-email-confirmation-body user)
       ch/generate-string
       send-template-email))
 

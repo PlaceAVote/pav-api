@@ -433,6 +433,9 @@ definitions:
       last_activity:
         type: number
         format: number
+      registered:
+        type: boolean
+        format: boolean
   UserProfileResponse:
     title: UserProfile
     type: object
@@ -468,6 +471,9 @@ definitions:
       last_activity:
         type: number
         format: number
+      registered:
+        type: boolean
+        format: boolean
   NewUserProfileResponse:
     type: object
     properties:
