@@ -24,7 +24,7 @@
   (update-in user-profile [:password] h/encrypt))
 
 (defn- extract-profile-info [profile private?]
-  (cond-> (select-keys profile [:user_id :first_name :last_name :country_code :state :public :img_url :city])
+  (cond-> (select-keys profile [:user_id :first_name :last_name :country_code :state :public :img_url :city :registered])
     private? (merge (select-keys profile [:zipcode :lat :lng :email :district :gender :created_at]))))
 
 (defprotocol Profiles
