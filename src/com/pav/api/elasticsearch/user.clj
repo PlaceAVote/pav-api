@@ -120,7 +120,7 @@ yes/no votes for this bill."
       (->> (esd/search connection "congress" "billmeta" :query (q/term :pav_tags t))
            esrsp/hits-from
            (map sanitize-tags-result)
-           (sort-by :comment_count)
+           (sort-by :comment_count >)
            ;; return vector like other functions
            vec))))
 
