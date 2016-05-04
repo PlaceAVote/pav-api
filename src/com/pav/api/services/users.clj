@@ -81,7 +81,6 @@ default-followers (:default-followers env))
       (pre-populate-newsfeed profile)
       (add-default-followers (cached-followers default-followers) user_id)
       (send-welcome-email profile)
-      (send-email-confirmation-email profile)
       (catch Exception e
         (log/errorf e "Error occured persisting user profile for '%s'" user_id)))
     profile))
