@@ -14,6 +14,10 @@
   (-> (far/query dy/client-opts dy/comment-details-table-name {:bill_id [:eq bill_id]} {:index "bill-comment-idx"})
       meta :count))
 
+(defn get-issue-comment-count [issue_id]
+  (-> (far/query dy/client-opts dy/user-issue-comments-table-name {:issue_id [:eq issue_id]} {:index "issueid-timestamp-idx"})
+      meta :count))
+
 (defn assoc-bill-comment-count
   "Associate a count of comments to the payload"
   [{:keys [bill_id] :as event}]

@@ -189,7 +189,7 @@
         status => 200
         (some nil? (vals response)) => nil
         (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :short_issue_id :author_id
-                                      :article_title :type :bill_id :bill_title :comment
+                                      :article_title :type :bill_id :bill_title :comment :comment_count
                                       :article_link :article_img :emotional_response :event_id
                                       :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
@@ -204,7 +204,7 @@
         status => 200
         (some nil? (vals response)) => nil
         (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :short_issue_id :author_id
-                                      :article_title :type :bill_id :bill_title :comment
+                                      :article_title :type :bill_id :bill_title :comment :comment_count
                                       :article_link :article_img :emotional_response :event_id
                                       :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
@@ -423,7 +423,7 @@
         status => 200
         (some nil? (vals response)) => nil
         (keys response) => (contains [:first_name :last_name :user_id :timestamp :issue_id :short_issue_id :author_id
-                                      :comment :emotional_response :type :event_id
+                                      :comment :emotional_response :type :event_id :comment_count
                                       :positive_responses :negative_responses :neutral_responses] :in-any-order)))
 
     (fact "Given an existing issue, When the author deletes the issue with the short_issue_id,
