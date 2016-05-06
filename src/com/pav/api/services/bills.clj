@@ -47,4 +47,5 @@
     (redis/retrieve-top-trending-bills-24hr 10)
     assoc-bill-metadata
     (mapv cs/assoc-bill-comment-count)
-    (mapv vs/assoc-bill-vote-count)))
+    (mapv vs/assoc-bill-vote-count)
+    (sort-by :comment_count >)))

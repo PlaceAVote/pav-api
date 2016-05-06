@@ -13,7 +13,8 @@
                                              base64->uuidStr]]
             [clj-http.client :as http]
             [clojure.core.async :refer [thread go]]
-            [com.pav.api.elasticsearch.user :as es])
+            [com.pav.api.elasticsearch.user :as es]
+            [com.pav.api.dynamodb.comments :as dc])
   (:import [java.util Date UUID]))
 
 (defn get-user-by-id [id]
@@ -151,7 +152,8 @@
       (if (empty? (:short_issue_id issue_id))
         (assoc issue :short_issue_id (uuid->base64Str (UUID/fromString (:issue_id issue))))
         issue))
-    (select-keys (get-user-by-id (:author_id feed-event)) [:first_name :last_name :img_url])))
+    (select-keys (get-user-by-id (:author_id feed-event)) [:first_name :last_name :img_url])
+    {:comment_count (dc/get-issue-comment-count issue_id)}))
 
 (defmethod event-meta-data "comment" [event user_id]
   (assoc-comment-metadata event user_id))
