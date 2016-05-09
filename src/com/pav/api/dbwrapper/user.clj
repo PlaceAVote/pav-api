@@ -2,6 +2,7 @@
   "Temporary wrapper that does dynamodb and sql parallel storage."
   (:require [com.pav.api.dynamodb.user :as dynamo]
             [com.pav.api.db.user :as sql]
+            [com.pav.api.dbwrapper.helpers :refer [with-sql-backend]]
             [com.pav.api.utils.utils :refer [prog1]])
   (:import java.text.SimpleDateFormat
            java.util.Date))
@@ -46,9 +47,11 @@
 (defn create-user [user-profile]
   (prog1
    (dynamo/create-user user-profile)
-   (-> user-profile convert-user-profile sql/create-user)))
+   (with-sql-backend
+     (-> user-profile convert-user-profile sql/create-user))))
 
 (defn delete-user [user-id]
   (prog1
    (dynamo/delete-user user-id)
-   (sql/delete-user user-id)))
+   (with-sql-backend
+     (sql/delete-user user-id))))

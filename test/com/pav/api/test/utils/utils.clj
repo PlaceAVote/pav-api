@@ -17,6 +17,7 @@
            [com.pav.api.dynamodb.db :as db]
            [com.pav.api.db.migrations :as sql-migrations]
            [com.pav.api.db.db :as sql-db]
+           [com.pav.api.dbwrapper.helpers :refer [with-sql-backend]]
            [com.pav.api.utils.utils :refer [time-log]]))
 
 (defn new-pav-user
@@ -141,6 +142,7 @@
       (println "Error while connecting to ElasticSearch: " e))))
 
 (defn flush-sql-tables []
-  (time-log "flush-sql-tables"
-    (sql-migrations/migrate!)
-    (sql-db/empty-all-tables-unsafe!)))
+  (with-sql-backend
+    (time-log "flush-sql-tables"
+      (sql-migrations/migrate!)
+      (sql-db/empty-all-tables-unsafe!))))
