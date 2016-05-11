@@ -23,9 +23,9 @@
   [{:keys [bill_id] :as event}]
   (assoc event :comment_count (get-comment-count bill_id)))
 
-(defn- associate-user-img [{:keys [author] :as comment}]
-  (if-let [{img :img_url} (if author (far/get-item dy/client-opts dy/user-table-name {:user_id author}))]
-    (assoc comment :author_img_url img)
+(defn- associate-user-info [{:keys [author] :as comment}]
+  (if-let [{i :img_url f :first_name l :last_name} (if author (far/get-item dy/client-opts dy/user-table-name {:user_id author}))]
+    (assoc comment :author_img_url i :author_first_name f :author_last_name l)
     comment))
 
 (defn associate-user-score [comment user_id]
@@ -44,7 +44,7 @@
          (far/batch-get-item dy/client-opts {dy/comment-details-table-name {:prim-kvs {:comment_id comment-ids}}}))
     (mapv #(cond-> % (:deleted %) (dissoc :body)))
     (mapv #(associate-user-score % user_id))
-    (mapv #(associate-user-img %))
+    (mapv #(associate-user-info %))
     (sort-by sort-key >)))
 
 (defn get-bill-comments

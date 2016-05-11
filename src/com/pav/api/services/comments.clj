@@ -10,7 +10,8 @@
             [clojure.core.memoize :as memo]
             [clojure.tools.logging :as log]
             [clojure.core.async :refer [go]]
-            [com.pav.api.dynamodb.user :as du])
+            [com.pav.api.dynamodb.user :as du]
+            [com.pav.api.domain.comment :refer [new-bill-comment]])
   (:import (java.util UUID Date)))
 
 (defn- new-dynamo-comment [comment-id author comment]
@@ -76,25 +77,29 @@
       (and parent_id (publish-comment-reply-notifications comment))
       (catch Exception e (log/error "Error Occured processing comment events " e)))))
 
+(defn- assoc-user-metadata-with-comment [comment {:keys [img_url first_name last_name]}]
+  (assoc comment
+    :author_img_url img_url :author_first_name first_name :author_last_name last_name))
+
 (defn update-bill-comment [payload comment_id]
-  (dc/update-bill-comment (:body payload) comment_id))
+  (let [{author :author :as comment} (dc/update-bill-comment (:body payload) comment_id)]
+    (assoc-user-metadata-with-comment comment (du/get-user-by-id author))))
 
 (defn delete-bill-comment [comment_id user_id]
   (dc/delete-comment comment_id user_id))
 
 (defn create-bill-comment [comment user]
-  (let [{img_url :img_url :as author} (du/get-user-by-id (:user_id user))
-        new-comment-id (create-comments-key)
-        comment-with-img-url (assoc comment :author_img_url img_url)
-        new-dynamo-comment (new-dynamo-comment new-comment-id author comment-with-img-url)]
-    (persist-comment new-dynamo-comment)
-    (publish-comment-events new-dynamo-comment)
-    {:record new-dynamo-comment}))
+  (let [author (du/get-user-by-id (:user_id user))
+        new-comment (new-bill-comment comment author)
+        comment-with-user-meta (assoc-user-metadata-with-comment new-comment author)]
+    (log/info "Persisting new comment " comment-with-user-meta)
+    (persist-comment new-comment)
+    (publish-comment-events comment-with-user-meta)
+    {:record comment-with-user-meta}))
 
 (defn create-user-issue-comment [comment user_id]
   (let [user (du/get-user-by-id user_id)
-        new-dynamo-comment (new-issue-comment comment user)
-        ]
+        new-dynamo-comment (new-issue-comment comment user)]
     (persist-issue-comment new-dynamo-comment)
     (assoc new-dynamo-comment :liked false :disliked false)))
 

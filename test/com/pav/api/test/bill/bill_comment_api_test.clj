@@ -30,7 +30,7 @@
       (let [token (-> (utils/create-user) create-auth-token)
             {status :status body :body} (pav-req :put "/bills/comments" token test-comment)]
         status => 201
-        ;body => (contains expected-comment-response)
+        body => (contains expected-comment-response)
         (keys body) => (contains [:bill_id :author :author_first_name :author_last_name :body :score :comment_id :id
                                   :timestamp :parent_id :has_children] :in-any-order)))
 
@@ -261,7 +261,7 @@
         status => 200
         (:total response) => 2
         (:comment_id (first (:comments response))) => comment2ID))
-    
+
     (fact "Create two comments, like a comment and retrieve them by highest score, Then ensure correct ordering"
       (utils/flush-dynamo-tables)
       (let [token (-> (utils/create-user) create-auth-token)
@@ -276,7 +276,7 @@
         (:total response) => 2
         (:comment_id first-comment) => comment2ID
         (:score first-comment) => 1))
-    
+
     (fact "Create two comments, like a comment, Then ensure by default they are sorted by highest score."
       (utils/flush-dynamo-tables)
       (let [token (-> (utils/create-user) create-auth-token)
@@ -291,7 +291,7 @@
         (:total response) => 2
         (:comment_id first-comment) => comment2ID
         (:score first-comment) => 1))
-    
+
     (fact "Create a comment, When the author has followers, Then verify the follower has the new comment in there
           Newsfeed and the comment author has an event in there Timeline"
       (let [;;Create Follower
@@ -375,4 +375,6 @@
         (get-in (first notifications) [:author]) => replier_user_id
         (keys (first notifications)) => (just [:notification_id :user_id :bill_id :comment_id :type :bill_title :read
                                                :author :author_img_url :author_first_name :author_last_name :parent_id
-                                               :disliked :liked :timestamp :body :score] :in-any-order)))))
+                                               :disliked :liked :timestamp :body :score] :in-any-order)))
+
+    ))
