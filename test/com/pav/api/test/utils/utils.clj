@@ -18,6 +18,8 @@
            [com.pav.api.db.migrations :as sql-migrations]
            [com.pav.api.db.db :as sql-db]
            [com.pav.api.dbwrapper.helpers :refer [with-sql-backend]]
+           [com.pav.api.dbwrapper.user :as du]
+           [com.pav.api.domain.user :refer [assoc-common-attributes]]
            [com.pav.api.utils.utils :refer [time-log]]))
 
 (defn new-pav-user
@@ -146,3 +148,6 @@
     (time-log "flush-sql-tables"
       (sql-migrations/migrate!)
       (sql-db/empty-all-tables-unsafe!))))
+
+(defn create-user []
+  (-> (assoc-common-attributes (new-pav-user)) du/create-user))

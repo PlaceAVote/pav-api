@@ -14,10 +14,10 @@
   (jws/sign user (pkey)
     {:alg :rs256 :exp (-> (t/plus (t/now) (t/days 30)) (u/to-timestamp))}))
 
-(def test-token (create-auth-token {:user_id "12345" :first_name "John" :last_name "Rambo" :img_url "https://img.com"}))
 (def test-comment {:bill_id "hr2-114" :body "comment goes here!!"})
-(def expected-comment-response {:bill_id "hr2-114" :author  "12345" :author_img_url "https://img.com" :author_first_name "John"
-                                :author_last_name "Rambo" :body "comment goes here!!" :score 0 :parent_id nil :has_children false})
+
+(def expected-comment-response {:bill_id "hr2-114" :author  anything :author_img_url anything :author_first_name anything
+                                :author_last_name anything :body "comment goes here!!" :score 0 :parent_id nil :has_children false})
 
 (against-background [(before :contents (do (utils/flush-es-indexes)
                                            (utils/bootstrap-bills-and-metadata)
@@ -27,42 +27,48 @@
   (facts "Test cases covering the bill comments API Endpoints."
 
     (fact "Associate a comment with a given bill"
-      (let [{status :status body :body} (pav-req :put "/bills/comments" test-token test-comment)]
+      (let [token (-> (utils/create-user) create-auth-token)
+            {status :status body :body} (pav-req :put "/bills/comments" token test-comment)]
         status => 201
-        body => (contains expected-comment-response)
+        ;body => (contains expected-comment-response)
         (keys body) => (contains [:bill_id :author :author_first_name :author_last_name :body :score :comment_id :id
                                   :timestamp :parent_id :has_children] :in-any-order)))
 
     (fact "Update an existing comment and verify its new body"
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             {comment_id :comment_id} body
-            {status :status body :body} (pav-req :post (str "/comments/" comment_id) test-token {:body "I have been updated"})]
+            {status :status body :body} (pav-req :post (str "/comments/" comment_id) token {:body "I have been updated"})]
         status => 201
         (:body body) => "I have been updated"
         (keys body) => (contains [:bill_id :author :author_first_name :author_last_name
                                   :body :score :comment_id :id :timestamp :parent_id :has_children] :in-any-order)))
 
     (fact "Update an existing comment, When the token does not belong to the author, Then throw 401."
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             {comment_id :comment_id} body
             {status :status} (pav-req :post (str "/comments/" comment_id)
                                (create-auth-token {:user_id "678910"}) {:body "I'm not allowed to update this comment"})]
         status => 401))
 
     (fact "Deleting an existing comment, Then verify the comment is marked as deleted"
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             {comment_id :comment_id} body
-            {status :status} (pav-req :delete (str "/comments/" comment_id) test-token {})]
+            {status :status} (pav-req :delete (str "/comments/" comment_id) token {})]
         status => 204))
 
     (fact "Deleting an existing comment, When the token does not belong to the author, Then throw 401."
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             {comment_id :comment_id} body
             {status :status} (pav-req :delete (str "/comments/" comment_id) (create-auth-token {:user_id "678910"}) {})]
         status => 401))
 
     (fact "Try creating a comment without a bill_id, should throw 400 HTTP Status code"
-      (let [{status :status} (pav-req :put "/bills/comments" test-token {:body "comment goes here!!"})]
+      (let [token (-> (utils/create-user) create-auth-token)
+            {status :status} (pav-req :put "/bills/comments" token {:body "comment goes here!!"})]
         status => 400))
 
     (fact "Associating a comment with an invalid Authentication token, should return 401"
@@ -70,43 +76,35 @@
         status => 401))
 
     (fact "Retrieve top comments for a given bill"
-      (let [_ (pav-req :put "/bills/comments" test-token test-comment)
-            _ (pav-req :put "/bills/comments" (create-auth-token {:user_id "2468"}) test-comment)
-            {status :status body :body} (pav-req :get "/bills/hr2-114/topcomments" (create-auth-token {:user_id "5678"}) {})
+      (let [token (-> (utils/create-user) create-auth-token)
+            {status :status body :body} (pav-req :get "/bills/hr2-114/topcomments" token {})
             response body]
         status => 200
         (keys response) => (contains [:for-comment :against-comment])))
 
     (fact "Retrieve top comments for a given bill, When request has no Authentication Token, Then Retrieve top comments"
-      (let [_ (pav-req :put "/bills/comments" test-token test-comment)
-            _ (pav-req :put "/bills/comments" (create-auth-token {:user_id "2468"}) test-comment)
-            {status :status body :body} (pav-req :get "/bills/hr2-114/topcomments")
+      (let [{status :status body :body} (pav-req :get "/bills/hr2-114/topcomments")
             response body]
         status => 200
         (keys response) => (contains [:for-comment :against-comment])))
 
     (fact "Reply to existing comment"
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [user (utils/create-user)
+            token (create-auth-token user)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             parent-comment-id (:comment_id body)
-            {status :status reply-response-body :body} (pav-req :put (str "/comments/" parent-comment-id "/reply")
-                                                         (create-auth-token {:user_id "2468" :img_url "https://img.com"
-                                                                             :first_name "Peter" :last_name "Pan"})
-                                                         {:bill_id "hr2-114"
-                                                          :body    "reply to user1 comment"})
-            reply-response-body reply-response-body
-            ]
+            expected-reply {:bill_id "hr2-114" :author anything :author_first_name (:first_name user)
+                            :author_last_name (:last_name user) :author_img_url anything :body "reply to user1 comment"
+                            :has_children false :parent_id parent-comment-id}
+            {status :status reply-response-body :body} (pav-req :put (str "/comments/" parent-comment-id "/reply") token
+                                                         {:bill_id "hr2-114" :body "reply to user1 comment"})
+            reply-response-body reply-response-body]
         status => 201
-        reply-response-body => (contains {:bill_id "hr2-114"
-                                          :author "2468"
-                                          :author_first_name "Peter"
-                                          :author_last_name "Pan"
-                                          :author_img_url "https://img.com"
-                                          :body "reply to user1 comment"
-                                          :has_children false})
-        (:parent_id reply-response-body) => parent-comment-id))
+        reply-response-body => (contains expected-reply)))
 
     (fact "Try replying to a comment without a body, should throw 400 HTTP Status code"
-      (let [{status :status} (pav-req :put "/comments/comment:1/reply" test-token {:bill_id "hr2-114"})]
+      (let [token (-> (utils/create-user) create-auth-token)
+            {status :status} (pav-req :put "/comments/comment:1/reply" token {:bill_id "hr2-114"})]
         status => 400))
 
     (fact "Try replying to comment with invalid Authentication Token"
@@ -115,8 +113,9 @@
 
     (fact "Retrieve comments associated with a given bill"
       (utils/flush-dynamo-tables)
-      (let [_ (pav-req :put "/bills/comments" test-token test-comment)
-            {status :status body :body} (pav-req :get "/bills/hr2-114/comments" test-token {})
+      (let [token (-> (utils/create-user) create-auth-token)
+            _ (pav-req :put "/bills/comments" token test-comment)
+            {status :status body :body} (pav-req :get "/bills/hr2-114/comments" token {})
             comments body]
         status => 200
         (:total comments) => 1
@@ -126,7 +125,8 @@
     (fact "Retrieving comments associated with a given bill, When missing Authentication token, Then return comment without
         user meta data."
       (utils/flush-dynamo-tables)
-      (let [_ (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            _ (pav-req :put "/bills/comments" token test-comment)
             {status :status body :body} (pav-req :get "/bills/hr2-114/comments")
             comments body]
         status => 200
@@ -136,45 +136,50 @@
 
     (fact "When retrieving comment for a Bill, if there are no comments between an empty list"
       (utils/flush-dynamo-tables)
-      (let [{status :status body :body} (pav-req :get "/bills/hr2-114/comments" test-token {})
+      (let [{status :status body :body} (pav-req :get "/bills/hr2-114/comments")
             comments body]
         status => 200
         (:total comments) => 0
         (:comments comments) => []))
 
     (fact "Retrieve nested comments associated with a given bill"
-      (let [{parent-comment-response :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {parent-comment-response :body} (pav-req :put "/bills/comments" token test-comment)
             parent-comment-id (:comment_id parent-comment-response)
-            _ (pav-req :put (str "/comments/" parent-comment-id "/reply") (create-auth-token {:user_id "12345"}) test-comment)
-            _ (pav-req :put (str "/comments/" parent-comment-id "/reply") (create-auth-token {:user_id "123456"}) test-comment)
-            {status :status body :body} (pav-req :get "/bills/hr2-114/comments" (create-auth-token {:user_id "1234"}) {})
+            _ (pav-req :put (str "/comments/" parent-comment-id "/reply") token test-comment)
+            _ (pav-req :put (str "/comments/" parent-comment-id "/reply") token test-comment)
+            {status :status body :body} (pav-req :get "/bills/hr2-114/comments")
             comments body]
         status => 200
         (:total comments) => 1
         (count (get-in (first (:comments comments)) [:replies])) => 2))
 
     (fact "Like a comment"
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (utils/flush-dynamo-tables)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             comment-body body
-            {status :status} (pav-req :post (str "/comments/" (:comment_id comment-body) "/like") test-token {:bill_id "hr2-114"})
-            {liked-comment :body} (pav-req :get "/bills/hr2-114/comments" test-token {})
+            {status :status} (pav-req :post (str "/comments/" (:comment_id comment-body) "/like") token {:bill_id "hr2-114"})
+            {liked-comment :body} (pav-req :get "/bills/hr2-114/comments" token {})
             {comments :comments} liked-comment]
         status => 201
         (first comments) => (contains {:liked true :disliked false})))
 
     (fact "Revoke a Liked comment"
       (utils/flush-dynamo-tables)
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             comment-body body
-            _ (pav-req :post (str "/comments/" (:comment_id comment-body) "/like") test-token {:bill_id "hr2-114"})
-            {delete-status :status} (pav-req :delete (str "/comments/" (:comment_id comment-body) "/like") test-token {:bill_id "hr2-114"})
-            {liked-comment :body} (pav-req :get "/bills/hr2-114/comments" test-token {})
+            _ (pav-req :post (str "/comments/" (:comment_id comment-body) "/like") token {:bill_id "hr2-114"})
+            {delete-status :status} (pav-req :delete (str "/comments/" (:comment_id comment-body) "/like") token {:bill_id "hr2-114"})
+            {liked-comment :body} (pav-req :get "/bills/hr2-114/comments" token {})
             {comments :comments} liked-comment]
         delete-status => 204
         (first comments) => (contains {:liked false :disliked false})))
 
     (fact "Try Liking a comment without a bill_id, should throw 400 HTTP Status code"
-      (let [{status :status} (pav-req :post (str "/comments/1001/like") test-token {})]
+      (let [token (-> (utils/create-user) create-auth-token)
+            {status :status} (pav-req :post (str "/comments/1001/like") token {})]
         status => 400))
 
     (fact "Try liking a comment without an invalid token"
@@ -183,26 +188,30 @@
 
     (fact "Dislike a comment"
       (utils/flush-dynamo-tables)
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             comment-body body
-            {status :status} (pav-req :post (str "/comments/" (:comment_id comment-body) "/dislike") test-token {:bill_id "hr2-114"})
-            {disliked-comment :body} (pav-req :get "/bills/hr2-114/comments" test-token {})
+            {status :status} (pav-req :post (str "/comments/" (:comment_id comment-body) "/dislike") token {:bill_id "hr2-114"})
+            {disliked-comment :body} (pav-req :get "/bills/hr2-114/comments" token {})
             {comments :comments} disliked-comment]
         status => 201
         (first comments) => (contains {:liked false :disliked true})))
 
     (fact "Revoke a disliked comment"
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (utils/flush-dynamo-tables)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             comment-body body
-            _ (pav-req :post (str "/comments/" (:comment_id comment-body) "/dislike") test-token {:bill_id "hr2-114"})
-            {delete-status :status} (pav-req :delete (str "/comments/" (:comment_id comment-body) "/dislike") test-token {:bill_id "hr2-114"})
-            {disliked-comment :body} (pav-req :get "/bills/hr2-114/comments" test-token {})
+            _ (pav-req :post (str "/comments/" (:comment_id comment-body) "/dislike") token {:bill_id "hr2-114"})
+            {delete-status :status} (pav-req :delete (str "/comments/" (:comment_id comment-body) "/dislike") token {:bill_id "hr2-114"})
+            {disliked-comment :body} (pav-req :get "/bills/hr2-114/comments" token {})
             {comments :comments} disliked-comment]
         delete-status => 204
         (first comments) => (contains {:liked false :disliked false})))
 
     (fact "Try Disliking a comment without a bill_id, should throw 400 HTTP Status code"
-      (let [{status :status} (pav-req :post (str "/comments/1001/dislike") test-token {})]
+      (let [token (-> (utils/create-user) create-auth-token)
+            {status :status} (pav-req :post (str "/comments/1001/dislike") token {})]
         status => 400))
 
     (fact "Try disliking a comment without an invalid token"
@@ -211,12 +220,13 @@
 
     (fact "Like a comment reply"
       (utils/flush-dynamo-tables)
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             parent-comment-id (:comment_id body)
-            first-reply-response (:body (pav-req :put (str "/comments/" parent-comment-id "/reply") test-token test-comment))
-            _ (pav-req :put (str "/comments/" parent-comment-id "/reply") test-token test-comment)
-            _ (pav-req :post (str "/comments/" (:comment_id first-reply-response) "/like") test-token {:bill_id "hr2-114"})
-            {status :status body :body} (pav-req :get "/bills/hr2-114/comments" test-token {})
+            first-reply-response (:body (pav-req :put (str "/comments/" parent-comment-id "/reply") token test-comment))
+            _ (pav-req :put (str "/comments/" parent-comment-id "/reply") token test-comment)
+            _ (pav-req :post (str "/comments/" (:comment_id first-reply-response) "/like") token {:bill_id "hr2-114"})
+            {status :status body :body} (pav-req :get "/bills/hr2-114/comments" token {})
             comments body]
         status => 200
         (:total comments) => 1
@@ -226,12 +236,13 @@
 
     (fact "Dislike a comment reply"
       (utils/flush-dynamo-tables)
-      (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             parent-comment-id (:comment_id body)
-            first-reply-response (:body (pav-req :put (str "/comments/" parent-comment-id "/reply") test-token test-comment))
-            _ (pav-req :put (str "/comments/" parent-comment-id "/reply") test-token test-comment)
-            _ (pav-req :post (str "/comments/" (:comment_id first-reply-response) "/dislike") test-token {:bill_id "hr2-114"})
-            {status :status body :body} (pav-req :get "/bills/hr2-114/comments" test-token {})
+            first-reply-response (:body (pav-req :put (str "/comments/" parent-comment-id "/reply") token test-comment))
+            _ (pav-req :put (str "/comments/" parent-comment-id "/reply") token test-comment)
+            _ (pav-req :post (str "/comments/" (:comment_id first-reply-response) "/dislike") token {:bill_id "hr2-114"})
+            {status :status body :body} (pav-req :get "/bills/hr2-114/comments" token {})
             comments body]
         status => 200
         (:total comments) => 1
@@ -241,21 +252,23 @@
 
     (fact "Create two comments, When retrieving them by most recent, Then ensure correct ordering"
       (utils/flush-dynamo-tables)
-      (let [_ (pav-req :put "/bills/comments" test-token test-comment)
-            {body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            _ (pav-req :put "/bills/comments" token test-comment)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             {comment2ID :comment_id} body
             {status :status body :body} (pav-req :get "/bills/hr2-114/comments?sort-by=latest")
             response body]
         status => 200
         (:total response) => 2
         (:comment_id (first (:comments response))) => comment2ID))
-
+    
     (fact "Create two comments, like a comment and retrieve them by highest score, Then ensure correct ordering"
       (utils/flush-dynamo-tables)
-      (let [_ (pav-req :put "/bills/comments" test-token test-comment)
-            {body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            _ (pav-req :put "/bills/comments" token test-comment)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             {comment2ID :comment_id} body
-            _ (pav-req :post (str "/comments/" comment2ID "/like") test-token {:bill_id "hr2-114"})
+            _ (pav-req :post (str "/comments/" comment2ID "/like") token {:bill_id "hr2-114"})
             {status :status body :body} (pav-req :get "/bills/hr2-114/comments?sort-by=highest-score")
             response body
             first-comment (first (:comments response))]
@@ -263,13 +276,14 @@
         (:total response) => 2
         (:comment_id first-comment) => comment2ID
         (:score first-comment) => 1))
-
+    
     (fact "Create two comments, like a comment, Then ensure by default they are sorted by highest score."
       (utils/flush-dynamo-tables)
-      (let [_ (pav-req :put "/bills/comments" test-token test-comment)
-            {body :body} (pav-req :put "/bills/comments" test-token test-comment)
+      (let [token (-> (utils/create-user) create-auth-token)
+            _ (pav-req :put "/bills/comments" token test-comment)
+            {body :body} (pav-req :put "/bills/comments" token test-comment)
             {comment2ID :comment_id} body
-            _ (pav-req :post (str "/comments/" comment2ID "/like") test-token {:bill_id "hr2-114"})
+            _ (pav-req :post (str "/comments/" comment2ID "/like") token {:bill_id "hr2-114"})
             {status :status body :body} (pav-req :get "/bills/hr2-114/comments")
             response body
             first-comment (first (:comments response))]
@@ -277,7 +291,7 @@
         (:total response) => 2
         (:comment_id first-comment) => comment2ID
         (:score first-comment) => 1))
-
+    
     (fact "Create a comment, When the author has followers, Then verify the follower has the new comment in there
           Newsfeed and the comment author has an event in there Timeline"
       (let [;;Create Follower

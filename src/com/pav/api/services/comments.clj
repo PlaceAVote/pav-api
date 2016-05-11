@@ -83,9 +83,9 @@
   (dc/delete-comment comment_id user_id))
 
 (defn create-bill-comment [comment user]
-  (let [author user
+  (let [{img_url :img_url :as author} (du/get-user-by-id (:user_id user))
         new-comment-id (create-comments-key)
-        comment-with-img-url (assoc comment :author_img_url (:img_url user))
+        comment-with-img-url (assoc comment :author_img_url img_url)
         new-dynamo-comment (new-dynamo-comment new-comment-id author comment-with-img-url)]
     (persist-comment new-dynamo-comment)
     (publish-comment-events new-dynamo-comment)
