@@ -102,8 +102,11 @@
       ;;create pointer to comment with :id=bill_id and also track the time of creation and current score for sorting purposes.
       (far/put-item dy/client-opts dy/bill-comment-table-name
         {:id bill_id :comment_id comment_id :timestamp timestamp :score score})
-      (far/put-item dy/client-opts dy/comment-details-table-name comment))
-    (create-bill-comment-reply comment)))
+      (far/put-item dy/client-opts dy/comment-details-table-name comment)
+      comment)
+    (do
+      (create-bill-comment-reply comment)
+      comment)))
 
 (defn update-bill-comment [new-body comment_id]
   (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}
