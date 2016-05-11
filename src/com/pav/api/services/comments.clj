@@ -88,14 +88,18 @@
 (defn delete-bill-comment [comment_id user_id]
   (dc/delete-comment comment_id user_id))
 
-(defn create-bill-comment [comment user]
-  (let [author (du/get-user-by-id (:user_id user))
-        new-comment (new-bill-comment comment author)
-        comment-with-user-meta (assoc-user-metadata-with-comment new-comment author)]
-    (log/info "Persisting new comment " comment-with-user-meta)
-    (persist-comment new-comment)
-    (publish-comment-events comment-with-user-meta)
-    {:record comment-with-user-meta}))
+(defn create-bill-comment
+  "Create Bill User Comment"
+  ([comment user]
+   (let [author (du/get-user-by-id (:user_id user))
+         new-comment (new-bill-comment comment author)
+         comment-with-user-meta (assoc-user-metadata-with-comment new-comment author)]
+     (log/info "Persisting new comment " comment-with-user-meta)
+     (persist-comment new-comment)
+     (publish-comment-events comment-with-user-meta)
+     {:record comment-with-user-meta}))
+  ([parent_id comment user]
+    (create-bill-comment (assoc comment :parent_id parent_id) user)))
 
 (defn create-user-issue-comment [comment user_id]
   (let [user (du/get-user-by-id user_id)
@@ -108,16 +112,6 @@
 
 (defn delete-user-issue-comment [comment_id]
   (dc/mark-user-issue-for-deletion comment_id))
-
-(defn create-bill-comment-reply [comment-id reply user]
-  (let [author user
-        new-comment-id (create-comments-key)
-        reply-with-img-url (assoc reply :author_img_url (:img_url user))
-        new-dynamo-comment (-> (new-dynamo-comment new-comment-id author reply-with-img-url)
-                               (assoc :parent_id comment-id))]
-    (persist-comment new-dynamo-comment)
-    (publish-comment-events new-dynamo-comment)
-    {:record new-dynamo-comment}))
 
 (defn get-bill-comments
   [user_id bill-id & {:keys [sort-by last_comment_id]

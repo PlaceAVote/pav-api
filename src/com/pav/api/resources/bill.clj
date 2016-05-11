@@ -58,8 +58,8 @@
   :malformed? (fn [ctx] (new-bill-comment-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
-  :put! (fn [ctx] (cs/create-bill-comment-reply comment-id (u/retrieve-body ctx) (u/retrieve-user-details ctx)))
-  :handle-created :record
+  :put! (fn [ctx] (cs/create-bill-comment comment-id (u/retrieve-body ctx) (u/retrieve-user-details ctx)))
+  :handle-created (fn [{record :record}] (cheshire.core/generate-string record))
   :handle-malformed {:errors [{:body "Please specify a comment body and bill_id"}]}
   :handle-unauthorized {:error "Not Authorized"})
 
