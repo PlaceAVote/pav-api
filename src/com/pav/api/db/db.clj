@@ -3,25 +3,37 @@
 similar API as dynamodb."
   (:require [clojure.java.jdbc :as sql]
             [environ.core :refer [env]]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [com.pav.api.utils.utils :refer [set-env!]]))
 
-(defn- parse-url
+(defn parse-url
   "Expects url in form 'mysql://address' or 'h2://path' and return
 a map with :subprotocol and :subname as appropriate url. Only takes into
 account first column; other columns are ignored, so db type for H2 can
 be specified.
 
-It also does one more thing for H2 database: sets it to MySQL mode by
-appending 'mode=mysql' to url, if not given."
+It also does couple of one more thing for H2 database: sets it to MySQL mode by
+appending 'mode=mysql' to url, if not given and, when H2 memory mode is used, sets
+db_close_delay=-1 to keep memory reference live as long as JVM is alive."
   [url]
   {:post [(and (contains? % :subprotocol)
                (contains? % :subname))]}
   (let [[subproto path] (-> url .toLowerCase (.split ":" 2))
+        ;; for keeping H2 in mysql mode
         mysql-mode-str "mode=mysql"
+        ;; In case of memory mode, make sure database is alive as long as JVM is alive.
+        ;; Otherwise, it will be recreated for every new call, which will make migrations unusable.
+        h2-mem-persistent "db_close_delay=-1"
+        addons (if (= "h2" subproto)
+                 (str
+                  (if-not (.contains path mysql-mode-str)
+                    (str ";" mysql-mode-str))
+                  (if (and (.contains path "mem:")
+                           (not (.contains path h2-mem-persistent)))
+                    (str ";" h2-mem-persistent))))
         ret {:subprotocol subproto, :subname path}]
-    (if (and (= "h2" subproto)
-             (not (.contains path mysql-mode-str)))
-      (update-in ret [:subname] #(str % ";" mysql-mode-str))
+    (if addons
+      (update-in ret [:subname] #(str % addons))
       ret)))
 
 (def ^{:doc "Database access object."
@@ -116,3 +128,10 @@ Works fast, but can yield malformed constraints."
              "schema_version" ;; this is flyway metadata
              ]]
     (safe-drop-table t true)))
+
+(defn set-db-url!
+  "Set database url to the new value. Use this only for runtime changes, because
+it will reload 'com.pav.api.db.db' namespace."
+  [url]
+  (set-env! :db-url url)
+  (require '[com.pav.api.db.db] :reload))
