@@ -53,7 +53,7 @@
 (defn persist-issue-comment [comment]
   (dc/create-issue-comment comment))
 
-(defn- publish-comment-reply-notifications [{:keys [bill_id parent_id] :as comment}]
+(defn- publish-comment-reply-notifications [{:keys [bill_id parent_id author] :as comment}]
   (let [notification_id (.toString (UUID/randomUUID))
         parent_user_id (:author (dc/get-bill-comment parent_id))
         {:keys [email]} (du/get-user-by-id parent_user_id)
@@ -62,8 +62,9 @@
                      (assoc comment :user_id parent_user_id)))
     (process-event (create-comment-reply-wsnotification-event notification_id
                      (assoc comment :user_id parent_user_id :bill_title bill_title)))
-    (process-event (create-comment-reply-email-notification-event
-                     (assoc comment :bill_title bill_title :email email)))))
+    (when (and email (not (= parent_user_id author)))
+      (process-event (create-comment-reply-email-notification-event
+                       (assoc comment :bill_title bill_title :email email))))))
 
 (defn- publish-comment-events
   "Takes a new comment then generates the relevant event types and processes them."
