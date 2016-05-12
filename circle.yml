@@ -16,10 +16,11 @@ machine:
 deployment:
   development-mysql:
     branch: mysql
-    - lein uberjar
-    - convox login $CONVOX_GRID_HOST --password $CONVOX_API_KEY
-    - convox switch development
-    - convox deploy --app pav-api-mysql
+    commands:
+      - lein uberjar
+      - convox login $CONVOX_GRID_HOST --password $CONVOX_API_KEY
+      - convox switch development
+      - convox deploy --app pav-api-mysql
   development:
     branch: master
     commands:
