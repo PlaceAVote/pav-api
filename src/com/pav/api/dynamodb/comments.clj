@@ -28,9 +28,12 @@
     (assoc comment :author_img_url i :author_first_name f :author_last_name l)
     comment))
 
+(defn get-user-bill-comment-score [comment_id user_id]
+  (far/get-item dy/client-opts dy/comment-user-scoring-table
+    {:comment_id comment_id :user_id user_id}))
+
 (defn associate-user-score [comment user_id]
-  (if-let [scoring-record (and user_id (far/get-item dy/client-opts dy/comment-user-scoring-table
-                                         {:comment_id (:comment_id comment) :user_id user_id}))]
+  (if-let [scoring-record (and user_id (get-user-bill-comment-score (:comment_id comment) user_id))]
     (if (:liked scoring-record)
       (assoc comment :liked true :disliked false)
       (assoc comment :liked false :disliked true))

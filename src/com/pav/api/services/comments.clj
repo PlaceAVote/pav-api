@@ -105,16 +105,16 @@
   (dc/get-user-bill-comments bill-id :user_id user_id :sort-by sort-by :last_comment_id last_comment_id))
 
 (defn score-bill-comment [user_id comment-id operation]
-  (dc/score-comment comment-id user_id operation)
+  (dbwrapper/score-bill-comment comment-id user_id operation)
   (process-event
     (create-comment-score-timeline-event
       operation user_id (assoc (dc/get-bill-comment comment-id) :timestamp (.getTime (Date.))))))
 
 (defn revoke-liked-comment [user_id comment_id]
-  (dc/remove-liked-comment user_id comment_id))
+  (dbwrapper/revoke-liked-bill-comment-score comment_id user_id))
 
 (defn revoke-disliked-comment [user_id comment_id]
-  (dc/remove-disliked-comment user_id comment_id))
+  (dbwrapper/revoke-disliked-bill-comment-score comment_id user_id ))
 
 (defn get-top-comments [bill-id user_id]
   ((memo/ttl dc/get-top-comments :ttl/threshold 1800000) bill-id user_id))

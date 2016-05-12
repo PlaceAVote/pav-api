@@ -33,3 +33,28 @@
     (dynamo/delete-comment comment_id user_id)
     (with-sql-backend
       (sql/mark-bill-comment-for-deletion (:id (sql/get-bill-comment-by-old-id comment_id))))))
+
+(defn score-bill-comment [comment_id user_id op]
+  (prog1
+    (dynamo/score-comment comment_id user_id op)
+    (with-sql-backend
+      (sql/score-bill-comment
+        (:id (sql/get-bill-comment-by-old-id comment_id))
+        (:user_id (u-sql/get-user-by-old-id user_id))
+        op))))
+
+(defn revoke-liked-bill-comment-score [comment_id user_id]
+  (prog1
+    (dynamo/remove-liked-comment user_id comment_id)
+    (with-sql-backend
+      (sql/revoke-liked-bill-comment-score
+        (:id (sql/get-bill-comment-by-old-id comment_id))
+        (:user_id (u-sql/get-user-by-old-id user_id))))))
+
+(defn revoke-disliked-bill-comment-score [comment_id user_id]
+  (prog1
+    (dynamo/remove-disliked-comment user_id comment_id)
+    (with-sql-backend
+      (sql/revoke-disliked-bill-comment-score
+        (:id (sql/get-bill-comment-by-old-id comment_id))
+        (:user_id (u-sql/get-user-by-old-id user_id))))))
