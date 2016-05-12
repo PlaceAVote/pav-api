@@ -149,6 +149,4 @@
               sql-score-evt (sql/get-user-bill-comment-score (:id sql-ret) (:user_id sql-ret))]
           (select-values dynamo-ret [:score]) => (select-values sql-ret [:score])
           dynamo-score-evt => nil
-          sql-score-evt => nil))
-
-      )))
+          sql-score-evt => nil)))))
