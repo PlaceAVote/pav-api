@@ -1,5 +1,6 @@
 (ns com.pav.api.services.comments
   (:require [com.pav.api.dynamodb.comments :as dc]
+            [com.pav.api.dbwrapper.comment :as dbwrapper]
             [com.pav.api.elasticsearch.user :as eu]
             [com.pav.api.events.comment :refer [create-comment-timeline-event create-comment-newsfeed-event
                                                 create-comment-score-timeline-event
@@ -13,18 +14,6 @@
             [com.pav.api.dynamodb.user :as du]
             [com.pav.api.domain.comment :refer [new-bill-comment]])
   (:import (java.util UUID Date)))
-
-(defn- new-dynamo-comment [comment-id author comment]
-  (-> comment
-    (assoc :comment_id comment-id)
-    (assoc :id comment-id)
-    (assoc :timestamp (.getTime (Date.)))
-    (assoc :parent_id nil)
-    (assoc :has_children false)
-    (assoc :score 0)
-    (assoc :author (:user_id author)
-           :author_first_name (:first_name author)
-           :author_last_name (:last_name author))))
 
 (defn- new-issue-comment [comment author]
   (let [timestamp (.getTime (Date.))]
@@ -45,11 +34,8 @@
 (defn get-comment-count [bill_id]
   (dc/get-comment-count bill_id))
 
-(defn create-comments-key []
-  (.toString (UUID/randomUUID)))
-
 (defn persist-comment [comment]
-  (dc/create-bill-comment comment))
+  (dbwrapper/create-bill-comment comment))
 
 (defn persist-issue-comment [comment]
   (dc/create-issue-comment comment))

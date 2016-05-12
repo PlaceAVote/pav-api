@@ -151,3 +151,9 @@
 
 (defn create-user []
   (-> (assoc-common-attributes (new-pav-user)) du/create-user))
+
+(defn select-values
+  "Return values in order for given keys. Removes nil."
+  [mp ks]
+  (remove nil?
+    (reduce #(conj %1 (get mp %2)) [] ks)))
