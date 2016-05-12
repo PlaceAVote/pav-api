@@ -8,7 +8,7 @@
                                                     bootstrap-bills-and-metadata
                                                     pav-req]]))
 
-(against-background [(before :contents (do
+(against-background [(before :facts (do
                                          (flush-dynamo-tables)
                                          (flush-redis)
                                          (flush-es-indexes)
