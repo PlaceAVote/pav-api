@@ -35,6 +35,7 @@ CREATE TABLE user_confirmation_tokens (
 CREATE TABLE user_creds_fb (
   -- about fb id length: http://stackoverflow.com/questions/7566672/whats-the-max-length-of-a-facebook-uid
   facebook_id varchar(128) NOT NULL PRIMARY KEY,
+  facebook_token varchar(255),
   user_id bigint unsigned,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
 
