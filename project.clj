@@ -66,7 +66,10 @@
   {
    :uberjar {:jvm-opts     ^:replace ["-Xms256m" "-Xmx512m" "-Xss512k" "-XX:MaxMetaspaceSize=150m"]
              :aot          [system com.pav.api.migrations.migrations]
-             :env          {:auth-pub-key "resources/pav_auth_pubkey.pem"}
+             :env          {:auth-pub-key "resources/pav_auth_pubkey.pem"
+                            :db-url       "h2:mem:pav;DB_CLOSE_DELAY=-1"
+                            :db-user      "pavuser"
+                            :db-pwd       "pavpass"}
              :uberjar-name "pav-user-api.jar"}
    :production
             {:ring
