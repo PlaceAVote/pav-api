@@ -108,7 +108,7 @@
       (create-bill-comment-reply comment)
       comment)))
 
-(defn update-bill-comment [new-body comment_id]
+(defn update-bill-comment [{new-body :body} comment_id]
   (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}
     {:update-expr "SET #body = :body" :expr-attr-names {"#body" "body"} :expr-attr-vals {":body" new-body}
      :return :all-new}))

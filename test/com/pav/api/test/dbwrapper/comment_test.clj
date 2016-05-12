@@ -54,7 +54,6 @@
                                                  :parent_id (:comment_id parent_comment)))
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-reply))
               sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-reply))]
-          (println "dynamo " dynamo-ret "\nmysql " sql-ret)
           (map? new-reply) => true
           (:parent_id new-reply) => (:comment_id parent_comment)
           (select-values dynamo-ret [:author
@@ -74,4 +73,26 @@
                                   :has_children
                                   :score
                                   :deleted
-                                  :old_parent_id]))))))
+                                  :old_parent_id])))
+
+      (fact "Update Existing Comment, Then validate data in both datastores"
+        (let [user (tu/create-user)
+              comment-payload (new-bill-comment {:bill_id "hr2-114" :body "comment body"} user)
+              new-comment (u/create-bill-comment comment-payload)
+              update-ret (u/update-bill-comment (:comment_id comment-payload) {:body "updated comment body"})
+              dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
+              sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))]
+          (map? update-ret) => true
+          (select-values dynamo-ret [:body]) => (select-values sql-ret [:body])))
+
+      (fact "Mark Existing Comment for deletion, Then validate data in both datastores"
+        (let [user (tu/create-user)
+              comment-payload (new-bill-comment {:bill_id "hr2-114" :body "comment body"} user)
+              new-comment (u/create-bill-comment comment-payload)
+              deleted-ret (u/mark-bill-comment-for-deletion (:comment_id comment-payload) (:user_id user))
+              dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
+              sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))]
+          (map? deleted-ret) => true
+          (select-values dynamo-ret [:deleted]) => (select-values sql-ret [:deleted])))
+
+      )))

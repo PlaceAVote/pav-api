@@ -34,7 +34,7 @@
                          :parent_id nil
                          :body       "comment body goes here!!!"}
             _ (dc/create-bill-comment new-comment)
-            _ (dc/update-bill-comment "updated comment body" "comment:1")
+            _ (dc/update-bill-comment {:body "updated comment body"} "comment:1")
             persisted-comment (dc/get-user-bill-comments "hr2-114")]
         (:total persisted-comment) => 1
         (get-in (first (:comments persisted-comment)) [:body]) => "updated comment body"))

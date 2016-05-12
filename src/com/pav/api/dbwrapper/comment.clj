@@ -21,3 +21,15 @@
     (dynamo/create-bill-comment comment)
     (with-sql-backend
       (sql/create-bill-comment (-> comment dynamodb->sql-comment)))))
+
+(defn update-bill-comment [comment_id props]
+  (prog1
+    (dynamo/update-bill-comment props comment_id)
+    (with-sql-backend
+      (sql/update-bill-comment props (:id (sql/get-bill-comment-by-old-id comment_id))))))
+
+(defn mark-bill-comment-for-deletion [comment_id user_id]
+  (prog1
+    (dynamo/delete-comment comment_id user_id)
+    (with-sql-backend
+      (sql/mark-bill-comment-for-deletion (:id (sql/get-bill-comment-by-old-id comment_id))))))

@@ -68,11 +68,11 @@
     :author_img_url img_url :author_first_name first_name :author_last_name last_name))
 
 (defn update-bill-comment [payload comment_id]
-  (let [{author :author :as comment} (dc/update-bill-comment (:body payload) comment_id)]
+  (let [{author :author :as comment} (dbwrapper/update-bill-comment comment_id payload)]
     (assoc-user-metadata-with-comment comment (du/get-user-by-id author))))
 
 (defn delete-bill-comment [comment_id user_id]
-  (dc/delete-comment comment_id user_id))
+  (dbwrapper/mark-bill-comment-for-deletion comment_id user_id))
 
 (defn create-bill-comment
   "Create Bill User Comment"

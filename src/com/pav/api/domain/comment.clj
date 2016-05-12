@@ -12,7 +12,8 @@
    has_children :- s/Bool
    parent_id    :- (s/maybe str-schema)
    score        :- s/Int
-   timestamp    :- Long])
+   timestamp    :- Long
+   deleted      :- s/Bool])
 
 (s/defn ^:always-validate new-bill-comment :- NewDynamoBillComment
   "Create New Bill Comment for persisting to dynamoDB."
@@ -20,7 +21,7 @@
   (let [id (.toString (UUID/randomUUID))]
     (->
       (assoc comment :id id :comment_id id :author (:user_id user_info))
-      (merge {:score 0 :timestamp (.getTime (Date.)) :has_children false})
+      (merge {:score 0 :timestamp (.getTime (Date.)) :has_children false :deleted false})
       map->NewDynamoBillComment)))
 
 (comment

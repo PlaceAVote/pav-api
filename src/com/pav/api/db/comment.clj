@@ -3,7 +3,8 @@
             [clojure.java.jdbc :as sql]
             [clojure.tools.logging :as log]
             [com.pav.api.utils.utils :as u]
-            [com.pav.api.db.common :refer [extract-value unclobify]]))
+            [com.pav.api.db.common :refer [extract-value unclobify]])
+  (:import (java.util Date)))
 
 (defn create-bill-comment [comment]
   (try
@@ -21,3 +22,10 @@
   (first
     (sql/query db/db ["SELECT * FROM comments WHERE old_comment_id = ? LIMIT 1" comment_id]
       {:row-fn unclobify})))
+
+(defn update-bill-comment [props comment_id]
+  (log/info "Updating comment " comment_id " with " props)
+  (sql/update! db/db "comments" props ["id=?" comment_id]))
+
+(defn mark-bill-comment-for-deletion [comment_id]
+  (update-bill-comment {:deleted true :updated_at (.getTime (Date.))} comment_id))
