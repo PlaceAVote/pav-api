@@ -21,7 +21,7 @@
     (update-in bill [:sponsor]
       (fn [sponsor] (merge
                       sponsor
-                      (select-keys legislator [:first_name :last_name :description])
+                      (select-keys legislator [:first_name :last_name :current_term])
                       {:img_url (get-in legislator [:img_urls :200px])})))
     bill))
 
