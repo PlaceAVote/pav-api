@@ -518,7 +518,7 @@ so it can be fed to ':malformed?' handler."
 (defn user-dob->age [dob]
   (try
     (->
-      (f/unparse dob-parser (f/parse dob-parser "05/10/1984"))
+      (f/unparse dob-parser (f/parse dob-parser dob))
       c/from-string (t/interval (t/now)) t/in-years)
     (catch Exception e
       (log/error (str "Trouble parsing dob " dob) e)
