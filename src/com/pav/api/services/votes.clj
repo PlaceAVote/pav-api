@@ -1,5 +1,7 @@
 (ns com.pav.api.services.votes
   (:require [com.pav.api.dynamodb.votes :as dv]
+            [com.pav.api.dynamodb.user :as du]
+            [com.pav.api.services.users :as us]
             [com.pav.api.elasticsearch.user :refer [get-bill-info get-bill get-priority-bill-title]]
             [com.pav.api.events.handler :refer [process-event]]
             [com.pav.api.events.vote :refer [create-timeline-vote-event
@@ -61,8 +63,23 @@
     true
     false))
 
+(defn assoc-user-demographic-data [votes]
+  (if (seq votes)
+    (let [user_data (->>
+                      (map :user_id votes)
+                      du/batch-get-users
+                      :users
+                      (map #(assoc % :age (us/user-dob->age (:dob %))))
+                      (map #(select-keys % [:user_id :state :district :gender :age]))
+                      (group-by :user_id))
+          merged-data (map #(dissoc (merge % (first (user_data (:user_id %)))) :user_id) votes)]
+      merged-data)
+    votes))
+
 (defn get-votes-for-bill
-  ([bill_id] (dv/get-votes-for-bill bill_id))
+  ([bill_id] (->
+               (dv/get-votes-for-bill bill_id)
+               assoc-user-demographic-data))
   ([bill_id user_id] (dv/get-user-vote bill_id user_id)))
 
 (defn assoc-bill-vote-count [{:keys [bill_id] :as event}]
