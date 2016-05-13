@@ -17,7 +17,7 @@
      (select-keys ret [:last_version]))))
 
 (defn assoc-legislator-info [{:keys [sponsor_id] :as bill}]
-  (if-let [legislator (es/get-legislator sponsor_id)]
+  (if-let [legislator (and bill (es/get-legislator sponsor_id))]
     (update-in bill [:sponsor]
       (fn [sponsor] (merge
                       sponsor
