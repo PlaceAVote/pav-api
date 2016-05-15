@@ -9,6 +9,7 @@
   "Check if argument is org.h2.jdbc.JdbcClob and convert it to string.
 Otherwise, return given argument as is."
   [mp]
+  ;; FIXME: check if H2 is used, since MySQL does not use Clob for TEXT types
   (reduce-kv
    (fn [m k v]
      (assoc m k (if (instance? org.h2.jdbc.JdbcClob v)
@@ -29,7 +30,7 @@ only one id or extracting generated id. Makes no sense for multiple results."
   "Return user by given id. id can be either number or number as string.
 Returns nil if not found."
   [id]
-  (first 
+  (first
    (sql/query db/db ["SELECT * FROM user_info WHERE user_id = ? LIMIT 1" id])))
 
 (defn get-user-by-old-id
@@ -39,19 +40,22 @@ other for easier transition from DynamoDB, since it will be removed in future."
   [id]
   (first
    (sql/query db/db ["SELECT * FROM user_info WHERE old_user_id = ? LIMIT 1" id]
+              ;; Remove Clob from every value if found. This is primarly for H2
+              ;; database, since it will for TEXT types return Java Clob object. MySQL will
+              ;; however return normal String. Note that Clob isn't compatible with String.
               {:row-fn unclobify})))
 
 (defn get-user-by-email
   "Return user by given email address."
   [email]
-  (first 
+  (first
    (sql/query db/db ["SELECT * FROM user_info WHERE email = ? LIMIT 1" email]
               {:row-fn unclobify})))
 
 (defn get-user-profile-by-facebook-id
   "Return full user details by given facebook id."
   [facebook_id]
-  (first 
+  (first
    (sql/query db/db [(str "SELECT * FROM user_info AS u "
                           "JOIN user_creds_fb AS c "
                           "ON u.user_id = c.user_id "
@@ -74,13 +78,41 @@ that in a given transaction."
                                           :user_id id
                                           :password password}))
 
+(defn- figure-id
+  "Depending on parameter, returns new/old style ID."
+  [id is-old-id?]
+  (if is-old-id?
+    (-> id get-user-by-old-id :user_id)
+    id))
+
+(defn- get-user-password
+  "Retrieve user password using id or old_id, depending on occasion."
+  ([id is-old-id?]
+     (let [id (figure-id id is-old-id?)]
+       (-> (sql/query db/db ["SELECT password FROM user_creds_pav WHERE user_id = ?" id]
+                      {:row-fn unclobify})
+           first
+           :password)))
+  ([id] (get-user-password id false)))
+
+(defn- get-fb-id-and-token
+  "Retrieve facebook token and id using database id or old_id."
+  ([id is-old-id?]
+     (let [id (figure-id id is-old-id?)]
+       (sql/query db/db ["SELECT facebook_id, facebook_token FROM user_creds_fb WHERE user_id = ?" id])))
+  ([id] (get-fb-id-and-token id false)))
+
 (defn create-user
   "Create user with given map. Can throw constraint exception from database if email is
-not unique. Returns user id if everything went fine."
+not unique. Returns user id if everything went fine.
+
+If :password was given, it will create user with local credentials. If not, it will except
+facebook :token value, which will create facebook related credentials (inside user_creds_fb)."
   [user-profile]
   {:pre [(and (contains? user-profile :email)
-              (contains? user-profile :password)
-              (contains? user-profile :confirmation-token))]}
+              (contains? user-profile :confirmation-token)
+              (or (contains? user-profile :password)
+                  (contains? user-profile :token)))]}
   (try
     (sql/with-db-transaction [d db/db]
       ;; Select only those keys that matches table columns, or database will throw exception.
@@ -90,6 +122,7 @@ not unique. Returns user id if everything went fine."
                                             :dob :address :zipcode :state :latitude :longtitude
                                             :public_profile :created_at :updated_at :country_code
                                             :old_user_id])
+            data (unclobify data)
             id (extract-value
                 (sql/insert! d "user_info" data))]
         (->> user-profile

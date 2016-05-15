@@ -10,11 +10,23 @@
 (defn- parse-dob
   "Parse date of birth in form MM/DD/YYYY to long."
   [in]
-  (-> (SimpleDateFormat. "MM/dd/yyyy")
-      (.parse in)
-      .getTime))
+  (cond
+   (string? in) (-> (SimpleDateFormat. "MM/dd/yyyy")
+                    (.parse in)
+                    .getTime)
+   (number? in) in
+   :else (throw
+          (Exception.
+           (format "Received wrong format (%s) for '%s'" (type in) in)))))
 
-(defn- convert-user-profile
+(defn- bigint->long
+  "Convert from Clojure's BigInt to long if possible."
+  [n]
+  (if (instance? clojure.lang.BigInt n)
+    (.longValue n)
+    n))
+
+(defn convert-user-profile
   "Convert it from dynamodb schema to sql db schema."
   [user-profile]
   (assoc user-profile
@@ -22,6 +34,8 @@
     :latitude (:lat user-profile)
     :longtitude (:lng user-profile)
     :public_profile (:public user-profile)
+    :created_at (-> user-profile :created_at bigint->long)
+    :updated_at (-> user-profile :updated_at bigint->long)
     :dob (-> user-profile :dob parse-dob)))
 
 (defn create-user [user-profile]
