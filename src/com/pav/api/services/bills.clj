@@ -16,6 +16,15 @@
      bill
      (select-keys ret [:last_version]))))
 
+(defn assoc-legislator-info [{:keys [sponsor_id] :as bill}]
+  (if-let [legislator (and sponsor_id (es/get-legislator sponsor_id))]
+    (update-in bill [:sponsor]
+      (fn [sponsor] (merge
+                      sponsor
+                      (select-keys legislator [:first_name :last_name :current_term])
+                      {:img_url (get-in legislator [:img_urls :200px])})))
+    bill))
+
 (defn extract-pageview-metadata [bill]
   (select-keys bill [:bill_id :official_title :short_title :popular_title :summary :subject]))
 
@@ -25,7 +34,7 @@
     {:user_voted false}))
 
 (defn get-bill [bill_id user_id]
-  (let [bill (->> (es/get-bill bill_id) assoc-bill-text)]
+  (let [bill (->> (es/get-bill bill_id) assoc-bill-text assoc-legislator-info)]
     (when bill
       (redis/increment-bill-pageview (extract-pageview-metadata bill))
       (if user_id

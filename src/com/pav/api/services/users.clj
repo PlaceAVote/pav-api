@@ -22,7 +22,10 @@
             [clojure.tools.logging :as log]
             [clojure.core.memoize :as memo]
             [taoensso.truss :refer [have]]
-            [environ.core :refer [env]])
+            [environ.core :refer [env]]
+            [clj-time.coerce :as c]
+            [clj-time.core :as t]
+            [clj-time.format :as f])
   (:import (java.util Date UUID)
            (java.sql Timestamp)))
 
@@ -510,3 +513,31 @@ so it can be fed to ':malformed?' handler."
 
 (defn send-contact-form-email [body]
   (mandril/send-contact-form-email body))
+
+(def dob-parser
+  (f/formatter (t/default-time-zone)
+    "YYYY-MM-dd"
+    "MM/dd/YYYY" "YYYY/MM/dd"))
+
+(def utc-dob-parser
+  (f/formatter (t/default-time-zone)
+    "YYYY-MM-dd" "dd/MM/YYYY"))
+
+
+(defn user-dob->age [dob]
+  (->
+    (or
+      (try (f/unparse utc-dob-parser (f/parse utc-dob-parser dob)) (catch Exception _))
+      (try (f/unparse dob-parser (f/parse dob-parser dob)) (catch Exception _)))
+    c/from-string (t/interval (t/now)) t/in-years))
+
+(comment
+  (user-dob->age "05/10/1984")
+  (user-dob->age "1984/10/05")
+  (user-dob->age "05/10/1984")
+
+  (user-dob->age "05/14/1996")
+  (user-dob->age "14/05/1996")
+  (user-dob->age "1996/05/14")
+
+  (f/show-formatters))
