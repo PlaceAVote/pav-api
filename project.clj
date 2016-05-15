@@ -61,7 +61,8 @@
   :aliases {"migrate"       ["run" "-m" "com.pav.api.db.migrations/migrate!"]
             "repair"        ["run" "-m" "com.pav.api.db.migrations/repair!"]
             "info"          ["run" "-m" "com.pav.api.db.migrations/info"]
-            "drop-tables"   ["run" "-m" "com.pav.api.db.db/drop-all-tables!"]}
+            "drop-tables"   ["run" "-m" "com.pav.api.db.db/drop-all-tables!"]
+            "migrate-data"  ["run" "-m" "com.pav.api.db.from-dynamodb/migrate-all-data"]}
   :profiles
   {
    :uberjar {:jvm-opts     ^:replace ["-Xms256m" "-Xmx512m" "-Xss512k" "-XX:MaxMetaspaceSize=150m"]
@@ -84,7 +85,7 @@
                             ;; db url should be in form: mysql://url/db or h2:file:///tmp/pav
                             ;:db-url                              "mysql://127.0.0.1:3306/pav"
                             ;:db-url                              "h2:file:///tmp/pav"
-                            :db-url                              "h2:mem:pav;DB_CLOSE_DELAY=-1"
+                            :db-url                              "h2:mem:pav"
                             :db-user                             "pavuser"
                             :db-pwd                              "pavpass"
                             :redis-url                           "redis://127.0.0.1:6379"
