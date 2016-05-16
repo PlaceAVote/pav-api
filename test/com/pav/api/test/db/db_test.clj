@@ -19,6 +19,5 @@
       d/db => (contains {:subprotocol "h2" :subname "file:///some-magic-file;mode=mysql"})
       (d/set-db-url! "mysql://127.0.0.1:3306/mydb")
       d/db => (contains {:subprotocol "mysql" :subname "//127.0.0.1:3306/mydb"})
-      (d/set-db-url! old)))
-)
+      (d/set-db-url! old))))
  

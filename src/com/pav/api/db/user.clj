@@ -1,30 +1,11 @@
 (ns com.pav.api.db.user
   "Functions for dealing with user database access."
   (:require [com.pav.api.db.db :as db]
+            [com.pav.api.db.topic :refer [add-user-topics]]
+            [com.pav.api.db.common :refer [unclobify extract-value]]
             [clojure.java.jdbc :as sql]
             [clojure.tools.logging :as log]
             [com.pav.api.utils.utils :as u]))
-
-(defn- unclobify
-  "Check if argument is org.h2.jdbc.JdbcClob and convert it to string.
-Otherwise, return given argument as is."
-  [mp]
-  ;; FIXME: check if H2 is used, since MySQL does not use Clob for TEXT types
-  (reduce-kv
-   (fn [m k v]
-     (assoc m k (if (instance? org.h2.jdbc.JdbcClob v)
-                  ;; simple (str ...) does not work, because it will
-                  ;; return 'clobXX:' header
-                  (.getSubString v 1 (.length v))
-                  v)))
-   {} mp))
-
-(defn- extract-value
-  "Extract value returned from query result, where we are interested only
-in value, but now query key. This works for counting clauses, finding id of
-only one id or extracting generated id. Makes no sense for multiple results."
-  [ret]
-  (-> ret first first val))
 
 (defn get-user-by-id
   "Return user by given id. id can be either number or number as string.
@@ -128,7 +109,10 @@ facebook :token value, which will create facebook related credentials (inside us
         (->> user-profile
              :confirmation-token
              (create-confirmation-record d id))
+        ;; password
         (store-user-password d (:email user-profile) id (:password user-profile))
+        ;; topics
+        (->> user-profile :topics (add-user-topics d id))
         id))
     (catch Exception e
       (log/error e "Error occured persisting new user-profile to SQL table with details:" user-profile))))

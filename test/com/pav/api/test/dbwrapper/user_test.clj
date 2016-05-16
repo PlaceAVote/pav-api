@@ -10,12 +10,6 @@
             [com.pav.api.dynamodb.user :as dynamodb]
             [com.pav.api.db.user :as sql]))
 
-(defn select-values 
-  "Return values in order for given keys. Removes nil."
-  [mp ks]
-  (remove nil?
-          (reduce #(conj %1 (get mp %2)) [] ks)))
-
 (with-sql-backend-enabled
   (against-background [(before :facts (do (flush-selected-dynamo-tables [user-table-name])
                                           (flush-sql-tables)))]
@@ -26,7 +20,7 @@
             dynamo-ret (dynamodb/get-user-by-id (:user_id ret))
             sql-ret    (sql/get-user-by-old-id (:user_id ret))]
         (map? ret) => true
-        (select-values dynamo-ret [:user_id
+        (tu/select-values dynamo-ret [:user_id
                                    :email
                                    :first_name
                                    :last_name
@@ -38,7 +32,7 @@
                                    :lat
                                    :lng
                                    :public]) =>
-        (select-values sql-ret [:old_user_id
+        (tu/select-values sql-ret [:old_user_id
                                 :email
                                 :first_name
                                 :last_name
