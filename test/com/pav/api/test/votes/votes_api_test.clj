@@ -69,8 +69,9 @@
             {status :status body :body} (pav-req :get "/vote/bill/hr2-114" token {})
             response (first body)]
         status => 200
-        (keys response) => (contains [:bill_id :vote :timestamp :created_at] :in-any-order)
-        response => (just {:bill_id "hr2-114" :vote true :timestamp anything :created_at anything})))
+        (keys response) => (just [:bill_id :vote :timestamp :created_at :age :state :gender :district] :in-any-order)
+        response => (just {:bill_id "hr2-114" :vote true :timestamp anything :created_at anything
+                           :age anything :state anything :gender anything :district anything})))
 
     (fact "Retrieving vote records with no Authentication Token, then return vote records for given bill"
       (let [{body :body} (pav-req :put "/user" (new-pav-user))
@@ -79,7 +80,8 @@
             _ (pav-req :put "/vote" token new-vote)
             {status :status body :body} (pav-req :get "/vote/bill/hr2-114")]
         status => 200
-        (first body) => (just {:bill_id "hr2-114" :vote true :timestamp anything :created_at anything})))
+        (first body) => (just {:bill_id "hr2-114" :vote true :timestamp anything :created_at anything
+                               :age anything :state anything :gender anything :district anything})))
 
     (fact "When retrieving vote records for a bill that doesn't exist, return empty list"
       (u/flush-dynamo-tables)

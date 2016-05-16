@@ -833,6 +833,22 @@
         "timestamp": {
           "type": "string",
           "format": "string"
+        },
+        "state": {
+          "type": "string",
+          "format": "string"
+        },
+        "district": {
+          "type": "number",
+          "format": "number"
+        },
+        "gender": {
+          "type": "string",
+          "format": "string"
+        },
+        "age": {
+          "type": "number",
+          "format": "number"
         }
       }
     },

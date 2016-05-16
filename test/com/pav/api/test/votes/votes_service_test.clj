@@ -1,7 +1,8 @@
 (ns com.pav.api.test.votes.votes-service-test
   (:use midje.sweet)
   (:require [com.pav.api.test.utils.utils :as u]
-            [com.pav.api.services.votes :as vs])
+            [com.pav.api.services.votes :as vs]
+            [com.pav.api.services.users :as us])
   (:import (java.util UUID Date)))
 
 (against-background [(before :facts (do (u/flush-dynamo-tables)
@@ -37,13 +38,14 @@
       vote? => false))
 
   (fact "Retrieve all vote records associated a bill"
-    (let [new-vote {:user_id "12345" :bill_id "hr2-114" :vote true :vote-id (.toString (UUID/randomUUID))
+    (let [{user-record :record} (us/create-user-profile (u/new-pav-user) :pav)
+          new-vote {:user_id (:user_id user-record) :bill_id "hr2-114" :vote true :vote-id (.toString (UUID/randomUUID))
                     :created_at (.getTime (Date.)) :timestamp (.getTime (Date.))}
           _ (vs/create-user-vote-record new-vote)
           votes-for-bill (vs/get-votes-for-bill "hr2-114")]
       (count votes-for-bill) => 1
-      (keys (first votes-for-bill)) => (contains [:bill_id :vote :timestamp :created_at] :in-any-order)
-      (first votes-for-bill) => (dissoc new-vote :vote-id :user_id)))
+      (keys (first votes-for-bill)) => (just [:bill_id :vote :timestamp :created_at
+                                              :age :district :gender :state] :in-any-order)))
 
   (fact "If there are no vote records associated with a bill, return an empty list"
     (vs/get-votes-for-bill "hr2-114") => [])

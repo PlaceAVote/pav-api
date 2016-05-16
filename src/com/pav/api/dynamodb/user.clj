@@ -491,3 +491,7 @@ new ID assigned as issue_id and timestamp stored in table."
       {:attr-conds {:created_at [:between [start end]]}})
     meta
     :count))
+
+(defn batch-get-users [user_ids]
+  (far/batch-get-item dy/client-opts
+    {dy/user-table-name {:prim-kvs {:user_id user_ids}}}))
