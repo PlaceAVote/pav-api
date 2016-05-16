@@ -1,4 +1,4 @@
-(ns com.pav.api.db.from-dynamodb
+(ns com.pav.api.dbwrapper.from-dynamodb
   "Utility functions to move data from DynamoDB to SQL database."
   (:require [com.pav.api.dynamodb.user :as du]
             [com.pav.api.db.user :as su]
