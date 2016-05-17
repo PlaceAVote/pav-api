@@ -1,5 +1,6 @@
 (ns com.pav.api.services.votes
   (:require [com.pav.api.dynamodb.votes :as dv]
+            [com.pav.api.dbwrapper.vote :as dbv]
             [com.pav.api.dynamodb.user :as du]
             [com.pav.api.services.users :as us]
             [com.pav.api.elasticsearch.user :refer [get-bill-info get-bill get-priority-bill-title]]
@@ -9,7 +10,7 @@
                                              create-newsfeed-vote-event]]
             [clojure.tools.logging :as log]
             [clojure.core.async :refer [go]])
-  (:import (java.util UUID)))
+  (:import (java.util UUID Date)))
 
 (defn new-vote-count-record [{:keys [vote bill_id]}]
   (let [votes (if (true? vote)
@@ -37,11 +38,19 @@
       (process-event (create-newsfeed-vote-event vote-record))
       (catch Exception e (log/error (str "Error occured publishing vote events for " vote-record) e)))))
 
+(defn new-vote-record [payload user_id]
+  (-> payload
+    (assoc :vote-id (.toString (UUID/randomUUID)))
+    (assoc :created_at (.getTime (Date.)))
+    (assoc :timestamp (.getTime (Date.)))
+    (assoc :user_id user_id)))
+
 (defn create-user-vote-record
   "Create new user vote relationship between a bill and user.  Also publish event on user timeline and notification feed."
-  [{:keys [vote bill_id] :as record}]
-  (let [current-count (dv/get-vote-count bill_id)]
-    (dv/create-user-vote record)
+  [{:keys [vote bill_id] :as payload} user_id]
+  (let [record (new-vote-record payload user_id)
+        current-count (dv/get-vote-count bill_id)]
+    (dbv/create-user-vote-record record)
     (if current-count
       (update-vote-count bill_id vote)
       (create-vote-count (new-vote-count-record record)))
