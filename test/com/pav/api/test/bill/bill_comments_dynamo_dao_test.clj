@@ -9,7 +9,7 @@
   (doseq [v [{:vote-id "1" :vote true :user_id "1234" :bill_id "hr2-114" :timestamp 12312321}
              {:vote-id "2" :vote false :user_id "5678" :bill_id "hr2-114" :timestamp 12312321}
              {:vote-id "3" :vote false :user_id "2468" :bill_id "hr2-114" :timestamp 12312321}]]
-    (vs/create-user-vote-record v)))
+    (vs/create-user-vote-record v (:user_id v))))
 
 (against-background [(before :facts (do (u/flush-dynamo-tables)
                                         (create-vote-records)))]
