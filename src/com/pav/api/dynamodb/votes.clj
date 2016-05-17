@@ -47,3 +47,13 @@
     (far/query dy/client-opts dy/user-votes-table-name {:user_id [:eq user_id]}
       {:index "user-bill-idx"})
     meta :count))
+
+(defn retrieve-all-user-votes
+  "Performs full table scan and retrieves all user vote records"
+  []
+  (loop [votes (far/scan dy/client-opts dy/user-votes-table-name)
+         acc []]
+    (if (:last-prim-kvs (meta votes))
+      (recur (far/scan dy/client-opts dy/user-votes-table-name {:last-prim-kvs (:last-prim-kvs (meta votes))})
+        (into acc votes))
+      (into acc votes))))
