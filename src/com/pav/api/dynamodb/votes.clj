@@ -9,7 +9,8 @@
     (catch Exception e (log/error e))))
 
 (defn create-user-vote [vote]
-  (far/put-item dy/client-opts dy/user-votes-table-name vote))
+  (far/put-item dy/client-opts dy/user-votes-table-name vote)
+  vote)
 
 (defn update-vote-count [bill_id vote]
   (let [update-stm (case vote

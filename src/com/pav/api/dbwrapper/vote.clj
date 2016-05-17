@@ -9,7 +9,7 @@
                               :as vote}]
   (->
     (select-keys vote [:bill_id :vote])
-    (assoc :old_user_id old_user_id :old_vote_id old_vote_id :user_id (sql-u/get-user-by-old-id old_user_id)
+    (assoc :old_user_id old_user_id :old_vote_id old_vote_id :user_id (:user_id (sql-u/get-user-by-old-id old_user_id))
            :created_at timestamp :updated_at timestamp)))
 
 (defn create-user-vote-record
