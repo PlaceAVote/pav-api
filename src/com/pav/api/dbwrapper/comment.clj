@@ -5,7 +5,7 @@
             [com.pav.api.dbwrapper.helpers :refer [with-sql-backend]]
             [com.pav.api.utils.utils :refer [prog1]]))
 
-(defn- dynamodb->sql-comment [comment]
+(defn dynamodb->sql-comment [comment]
   (let [c (assoc comment
             :old_comment_id (:comment_id comment)
             :old_user_id (:author comment)

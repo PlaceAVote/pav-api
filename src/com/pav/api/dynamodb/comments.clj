@@ -277,3 +277,14 @@
   (let [op (get-scoring-operation operation)]
     (far/delete-item dy/client-opts dy/user-issue-comments-scoring-table {:comment_id comment_id :user_id user_id})
     (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id} (merge op {:return :all-new}))))
+
+
+(defn retrieve-all-bill-comments
+  "Performs full table scan and retrieves all user records"
+  []
+  (loop [comments (far/scan dy/client-opts dy/comment-details-table-name)
+         acc []]
+    (if (:last-prim-kvs (meta comments))
+      (recur (far/scan dy/client-opts dy/comment-details-table-name {:last-prim-kvs (:last-prim-kvs (meta comments))})
+        (into acc comments))
+      (into acc comments))))
