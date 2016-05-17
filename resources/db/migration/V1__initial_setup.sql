@@ -131,7 +131,8 @@ CREATE TABLE user_comment_scores (
   liked bool,
   created_at bigint,
   updated_at bigint,
-  bill_id varchar(10),
+  old_user_id varchar(36),
+  old_comment_id varchar(36),
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE);
 

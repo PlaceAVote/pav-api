@@ -41,7 +41,9 @@
       (sql/score-bill-comment
         (:id (sql/get-bill-comment-by-old-id comment_id))
         (:user_id (u-sql/get-user-by-old-id user_id))
-        op))))
+        op
+        :old_user_id user_id
+        :old_comment_id comment_id))))
 
 (defn revoke-liked-bill-comment-score [comment_id user_id]
   (prog1

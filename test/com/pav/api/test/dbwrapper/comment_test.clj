@@ -106,7 +106,12 @@
               dynamo-score-evt (dynamodb/get-user-bill-comment-score (:comment_id new-comment) (:user_id user))
               sql-score-evt (sql/get-user-bill-comment-score (:id sql-ret) (:user_id sql-ret))]
           (select-values dynamo-ret [:score]) => (select-values sql-ret [:score])
-          (select-values dynamo-score-evt [:liked]) => (select-values sql-score-evt [:liked])))
+          (select-values dynamo-score-evt [:liked
+                                           :user_id
+                                           :comment_id]) =>
+          (select-values sql-score-evt [:liked
+                                        :old_user_id
+                                        :old_comment_id])))
 
       (fact "Dislike Existing Comment, Then validate data is both datastores"
         (let [user (tu/create-user)
@@ -119,7 +124,12 @@
               dynamo-score-evt (dynamodb/get-user-bill-comment-score (:comment_id new-comment) (:user_id user))
               sql-score-evt (sql/get-user-bill-comment-score (:id sql-ret) (:user_id sql-ret))]
           (select-values dynamo-ret [:score]) => (select-values sql-ret [:score])
-          (select-values dynamo-score-evt [:liked]) => (select-values sql-score-evt [:liked])))
+          (select-values dynamo-score-evt [:liked
+                                           :user_id
+                                           :comment_id]) =>
+          (select-values sql-score-evt [:liked
+                                        :old_user_id
+                                        :old_comment_id])))
 
       (fact "Delete Users scoring record for existing Comment the user has liked, Then validate data is both datastores"
         (let [user (tu/create-user)

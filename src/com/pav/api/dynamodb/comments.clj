@@ -280,7 +280,7 @@
 
 
 (defn retrieve-all-bill-comments
-  "Performs full table scan and retrieves all user records"
+  "Performs full table scan and retrieves all bill comment records"
   []
   (loop [comments (far/scan dy/client-opts dy/comment-details-table-name)
          acc []]
@@ -288,3 +288,13 @@
       (recur (far/scan dy/client-opts dy/comment-details-table-name {:last-prim-kvs (:last-prim-kvs (meta comments))})
         (into acc comments))
       (into acc comments))))
+
+(defn retrieve-all-bill-comment-scores
+  "Performs full table scan and retrieves all bill comment scoring records"
+  []
+  (loop [scores (far/scan dy/client-opts dy/comment-user-scoring-table)
+         acc []]
+    (if (:last-prim-kvs (meta scores))
+      (recur (far/scan dy/client-opts dy/comment-user-scoring-table {:last-prim-kvs (:last-prim-kvs (meta scores))})
+        (into acc scores))
+      (into acc scores))))
