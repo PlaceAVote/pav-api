@@ -23,13 +23,13 @@
 (defn- migrate-bill-comment
   "Copy single bill comment from dynamodb to sql table"
   [comment]
-  (if-let [{comment_id :comment_id} (sc/get-bill-comment-by-old-id (:comment_id comment))]
-    (log/infof (log/infof "Skipping comment found using old id '%s' " comment_id))
+  (if-let [found (sc/get-bill-comment-by-old-id (:comment_id comment))]
+    (log/infof (log/infof "Skipping comment found using old id '%s' " (:comment_id found)))
     (try
-      (log/infof "Migrating comment %s" comment_id)
+      (log/infof "Migrating comment %s" (:comment_id comment))
       (-> comment dynamodb->sql-comment sc/create-bill-comment)
       (catch Throwable e
-        (log/errorf "Failed for comment %s" comment_id (.getMessage e))))))
+        (log/errorf "Failed for comment %s" (:comment_id comment) (.getMessage e))))))
 
 (defn- migrate-users
   "Copy all dynamodb users to sql user table."
