@@ -70,6 +70,9 @@ CREATE TABLE user_votes (
   bill_id varchar(10),
   vote bool,
   created_at bigint,
+  updated_at bigint,
+  old_user_id varchar(36),
+  old_vote_id varchar(36),
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
 
 CREATE TABLE user_issues (

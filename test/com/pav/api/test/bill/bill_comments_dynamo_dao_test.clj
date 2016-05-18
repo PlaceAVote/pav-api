@@ -5,14 +5,7 @@
             [com.pav.api.services.votes :as vs])
   (:import (java.util Date)))
 
-(defn create-vote-records []
-  (doseq [v [{:vote-id "1" :vote true :user_id "1234" :bill_id "hr2-114" :timestamp 12312321}
-             {:vote-id "2" :vote false :user_id "5678" :bill_id "hr2-114" :timestamp 12312321}
-             {:vote-id "3" :vote false :user_id "2468" :bill_id "hr2-114" :timestamp 12312321}]]
-    (vs/create-user-vote-record v)))
-
-(against-background [(before :facts (do (u/flush-dynamo-tables)
-                                        (create-vote-records)))]
+(against-background [(before :facts (u/flush-dynamo-tables))]
 
   (facts "Test cases cover the creation of bill comments in dynamodb"
 
@@ -181,28 +174,35 @@
         (first (:comments persisted-comment)) => (contains {:score -1})))
 
     (fact "Retrieve top comments for a bill"
-      (let [comment-for {:score 2 :bill_id "hr2-114"
-                         :author "1234" :timestamp (.getTime (Date.))
+      (let [user1 (u/create-user)
+            _ (vs/create-user-vote-record {:vote true :bill_id "hr2-114"} (:user_id user1))
+            user2 (u/create-user)
+            _ (vs/create-user-vote-record {:vote false :bill_id "hr2-114"} (:user_id user2))
+            user3 (u/create-user)
+            _ (vs/create-user-vote-record {:vote false :bill_id "hr2-114"} (:user_id user3))
+            user4 (u/create-user)
+            comment-for {:score 2 :bill_id "hr2-114"
+                         :author (:user_id user1) :timestamp (.getTime (Date.))
                          :comment_id "comment:1" :has_children false
                          :parent_id nil
                          :body "I love this bill!!!"}
             comment-against {:score 4 :bill_id "hr2-114"
-                             :author "5678" :timestamp (.getTime (Date.))
+                             :author (:user_id user2) :timestamp (.getTime (Date.))
                              :comment_id "comment:2" :has_children false
                              :parent_id nil
                              :body "I hate this bill !!!"}
             comment-against2 {:score 6 :bill_id "hr2-114"
-                              :author "2468" :timestamp (.getTime (Date.))
+                              :author (:user_id user3) :timestamp (.getTime (Date.))
                               :comment_id "comment:3" :has_children false
                               :parent_id nil
                               :body "I hate this bill !!!"}
             comment-with-no-vote {:score 4 :bill_id "hr2-114"
-                                  :author "6789" :timestamp (.getTime (Date.))
+                                  :author (:user_id user4) :timestamp (.getTime (Date.))
                                   :comment_id "comment:4" :has_children false
                                   :parent_id nil
                                   :body "I haven't voted dummy !!!"}
             comment2-with-no-vote {:score 6 :bill_id "hr2-114"
-                                   :author "6789" :timestamp (.getTime (Date.))
+                                   :author (:user_id user4) :timestamp (.getTime (Date.))
                                    :comment_id "comment:5" :has_children false
                                    :parent_id nil
                                    :body "I haven't voted dummy !!!"}
@@ -211,33 +211,40 @@
             _ (dc/create-bill-comment comment-against2)
             _ (dc/create-bill-comment comment-with-no-vote)
             _ (dc/create-bill-comment comment2-with-no-vote)
-            top-comments (dc/get-top-comments "hr2-114" "5678")]
-        top-comments => {:for-comment     (assoc comment-for :liked false :disliked false)
-                         :against-comment (assoc comment-against2 :liked false :disliked false)}))
+            top-comments (dc/get-top-comments "hr2-114" (:user_id user2))]
+        (:for-comment top-comments) => (contains (assoc comment-for :liked false :disliked false) :in-any-order)
+        (:against-comment top-comments) => (contains (assoc comment-against2 :liked false :disliked false) :in-any-order)))
 
-    (fact "Retrieve top comments for a bill, When user_id is nil, Then there should be no liked or disliked status"
-      (let [comment-for {:score 2 :bill_id "hr2-114"
-                         :author "1234" :timestamp (.getTime (Date.))
+    (fact "Retrieve top comments for a bill, When user_id is nil, Then there should be no liked or disliked status" 
+      (let [user1 (u/create-user)
+            _ (vs/create-user-vote-record {:vote true :bill_id "hr2-114"} (:user_id user1))
+            user2 (u/create-user)
+            _ (vs/create-user-vote-record {:vote false :bill_id "hr2-114"} (:user_id user2))
+            user3 (u/create-user)
+            _ (vs/create-user-vote-record {:vote false :bill_id "hr2-114"} (:user_id user3))
+            user4 (u/create-user)
+            comment-for {:score 2 :bill_id "hr2-114"
+                         :author (:user_id user1) :timestamp (.getTime (Date.))
                          :comment_id "comment:1" :has_children false
                          :parent_id nil
                          :body "I love this bill!!!"}
             comment-against {:score 4 :bill_id "hr2-114"
-                             :author "5678" :timestamp (.getTime (Date.))
+                             :author (:user_id user2) :timestamp (.getTime (Date.))
                              :comment_id "comment:2" :has_children false
                              :parent_id nil
                              :body "I hate this bill !!!"}
             comment-against2 {:score 6 :bill_id "hr2-114"
-                              :author "2468" :timestamp (.getTime (Date.))
+                              :author (:user_id user3) :timestamp (.getTime (Date.))
                               :comment_id "comment:3" :has_children false
                               :parent_id nil
                               :body "I hate this bill !!!"}
             comment-with-no-vote {:score 4 :bill_id "hr2-114"
-                                  :author "6789" :timestamp (.getTime (Date.))
+                                  :author (:user_id user4) :timestamp (.getTime (Date.))
                                   :comment_id "comment:4" :has_children false
                                   :parent_id nil
                                   :body "I haven't voted dummy !!!"}
             comment2-with-no-vote {:score 6 :bill_id "hr2-114"
-                                   :author "6789" :timestamp (.getTime (Date.))
+                                   :author (:user_id user4) :timestamp (.getTime (Date.))
                                    :comment_id "comment:5" :has_children false
                                    :parent_id nil
                                    :body "I haven't voted dummy !!!"}
@@ -247,8 +254,8 @@
             _ (dc/create-bill-comment comment-with-no-vote)
             _ (dc/create-bill-comment comment2-with-no-vote)
             top-comments (dc/get-top-comments "hr2-114")]
-        top-comments => {:for-comment     (assoc comment-for :liked false :disliked false)
-                         :against-comment (assoc comment-against2 :liked false :disliked false)}))
+        (:for-comment top-comments) => (contains (assoc comment-for :liked false :disliked false) :in-any-order)
+        (:against-comment top-comments) => (contains (assoc comment-against2 :liked false :disliked false) :in-any-order)))
 
     (fact "Don't return top comments if there is one comment for with a corresponding vote but none against"
       (let [comment-for {:score 2 :bill_id "hr2-114"

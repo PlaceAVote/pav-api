@@ -6,6 +6,9 @@
             [com.pav.api.dynamodb.comments :as dc]
             [com.pav.api.db.comment :as sc]
             [com.pav.api.dbwrapper.comment :refer [dynamodb->sql-comment]]
+            [com.pav.api.dynamodb.votes :as dv]
+            [com.pav.api.db.vote :as sv]
+            [com.pav.api.dbwrapper.vote :refer [dynamo-vote->sql-vote]]
             [clojure.tools.logging :as log]
             [com.pav.api.db.db :as db]))
 
@@ -58,6 +61,18 @@
     (doseq [u users]
       (migrate-user u))))
 
+(defn- migrate-user-vote [{old_vote_id :vote-id :as v}]
+  (if (sv/get-user-vote-by-old-id old_vote_id)
+    (log/infof "Skipping user vote record found using old_vote_id '%s'" old_vote_id)
+    (if (su/get-user-by-old-id (:user_id v))
+      (try
+        (do
+         (log/infof "Migrating vote '%s'" old_vote_id)
+         (-> v dynamo-vote->sql-vote sv/create-user-vote-record))
+        (catch Throwable e
+          (log/errorf "Failed migrating user vote for vote-id '%s' with %s" old_vote_id (.getMessage e))))
+      (log/warnf "Could not find existing user '%s'" (:user_id v)))))
+
 (defn- migrate-bill-comments
   "Copy all dynamodb bill comments to sql user_bill_comments and comments table"
   []
@@ -67,6 +82,13 @@
       (migrate-bill-comment c))
     (doseq [s scores]
       (migrate-bill-comment-score s))))
+
+(defn- migrate-user-votes
+  "Copy all user votes to sql user_votes table"
+  []
+  (let [votes (dv/retrieve-all-user-votes)]
+    (doseq [v votes]
+      (migrate-user-vote v))))
 
 (defn migrate-all-data
   "Migrate all data to SQL database."
