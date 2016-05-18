@@ -6,7 +6,7 @@
             [com.pav.api.dynamodb.db :refer [user-table-name user-votes-table-name vote-count-table-name]]
             [com.pav.api.dynamodb.votes :as dynamodb]
             [com.pav.api.db.vote :as sql]
-            [com.pav.api.services.votes :refer [new-vote-record]]))
+            [com.pav.api.domain.vote :refer [new-user-vote]]))
 
 (with-sql-backend-enabled
   (against-background [(before :facts (do
@@ -19,7 +19,7 @@
 
       (fact "Create a new bill comment associated with a user and validate data in both databases."
         (let [user (tu/create-user)
-              vote-payload (new-vote-record {:bill_id "hr2-114" :vote true} (:user_id user))
+              vote-payload (new-user-vote {:bill_id "hr2-114" :vote true} user)
               new-vote (u/create-user-vote-record vote-payload)
               dynamo-ret (dynamodb/get-user-vote (:vote-id new-vote))
               sql-ret (sql/get-user-vote-by-old-id (:vote-id new-vote))]
