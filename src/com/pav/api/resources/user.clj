@@ -250,7 +250,7 @@
   ;; on for PUT we have to implement 'handle-created'
   :put! (fn [ctx] {::user-issue-response
                    (service/create-bill-issue (retrieve-token-user-id ctx) (retrieve-body ctx))})
-  :handle-created ::user-issue-response
+  :handle-created (fn [{record ::user-issue-response}] (cheshire.core/generate-string record))
   :handle-unauthorized {:error "Not Authorized"})
 
 (defresource get-user-issue [issue_id]

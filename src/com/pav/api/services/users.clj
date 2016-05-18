@@ -12,6 +12,7 @@
                                                              send-email-confirmation-email]]
             [com.pav.api.domain.user :refer [new-user-profile presentable profile-info assign-token-for
                                                   account-settings indexable-profile]]
+            [com.pav.api.domain.issue :refer [new-user-issue new-issue-img-key]]
             [com.pav.api.graph.graph-parser :as gp]
             [com.pav.api.s3.user :as s3]
             [com.pav.api.location.location-service :as loc]
@@ -397,11 +398,10 @@ default-followers (:default-followers env))
         new-img_url
         (catch Exception e (log/error "Error uploading Profile image. " e))))))
 
-(defn- merge-open-graph [body]
+(defn- get-issue-graph-data [body]
   "If an article_link is present, then merge open graph data or return original body"
   (if-let [url (:article_link body)]
-    (merge body (gp/extract-open-graph url))
-    body))
+    (gp/extract-open-graph url)))
 
 (defn- retrieve-bill-title [bill_id]
   "Given bill_id, Retrieve short_title if it exists or official_title."
@@ -418,11 +418,19 @@ default-followers (:default-followers env))
 
 (defn create-bill-issue
   "Create new bill issue, according to the details."
-  [user_id details]
+  [user_id new-payload]
   (when-let [user (get-user-by-id user_id)]
-    (let [details (merge {:user_id user_id} (merge-open-graph details) (retrieve-bill-title (:bill_id details)))
-          new-issue (du/create-bill-issue details)
+    (let [graph-data (get-issue-graph-data new-payload)
+          issue-payload (->>
+                          (new-user-issue
+                           (merge new-payload (retrieve-bill-title (:bill_id new-payload)))
+                           graph-data (:user_id user))
+                          (remove (comp nil? second)) (into {}))
+          new-issue (du/create-bill-issue issue-payload)
           to-populate (construct-issue-feed-object user new-issue)]
+      ;;if issue contains article_img then upload image to cdn
+      (if (:article_img graph-data)
+        (du/upload-issue-image (new-issue-img-key (:issue_id issue-payload)) (:article_img graph-data)))
       ;; populate followers table as the last action
       (du/publish-as-global-feed-item to-populate)
       (du/publish-to-timeline user_id to-populate)
@@ -432,7 +440,7 @@ default-followers (:default-followers env))
 (defn update-user-issue
   "Update user issue"
   [user_id issue_id update-map]
-  (let [update-map (merge (merge-open-graph update-map) (retrieve-bill-title (:bill_id update-map)))]
+  (let [update-map (merge update-map (get-issue-graph-data update-map) (retrieve-bill-title (:bill_id update-map)))]
     (println "Updated map" update-map)
     (merge
       (du/update-user-issue user_id issue_id update-map)

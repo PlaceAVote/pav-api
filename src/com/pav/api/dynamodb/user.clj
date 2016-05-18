@@ -307,31 +307,15 @@
   (far/batch-write-item client-opts
                         {dy/user-question-answers-table-name {:put answers}}))
 
-(defn- upload-issue-image [key img_url]
+(defn upload-issue-image [key img_url]
   (let [{stream :body headers :headers} (http/get img_url {:insecure? true :as :stream})]
     (s3/upload-issue-img (:cdn-bucket-name env) key stream (headers "Content-Type"))))
 
-(defn assoc-and-upload-issue-image
-  "Upload issue image to s3 bucket and associate address with issue payload."
-  [{:keys [article_img issue_id] :as issue}]
-  (let [key (str "users/issues/images/" issue_id "/main.jpg")]
-    (upload-issue-image key article_img)
-    (assoc issue :article_img (str (:cdn-url env) "/" key))))
-
 (defn create-bill-issue
-  "Create bill issues with details like user_id, bill_id and so on. Returns
-new ID assigned as issue_id and timestamp stored in table."
-  [details]
-  (let [id (UUID/randomUUID)
-        short_id (uuid->base64Str id)
-        timestamp (.getTime (Date.))
-        issue-data (cond-> details
-                     true (merge
-                            {:issue_id (.toString id) :short_issue_id short_id :timestamp timestamp
-                             :positive_responses 0 :neutral_responses 0 :negative_responses 0})
-                     (:article_img details) assoc-and-upload-issue-image)]
-    (far/put-item client-opts dy/user-issues-table-name issue-data)
-    issue-data))
+  "Create bill issues."
+  [issue]
+  (far/put-item client-opts dy/user-issues-table-name issue)
+  issue)
 
 (defn publish-batch-to-feed
   "Batch up items and persist to dynamodb in batches of 25 items."
