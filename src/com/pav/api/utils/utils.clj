@@ -169,3 +169,15 @@ name and output time result to log/info log. Returns value of last evaluated exp
      (log/infof "Elapsed time for %s: %s msecs"
                 ~label (/ (double (- (. System (nanoTime)) start#)) 1000000.0))
      ret#))
+
+(defmacro sstr
+  "Same as '(str)' but expand it's arguments in compile time. It is 10 times faster than
+ordinary '(str)'. WARNING: since arguments are expanded in compile time, make sure all of them
+are static or funny things will happen."
+  [& args]
+  (apply str (map eval args)))
+
+(defmacro sformat
+  "Static format, just as '(sstr)'. Watch for non-static variables."
+  [fmt & args]
+  (apply (partial format fmt) (map eval args)))

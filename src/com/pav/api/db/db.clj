@@ -1,7 +1,8 @@
 (ns com.pav.api.db.db
   "General functions for handling MySQL database, modeled to have
 similar API as dynamodb."
-  (:require [clojure.java.jdbc :as sql]
+  (:require [com.pav.api.db.tables :as table]
+            [clojure.java.jdbc :as sql]
             [environ.core :refer [env]]
             [clojure.tools.logging :as log]
             [com.pav.api.utils.utils :refer [set-env!]]))
@@ -108,23 +109,23 @@ Works fast, but can yield malformed constraints."
   ;; Make sure tables are deleted in proper order, to obey foreign key constraints. If
   ;; safe-drop-table was set to ignore this exception, some tables would be deleted and some
   ;; not, so throw this so dev knows something is wrong.
-  (doseq [t ["user_following_rel"
-             "user_creds_fb"
-             "user_confirmation_tokens"
-             "user_creds_pav"
-             "user_topic"
-             "user_votes"
-             "user_issue_responses"
-             "user_issue_comments"
-             "user_bill_comments"
-             "user_comment_scores"
-             "user_issues"
-             "comments"
-             "topic"
-             "activity_feed_subscribers"
-             "user_activity_feed"
-             "activity_event_type"
-             "user_info"
+  (doseq [t [table/user-followers-table
+             table/user-creds-fb-table
+             table/user-confirmation-tokens-table
+             table/user-creds-pav-table
+             table/user-topics-table
+             table/user-votes-table
+             table/user-issue-responses-table
+             table/user-issue-comments-table
+             table/user-bill-comments-table
+             table/user-comment-scores-table
+             table/user-issues-table
+             table/comments-table
+             table/topics-table
+             table/activity-feed-subscribers-table
+             table/user-activity-feeds-table
+             table/activity-event-types-table
+             table/user-info-table
              "schema_version" ;; this is flyway metadata
              ]]
     (safe-drop-table t true)))

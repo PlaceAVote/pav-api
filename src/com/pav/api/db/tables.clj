@@ -1,0 +1,21 @@
+(ns com.pav.api.db.tables
+  "All table names in a single place. In case renaming is necessary
+we won't have to change it all over the code.")
+
+(def ^{:const true} user-info-table "user_info")
+(def ^{:const true} user-confirmation-tokens-table "user_confirmation_tokens")
+(def ^{:const true} user-creds-fb-table "user_creds_fb")
+(def ^{:const true} user-creds-pav-table "user_creds_pav")
+(def ^{:const true} topics-table "topics")
+(def ^{:const true} user-topics-table "user_topics")
+(def ^{:const true} user-followers-table "user_followers")
+(def ^{:const true} user-votes-table "user_votes")
+(def ^{:const true} user-issues-table "user_issues")
+(def ^{:const true} user-issue-responses-table "user_issue_responses")
+(def ^{:const true} comments-table "comments")
+(def ^{:const true} user-issue-comments-table "user_issue_comments")
+(def ^{:const true} user-bill-comments-table "user_bill_comments")
+(def ^{:const true} user-comment-scores-table "user_comment_scores")
+(def ^{:const true} activity-event-types-table "activity_event_types")
+(def ^{:const true} user-activity-feeds-table "user_activity_feeds")
+(def ^{:const true} activity-feed-subscribers-table "activity_feed_subscribers")

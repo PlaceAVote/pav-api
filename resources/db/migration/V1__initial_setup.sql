@@ -35,7 +35,8 @@ CREATE TABLE user_confirmation_tokens (
 CREATE TABLE user_creds_fb (
   -- about fb id length: http://stackoverflow.com/questions/7566672/whats-the-max-length-of-a-facebook-uid
   facebook_id varchar(128) NOT NULL PRIMARY KEY,
-  facebook_token varchar(255),
+  -- http://stackoverflow.com/questions/8098515/can-access-token-be-longer-than-255-characters
+  facebook_token text,
   user_id bigint unsigned,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
 
@@ -45,18 +46,18 @@ CREATE TABLE user_creds_pav (
   password text,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
 
-CREATE TABLE topic (
+CREATE TABLE topics (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name text);
 
-CREATE TABLE user_topic (
+CREATE TABLE user_topics (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
   topic_id int,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
-  FOREIGN KEY(topic_id) REFERENCES topic(id) ON DELETE SET NULL);
+  FOREIGN KEY(topic_id) REFERENCES topics(id) ON DELETE SET NULL);
 
-CREATE TABLE user_following_rel (
+CREATE TABLE user_followers (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
   following_id bigint unsigned,
@@ -136,23 +137,23 @@ CREATE TABLE user_comment_scores (
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE);
 
-CREATE TABLE activity_event_type (
+CREATE TABLE activity_event_types (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name varchar(50) NOT NULL UNIQUE,
   source_table varchar(50) NOT NULL UNIQUE);
 
-CREATE TABLE user_activity_feed (
+CREATE TABLE user_activity_feeds (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
   activity_id int,
   event_type_id int,
   created_at bigint,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
-  FOREIGN KEY(event_type_id) REFERENCES activity_event_type(id) ON DELETE CASCADE);
+  FOREIGN KEY(event_type_id) REFERENCES activity_event_types(id) ON DELETE CASCADE);
 
 CREATE TABLE activity_feed_subscribers (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
   activity_feed_id int,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
-  FOREIGN KEY(activity_feed_id) REFERENCES user_activity_feed(id) ON DELETE CASCADE);
+  FOREIGN KEY(activity_feed_id) REFERENCES user_activity_feeds(id) ON DELETE CASCADE);

@@ -2,7 +2,9 @@
   "Functions for dealing with topics. All topics are capitalized in database to
 prevent duplicates."
   (:require [com.pav.api.db.db :as db]
+            [com.pav.api.db.tables :as t]
             [com.pav.api.db.common :refer [extract-value]]
+            [com.pav.api.utils.utils :refer [sstr]]
             [clojure.java.jdbc :as sql]
             [clojure.tools.logging :as log]
             [clojure.string :as s]))
@@ -10,7 +12,8 @@ prevent duplicates."
 (defn get-topic
   "Return topic ID if is present or nil if not."
   [t]
-  (-> (sql/query db/db ["SELECT id FROM topic WHERE name = ? LIMIT 1" (s/capitalize t)])
+  (-> (sql/query db/db [(sstr "SELECT id FROM " t/topics-table " WHERE name = ? LIMIT 1")
+                        (s/capitalize t)])
       first
       :id))
 
@@ -20,7 +23,7 @@ exists, database constraints exception will be thrown."
   [t]
   (sql/with-db-transaction [d db/db]
     (extract-value
-     (sql/insert! d "topic" {:name (s/capitalize t)}))))
+     (sql/insert! d t/topics-table {:name (s/capitalize t)}))))
 
 (defn get-or-add-topic
   "Add new topic and return topic ID. If topic is already present, return it's ID."
@@ -32,10 +35,10 @@ exists, database constraints exception will be thrown."
 (defn get-user-topics
   "Returns all user topics."
   [id]
-  (some->> (sql/query db/db [(str "SELECT t.name FROM user_topic as u "
-                                  "JOIN topic as t "
-                                  "ON u.topic_id = t.id "
-                                  "WHERE u.user_id = ?") id])
+  (some->> (sql/query db/db [(sstr "SELECT t.name FROM " t/user-topics-table " AS u "
+                                   "JOIN " t/topics-table " AS t "
+                                   "ON u.topic_id = t.id "
+                                   "WHERE u.user_id = ?") id])
            seq
            (map :name)))
 
@@ -44,7 +47,7 @@ exists, database constraints exception will be thrown."
 Optional argument is transaction, so it can run in a single transaction that does more that topic
 insert."
   ([transaction id t]
-     (let [insert-fn #(sql/insert! % "user_topic" {:user_id id :topic_id (get-or-add-topic t)})]
+     (let [insert-fn #(sql/insert! % t/user-topics-table {:user_id id :topic_id (get-or-add-topic t)})]
        (if-not (some #{t} (get-user-topics id))
          (if-not transaction
            (sql/with-db-transaction [d db/db]

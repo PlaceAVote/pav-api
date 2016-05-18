@@ -7,6 +7,13 @@
   (:import java.text.SimpleDateFormat
            java.util.Date))
 
+(defn- bigint->long
+  "Convert from Clojure's BigInt to long if possible."
+  [n]
+  (if (instance? clojure.lang.BigInt n)
+    (.longValue n)
+    n))
+
 (defn- parse-dob
   "Parse date of birth in form MM/DD/YYYY to long."
   [in]
@@ -14,17 +21,12 @@
    (string? in) (-> (SimpleDateFormat. "MM/dd/yyyy")
                     (.parse in)
                     .getTime)
+   ;; some field from dynamo has this type
+   (instance? clojure.lang.BigInt in) (bigint->long in)
    (number? in) in
    :else (throw
           (Exception.
            (format "Received wrong format (%s) for '%s'" (type in) in)))))
-
-(defn- bigint->long
-  "Convert from Clojure's BigInt to long if possible."
-  [n]
-  (if (instance? clojure.lang.BigInt n)
-    (.longValue n)
-    n))
 
 (defn convert-user-profile
   "Convert it from dynamodb schema to sql db schema."
