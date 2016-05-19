@@ -459,6 +459,11 @@
   []
   (full-table-scan dy/user-issues-table-name))
 
+(defn retrieve-all-user-issue-responses
+  "Performs full table scan of user issue responses"
+  []
+  (full-table-scan dy/user-issue-responses-table-name))
+
 (defn user-count-between [start end]
   (->
     (far/scan dy/client-opts dy/user-table-name
