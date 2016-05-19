@@ -31,7 +31,8 @@
                                    :state
                                    :lat
                                    :lng
-                                   :public]) =>
+                                   :public
+                                   :district]) =>
         (tu/select-values sql-ret [:old_user_id
                                 :email
                                 :first_name
@@ -43,5 +44,6 @@
                                 :state
                                 :latitude
                                 :longtitude
-                                :public_profile])))
+                                :public_profile
+                                :district])))
 ))

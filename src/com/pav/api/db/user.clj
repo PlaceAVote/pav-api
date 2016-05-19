@@ -109,7 +109,7 @@ facebook :token value, which will create facebook related credentials (inside us
       ;; The reason for this is because 'user-profile' contains (and can contain) more details
       ;; shared beteween multiple tables, necessary for user storage, like password or confirmation-token.
       (let [data (select-keys user-profile [:email :first_name :last_name :img_url :gender
-                                            :dob :address :zipcode :state :latitude :longtitude
+                                            :dob :address :zipcode :state :latitude :longtitude :district
                                             :public_profile :created_at :updated_at :country_code
                                             :old_user_id])
             data (unclobify data)

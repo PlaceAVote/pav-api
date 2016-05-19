@@ -28,6 +28,7 @@
     :old_user_id (:user_id user-profile)
     :latitude (:lat user-profile)
     :longtitude (:lng user-profile)
+    :district (-> user-profile :district bigint->long)
     :public_profile (:public user-profile)
     :created_at (-> user-profile :created_at bigint->long)
     :updated_at (-> user-profile :updated_at bigint->long)

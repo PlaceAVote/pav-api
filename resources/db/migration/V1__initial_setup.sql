@@ -12,6 +12,7 @@ CREATE TABLE user_info (
   dob bigint,
   address text,
   zipcode varchar(5),
+  district int,
   state text,
   -- for lat/long we are going to use DECIMAL to skip rounding imposed by FLOAT/DOUBLE.
   -- See: http://stackoverflow.com/questions/12504208/what-mysql-data-type-should-be-used-for-latitude-longitude-with-8-decimal-place
