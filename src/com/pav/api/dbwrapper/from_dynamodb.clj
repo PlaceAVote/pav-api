@@ -59,6 +59,7 @@
 (defn- migrate-users
   "Copy all dynamodb users to sql user table."
   []
+  (log/info "MIGRATION USERS")
   (let [users (du/retrieve-all-user-records)]
     (doseq [u users]
       (migrate-user u))))
@@ -102,6 +103,7 @@
 (defn- migrate-bill-comments
   "Copy all dynamodb bill comments to sql user_bill_comments and comments table"
   []
+  (log/info "MIGRATION BILL COMMENTS AND SCORES")
   (let [comments (dc/retrieve-all-bill-comments)
         scores (dc/retrieve-all-bill-comment-scores)]
     (doseq [c comments]
@@ -112,6 +114,7 @@
 (defn- migrate-user-votes
   "Copy all user votes to sql user_votes table"
   []
+  (log/info "MIGRATION USER VOTES")
   (let [votes (dv/retrieve-all-user-votes)]
     (doseq [v votes]
       (migrate-user-vote v))))
@@ -119,6 +122,7 @@
 (defn migrate-user-issues
   "Copy all user issue data to sql user_issues and scoring tables"
   []
+  (log/info "MIGRATION USER ISSUES AND RESPONSES")
   (let [issues (du/retrieve-all-user-issues)
         issue-responses (du/retrieve-all-user-issue-responses)]
     (doseq [i issues]
