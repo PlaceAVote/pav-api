@@ -50,16 +50,20 @@
   (when msg (println msg))
   (System/exit status))
 
+(defmacro exec-cmd
+  "Small utility macro that takes a pred and executes a series of functions specified."
+  [pred & cmds]
+  (list 'if pred (cons 'do cmds)))
+
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-options)]
-    (cond
-     (:help options)                   (exit 1 (usage summary))
-     ;; NOTE: order is important
-     (:drop-all-tables options)        (drop-all-tables!)
-     (:migrate-database options)       (migrate-db-on-startup)
-     (:create-dynamodb-tables options) (create-all-tables!)
-     (:migrate-data options)           (migrate-all-data)
-     errors                            (exit 1 (error-msg errors)))
-    (when (:start-server options)
+    (exec-cmd errors (exit 1 (error-msg errors)))
+    (exec-cmd (:help options) (exit 1 (usage summary)))
+    (exec-cmd (:drop-all-tables options) (drop-all-tables!))
+    (exec-cmd (:migrate-database options) (migrate-db-on-startup))
+    (exec-cmd (:create-dynamodb-tables options) (create-all-tables!))
+    (exec-cmd (:migrate-data options) (migrate-all-data))
+    (exec-cmd
+      (:start-server options)
       (start-server {:port 8080})
       (log/info "Server Listening on port 8080"))))
