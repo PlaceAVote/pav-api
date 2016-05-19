@@ -10,7 +10,8 @@
             [com.pav.api.notifications.ws-handler :refer [publish-notification]]
             [com.pav.api.s3.user :as s3]
             [com.pav.api.utils.utils :refer [uuid->base64Str
-                                             base64->uuidStr]]
+                                             base64->uuidStr
+                                             prog1]]
             [clj-http.client :as http]
             [clojure.core.async :refer [thread go]]
             [com.pav.api.elasticsearch.user :as es]
@@ -359,20 +360,6 @@
         (recur (far/query client-opts dy/userfeed-table-name {:issue_id [:eq issue_id]}
                  {:index "issueid-idx" :last-prim-kvs (:last-prim-kvs (meta issues))}))))))
 
-;;Temporarily disabled.
-;(defn populate-user-and-followers-feed-table
-;  "Populate given user and that users followers feed when user an publishes issue."
-;  [user_id data]
-;  (let [author-event  (assoc data :user_id user_id)
-;        follower-evts (->> (user-followers user_id)
-;                           ;; Remove any followers with the same user_id.  Temporary fix to avoid the same issue we
-;                           ;;discovered in development
-;                           (remove #(= user_id (:user_id %)))
-;                           (map #(assoc data :user_id (:user_id %))))
-;        follower-and-author-evts (conj follower-evts author-event)]
-;    (far/put-item client-opts dy/timeline-table-name (assoc author-event :event_id (.toString (UUID/randomUUID))))
-;    (persist-to-newsfeed follower-and-author-evts)))
-
 (defn publish-as-global-feed-item
   "Publish new issues to all users feeds.  This process is executed in seperate thread."
   [issue]
@@ -419,14 +406,16 @@
                         "neutral" {:neutral_responses [:add 1]}
                         "negative" {:negative_responses [:add 1]})]
     ;;update users emotional response
-    (far/update-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id user_id}
-      {:update-map {:emotional_response [:put response]}})
-    ;; update issue count
-    (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id issue-author}
-      {:update-map count-payload})
-    ;; notify author of response
-    (when-not (= user_id (:user_id user-issue))
-      (publish-issues-notification user_id user user-issue response))))
+    (prog1
+      (far/update-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id user_id}
+        {:update-map {:emotional_response [:put response]}
+         :return :all-new})
+      ;; update issue count
+      (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id issue-author}
+        {:update-map count-payload})
+      ;; notify author of response
+      (when-not (= user_id (:user_id user-issue))
+        (publish-issues-notification user_id user user-issue response)))))
 
 (defn get-user-issue-emotional-response [issue_id user_id]
   (try

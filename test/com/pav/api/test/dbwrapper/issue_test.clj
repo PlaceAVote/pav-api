@@ -72,5 +72,33 @@
               dynamo-ret (dynamodb/get-user-issue (:issue_id new-issue))
               sql-ret (sql/get-user-issue-by-old-id (:issue_id new-issue))]
           (map? updated-issue) => true
-          (select-values dynamo-ret [:deleted]) => (select-values sql-ret [:deleted])
-          )))))
+          (select-values dynamo-ret [:deleted]) => (select-values sql-ret [:deleted])))
+
+      (fact "Response to user issue positively"
+        (let [user (tu/create-user)
+              issue_payload (new-user-issue
+                              {:bill_id "hr2-114" :bill_title "bill title" :comment "issue comment"}
+                              {:article_img "http://img.com" :article_link "http://link.com" :article_title "wolly"}
+                              (:user_id user))
+              new-issue (u/create-user-issue issue_payload)
+              issue-eres (u/update-user-issue-emotional-response (:issue_id new-issue) (:user_id user) "positive")
+              dynamo-ret (dynamodb/get-user-issue-emotional-response (:issue_id new-issue) (:user_id user))
+              sql-ret (sql/get-user-issue-response-by-old-ids (:issue_id new-issue) (:user_id user))]
+          (map? issue-eres) => true
+          (select-values dynamo-ret [:user_id
+                                     :issue_id]) =>
+          (select-values sql-ret [:old_user_id
+                                  :old_issue_id])))
+
+      (fact "Response to user issue negatively and then delete the user response"
+        (let [user (tu/create-user)
+              issue_payload (new-user-issue
+                              {:bill_id "hr2-114" :bill_title "bill title" :comment "issue comment"}
+                              {:article_img "http://img.com" :article_link "http://link.com" :article_title "wolly"}
+                              (:user_id user))
+              new-issue (u/create-user-issue issue_payload)
+              _ (u/update-user-issue-emotional-response (:issue_id new-issue) (:user_id user) "positive")
+              _ (u/delete-user-issue-emotional-response (:issue_id new-issue) (:user_id user))
+              dynamo-ret (dynamodb/get-user-issue-emotional-response (:issue_id new-issue) (:user_id user))
+              sql-ret (sql/get-user-issue-response-by-old-ids (:issue_id new-issue) (:user_id user))]
+          (and (= dynamo-ret {:emotional_response "none"}) (nil? sql-ret)) => true)))))

@@ -95,7 +95,7 @@ CREATE TABLE user_issue_responses (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
   issue_id int,
-  response int,
+  emotional_response int,
   old_user_id varchar(36),
   old_issue_id varchar(36),
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,

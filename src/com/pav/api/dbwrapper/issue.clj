@@ -17,6 +17,17 @@
        :updated_at     (:timestamp issue)
        :deleted        (or (:deleted issue) false)})))
 
+(defn dynamo-issueres->sql-issueres [issue-res]
+  {:user_id            (:user_id (sql-u/get-user-by-old-id (:user_id issue-res)))
+   :issue_id           (:id (sql-i/get-user-issue-by-old-id (:issue_id issue-res)))
+   :old_user_id        (:user_id issue-res)
+   :old_issue_id       (:issue_id issue-res)
+   :emotional_response (case (:emotional_response issue-res)
+                         "positive" 1
+                         "neutral" 0
+                         "negative" -1
+                         0)})
+
 (defn create-user-issue [issue]
   (prog1
     (du/create-bill-issue issue)
@@ -39,3 +50,17 @@
       (sql-i/mark-user-issue-for-deletion
         (:user_id (sql-u/get-user-by-old-id user_id))
         (:id (sql-i/get-user-issue-by-old-id issue_id))))))
+
+(defn update-user-issue-emotional-response [issue_id user_id resp]
+  (let [dynamo-ret (du/update-user-issue-emotional-response issue_id user_id resp)]
+    (with-sql-backend
+      (-> dynamo-ret dynamo-issueres->sql-issueres sql-i/upsert-user-issue-emotional-response))
+    dynamo-ret))
+
+(defn delete-user-issue-emotional-response [issue_id user_id]
+  (prog1
+    (du/delete-user-issue-emotional-response issue_id user_id)
+    (with-sql-backend
+      (sql-i/delete-user-issue-emotional-response
+        (:id (sql-i/get-user-issue-by-old-id issue_id))
+        (:user_id (sql-u/get-user-by-old-id user_id))))))
