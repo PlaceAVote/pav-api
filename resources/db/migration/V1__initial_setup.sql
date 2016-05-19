@@ -96,6 +96,8 @@ CREATE TABLE user_issue_responses (
   user_id bigint unsigned,
   issue_id int,
   response int,
+  old_user_id varchar(36),
+  old_issue_id varchar(36),
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(issue_id) REFERENCES user_issues(id) ON DELETE CASCADE);
 

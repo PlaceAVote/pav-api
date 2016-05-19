@@ -5,7 +5,7 @@
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.dynamodb.db :as dy :refer [client-opts]]
-            [com.pav.api.dynamodb.common :refer [batch-delete-from-feed]]
+            [com.pav.api.dynamodb.common :refer [batch-delete-from-feed full-table-scan]]
             [com.pav.api.dynamodb.comments :refer [associate-user-score get-bill-comment]]
             [com.pav.api.notifications.ws-handler :refer [publish-notification]]
             [com.pav.api.s3.user :as s3]
@@ -463,12 +463,12 @@
 (defn retrieve-all-user-records
   "Performs full table scan and retrieves all user records"
   []
-  (loop [user-records (far/scan client-opts dy/user-table-name)
-         acc []]
-    (if (:last-prim-kvs (meta user-records))
-      (recur (far/scan client-opts dy/user-table-name {:last-prim-kvs (:last-prim-kvs (meta user-records))})
-        (into acc user-records))
-      (into acc user-records))))
+  (full-table-scan dy/user-table-name))
+
+(defn retrieve-all-user-issues
+  "Performs full table scan and retrieves all user issue records"
+  []
+  (full-table-scan dy/user-issues-table-name))
 
 (defn user-count-between [start end]
   (->
