@@ -205,7 +205,7 @@ It will NOT handle exceptions."
           :block? true})
        (log/debug "Creating tables done")
        (catch Exception e 
-         (log/error e (str "Failed with creating one of the tables with: " opts)))))
+         (log/error e "Failed with creating one of the tables with:" opts))))
   ([] (create-all-tables! client-opts)))
 
 (defn- safe-delete-table

@@ -68,7 +68,7 @@ but not applied on database. Returns nil if there are no pending migrations."
       (map get-migration-detail (-> obj flyway-setup .info .pending))))
   ([] (pending-migrations db/db)))
 
-(defn migrate-on-startup []
+(defn migrate-db-on-startup []
   (log/info "Running DB Migration " (info))
   (repair!)
   (migrate!)

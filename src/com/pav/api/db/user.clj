@@ -88,7 +88,8 @@ that in a given transaction."
   "Retrieve facebook token and id using database id or old_id."
   ([id is-old-id?]
      (let [id (figure-id id is-old-id?)]
-       (sql/query db/db [(sstr "SELECT facebook_id, facebook_token FROM " t/user-creds-fb-table " WHERE user_id = ?") id])))
+       (first
+        (sql/query db/db [(sstr "SELECT facebook_id, facebook_token FROM " t/user-creds-fb-table " WHERE user_id = ? LIMIT 1") id]))))
   ([id] (get-fb-id-and-token id false)))
 
 (defn create-user
@@ -130,10 +131,12 @@ facebook :token value, which will create facebook related credentials (inside us
 (defn delete-user
   "Delete user, making sure all tables are emptied wher user_id is referenced."
   [user_id]
-  (sql/delete! db/db "user_info" ["user_id = ?" user_id]))
+  (sql/delete! db/db t/user-info-table ["user_id = ?" user_id]))
 
-(defn update-user-token [user_id new-token]
-  )
+(defn update-user-token
+  "Update user token."
+  [user_id token]
+  (sql/update! db/db t/user-confirmation-tokens-table {:token token} ["user_id = ?" user_id]))
 
 (defn update-facebook-user-token [user_id new-facebook-token new-token]
   )

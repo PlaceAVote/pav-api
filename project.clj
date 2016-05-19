@@ -28,7 +28,8 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [clj-http "2.0.0"]
                  [org.clojure/core.memoize "0.5.8"]
-								 [amazonica "0.3.48"]
+                 [clj-time "0.11.0"]
+                 [amazonica "0.3.48" :exclustions [joda-time]]
                  [enlive "1.1.6"]
                  [com.taoensso/truss "1.0.0"]
                  [com.taoensso/faraday "1.9.0-beta1" :exclusions [joda-time
@@ -36,14 +37,14 @@
                                                                   com.amazonaws/aws-java-sdk-kms
                                                                   com.amazonaws/aws-java-sdk-core]]
                  [com.taoensso/encore "2.33.0"]
-                 [clj-time "0.11.0"]
                  [org.clojure/java.jdbc "0.5.8"]
                  [com.h2database/h2 "1.4.191"]
                  [mysql/mysql-connector-java "5.1.38"]
-                 [org.flywaydb/flyway-core "4.0"]]
+                 [org.flywaydb/flyway-core "4.0"]
+                 [org.clojure/tools.cli "0.3.5"]]
   :plugins [[lein-environ "1.0.0"]
-						[lein-release "1.0.5"]
-            [lein-essthree "0.2.1"]]
+            [lein-release "1.0.5"]
+            [lein-essthree "0.2.1" :exclusions [org.clojure/clojure]]]
   :essthree {:deploy {:type :library
                       :bucket "pav-maven-artifact-repository"
                       :snapshots     true

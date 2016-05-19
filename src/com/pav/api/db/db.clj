@@ -37,10 +37,18 @@ db_close_delay=-1 to keep memory reference live as long as JVM is alive."
       (update-in ret [:subname] #(str % addons))
       ret)))
 
+(defn- parse-url-fallback
+  "Call parse-url, but in case of nil value, return hardcoded H2 memory database."
+  [url default]
+  (parse-url (if url
+               url
+               (do (log/warn "Failed to load database url. Using hardocoded value:" default)
+                   default))))
+
 (def ^{:doc "Database access object."
        :public true}
   db (merge
-      (parse-url (:db-url env))
+      (parse-url-fallback (:db-url env) "h2:mem:pav")
       {:user (:db-user env)
        :password (:db-pwd env)}))
 
