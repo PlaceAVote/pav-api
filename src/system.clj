@@ -3,7 +3,7 @@
             [com.pav.api.db.migrations :refer [migrate-db-on-startup]]
             [com.pav.api.dbwrapper.from-dynamodb :refer [migrate-all-data]]
             [com.pav.api.dynamodb.db :refer [create-all-tables!]]
-            [clojure.tools.cli :refer [parse-opts]]
+            [clojure.tools.cli :as cli]
             [clojure.tools.logging :as log]
             [clojure.string :as str])
    (:gen-class))
@@ -42,7 +42,7 @@
   (System/exit status))
 
 (defn -main [& args]
-  (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
+  (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-options)]
     (cond
      (:help options)                   (exit 1 (usage summary))
      (:migrate-database options)       (migrate-db-on-startup)
