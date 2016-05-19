@@ -339,7 +339,8 @@
   (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id user_id}
     {:update-expr     "SET #deleted = :val, #updated = :updated"
      :expr-attr-names {"#deleted" "deleted" "#updated" "updated_at"}
-     :expr-attr-vals  {":val" true ":updated" (.getTime (Date.))}}))
+     :expr-attr-vals  {":val" true ":updated" (.getTime (Date.))}
+     :return :all-new}))
 
 (defn delete-user-issue-from-timeline
   "Remove user issue from users personal timeline."

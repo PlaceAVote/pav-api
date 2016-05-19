@@ -31,3 +31,11 @@
         (:user_id (sql-u/get-user-by-old-id user_id))
         (:id (sql-i/get-user-issue-by-old-id issue_id))
         updates))))
+
+(defn mark-user-issue-for-deletion [user_id issue_id]
+  (prog1
+    (du/mark-user-issue-for-deletion user_id issue_id)
+    (with-sql-backend
+      (sql-i/mark-user-issue-for-deletion
+        (:user_id (sql-u/get-user-by-old-id user_id))
+        (:id (sql-i/get-user-issue-by-old-id issue_id))))))

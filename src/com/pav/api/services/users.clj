@@ -453,7 +453,7 @@ default-followers (:default-followers env))
   "Mark user issue as deleted.  Removes issue from users personal timeline and each user who has a copy on there newsfeed."
   [user_id issue_id]
   (when-let [{:keys [issue_id timestamp]} (or (get-user-issue user_id issue_id) (get-user-issue user_id (utils/base64->uuidStr issue_id)))]
-    (du/mark-user-issue-for-deletion user_id issue_id)
+    (dbwi/mark-user-issue-for-deletion user_id issue_id)
     (du/delete-user-issue-from-timeline user_id timestamp)
     (du/delete-user-issue-from-feed issue_id)))
 

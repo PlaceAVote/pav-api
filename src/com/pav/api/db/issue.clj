@@ -16,6 +16,10 @@
   (log/infof "Updating user issue for user '%s' and issue '%s'" user_id issue_id)
   (sql/update! db/db user-issues-table updates [(u/sstr "id=? and user_id=?") issue_id user_id]))
 
+(defn mark-user-issue-for-deletion [user_id issue_id]
+  (log/infof "Marking user issue for deletion for user '%s' and issue '%s'" user_id issue_id)
+  (update-user-issue user_id issue_id {:deleted true}))
+
 (defn get-user-issue-by-old-id [old_issue_id]
   (first (sql/query db/db
            [(u/sstr "SELECT * FROM " user-issues-table " WHERE old_issue_id=?") old_issue_id]
