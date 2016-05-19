@@ -31,6 +31,10 @@
     :parse-fn parse-args
     :default-desc "false"
     :default false]
+   ["-s" "--start-server [option]" "Start web servert on port 8080."
+    :parse-fn parse-args
+    :default-desc "true"
+    :default true]
    ["-h" "--help" "Display help"]])
 
 (defn- error-msg [errors]
@@ -43,7 +47,7 @@
    summary))
 
 (defn- exit [status msg]
-  (println msg)
+  (when msg (println msg))
   (System/exit status))
 
 (defn -main [& args]
@@ -55,6 +59,7 @@
      (:migrate-database options)       (migrate-db-on-startup)
      (:create-dynamodb-tables options) (create-all-tables!)
      (:migrate-data options)           (migrate-all-data)
-     errors                            (exit 1 (error-msg errors))))
-  (start-server {:port 8080})
-  (log/info "Server Listening on port 8080"))
+     (:start-server options)           (do
+                                         (start-server {:port 8080})
+                                         (log/info "Server Listening on port 8080"))
+     errors                            (exit 1 (error-msg errors)))))
