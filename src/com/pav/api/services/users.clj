@@ -2,7 +2,8 @@
   (:require [buddy.hashers :as h]
             [com.pav.api.schema.user :as us]
             [com.pav.api.utils.utils :as utils]
-            [com.pav.api.dbwrapper.user :as dbw]
+            [com.pav.api.dbwrapper.user :as dbwu]
+            [com.pav.api.dbwrapper.issue :as dbwi]
             [com.pav.api.dynamodb.user :as du]
             [com.pav.api.dynamodb.votes :as dv]
             [com.pav.api.redis.redis :as redis-dao]
@@ -80,7 +81,7 @@ default-followers (:default-followers env))
   "Create new user profile profile to dynamo and redis."
   (when profile
     (try
-      (dbw/create-user profile)
+      (dbwu/create-user profile)
       (redis-dao/create-user-profile profile)
       (index-user (indexable-profile profile))
       (pre-populate-newsfeed profile)
@@ -426,7 +427,7 @@ default-followers (:default-followers env))
                            (merge new-payload (retrieve-bill-title (:bill_id new-payload)))
                            graph-data (:user_id user))
                           (remove (comp nil? second)) (into {}))
-          new-issue (du/create-bill-issue issue-payload)
+          new-issue (dbwi/create-user-issue issue-payload)
           to-populate (construct-issue-feed-object user new-issue)]
       ;;if issue contains article_img then upload image to cdn
       (if (:article_img graph-data)
@@ -443,7 +444,7 @@ default-followers (:default-followers env))
   (let [update-map (merge update-map (get-issue-graph-data update-map) (retrieve-bill-title (:bill_id update-map)))]
     (println "Updated map" update-map)
     (merge
-      (du/update-user-issue user_id issue_id update-map)
+      (dbwi/update-user-issue user_id issue_id update-map)
       (select-keys (get-user-by-id user_id) [:first_name :last_name :img_url])
       (get-user-issue-emotional-response issue_id user_id))))
 
@@ -452,7 +453,7 @@ default-followers (:default-followers env))
   "Mark user issue as deleted.  Removes issue from users personal timeline and each user who has a copy on there newsfeed."
   [user_id issue_id]
   (when-let [{:keys [issue_id timestamp]} (or (get-user-issue user_id issue_id) (get-user-issue user_id (utils/base64->uuidStr issue_id)))]
-    (du/mark-user-issue-for-deletion user_id issue_id)
+    (dbwi/mark-user-issue-for-deletion user_id issue_id)
     (du/delete-user-issue-from-timeline user_id timestamp)
     (du/delete-user-issue-from-feed issue_id)))
 
@@ -472,7 +473,7 @@ so it can be fed to ':malformed?' handler."
   "Set emotional response for given issue_id."
   [issue_id user_id body]
   (when-let [resp (:emotional_response body)]
-    (du/update-user-issue-emotional-response issue_id user_id resp)
+    (dbwi/update-user-issue-emotional-response issue_id user_id resp)
     ;; return body as is, since we already check it's content with
     ;; 'validate-user-issue-emotional-response'
     body))
@@ -486,7 +487,7 @@ so it can be fed to ':malformed?' handler."
 (defn delete-user-issue-emotional-response
   "Delete emotional response for given issue_id and user_id"
   [issue_id user_id]
-  (select-keys (du/delete-user-issue-emotional-response issue_id user_id)
+  (select-keys (dbwi/delete-user-issue-emotional-response issue_id user_id)
     [:emotional_response]))
 
 (defn user-issue-exist? [issue_id]

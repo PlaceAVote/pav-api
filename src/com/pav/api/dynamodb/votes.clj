@@ -1,5 +1,6 @@
 (ns com.pav.api.dynamodb.votes
   (:require [com.pav.api.dynamodb.db :as dy]
+            [com.pav.api.dynamodb.common :refer [full-table-scan]]
             [taoensso.faraday :as far]
             [clojure.tools.logging :as log]))
 
@@ -51,9 +52,4 @@
 (defn retrieve-all-user-votes
   "Performs full table scan and retrieves all user vote records"
   []
-  (loop [votes (far/scan dy/client-opts dy/user-votes-table-name)
-         acc []]
-    (if (:last-prim-kvs (meta votes))
-      (recur (far/scan dy/client-opts dy/user-votes-table-name {:last-prim-kvs (:last-prim-kvs (meta votes))})
-        (into acc votes))
-      (into acc votes))))
+  (full-table-scan dy/user-votes-table-name))

@@ -9,6 +9,8 @@
             [com.pav.api.dynamodb.votes :as dv]
             [com.pav.api.db.vote :as sv]
             [com.pav.api.dbwrapper.vote :refer [dynamo-vote->sql-vote]]
+            [com.pav.api.db.issue :as si]
+            [com.pav.api.dbwrapper.issue :refer [dynamo-issue->sql dynamo-issueres->sql-issueres]]
             [clojure.tools.logging :as log]
             [com.pav.api.db.db :as db]))
 
@@ -71,7 +73,31 @@
          (-> v dynamo-vote->sql-vote sv/create-user-vote-record))
         (catch Throwable e
           (log/errorf "Failed migrating user vote for vote-id '%s' with %s" old_vote_id (.getMessage e))))
-      (log/warnf "Could not find existing user '%s'" (:user_id v)))))
+      (log/warnf "Could not find existing user '%s' please migrate user records first" (:user_id v)))))
+
+(defn- migrate-user-issue [{old_issue_id :issue_id old_user_id :user_id :as i}]
+  (if (si/get-user-issue-by-old-id old_issue_id)
+    (log/infof "Skipping user issue record found using old_issue_id '%s'" old_issue_id)
+    (if (su/get-user-by-old-id old_user_id)
+      (try
+        (do
+         (log/infof "Migrating user issue '%s'" old_issue_id)
+         (-> i dynamo-issue->sql si/create-user-issue))
+        (catch Throwable e
+          (log/errorf "Failed migrating user issue for issue-id '%s' with %s" old_issue_id (.getMessage e))))
+      (log/warnf "Could not find existing user '%s', please migrate user records first" old_user_id))))
+
+(defn- migrate-user-issue-response [{old_issue_id :issue_id old_user_id :user_id :as ir}]
+  (if (si/get-user-issue-response-by-old-ids old_issue_id old_user_id)
+    (log/infof "Skipping user issue response record found using old_issue_id '%s' and old_user_id" old_issue_id old_user_id)
+    (if (su/get-user-by-old-id old_user_id)
+      (try
+        (do
+         (log/infof "Migrating user issue response '%s'" old_issue_id)
+         (-> ir dynamo-issueres->sql-issueres si/create-user-issue-response))
+        (catch Throwable e
+          (log/errorf "Failed migrating user issue response for issue-id '%s' with %s" old_issue_id (.getMessage e))))
+      (log/warnf "Could not find existing user '%s', please migrate user records first" old_user_id))))
 
 (defn- migrate-bill-comments
   "Copy all dynamodb bill comments to sql user_bill_comments and comments table"
@@ -89,6 +115,16 @@
   (let [votes (dv/retrieve-all-user-votes)]
     (doseq [v votes]
       (migrate-user-vote v))))
+
+(defn migrate-user-issues
+  "Copy all user issue data to sql user_issues and scoring tables"
+  []
+  (let [issues (du/retrieve-all-user-issues)
+        issue-responses (du/retrieve-all-user-issue-responses)]
+    (doseq [i issues]
+      (migrate-user-issue i))
+    (doseq [ir issue-responses]
+      (migrate-user-issue-response ir))))
 
 (defn migrate-all-data
   "Migrate all data to SQL database."
