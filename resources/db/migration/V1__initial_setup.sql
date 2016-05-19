@@ -78,17 +78,16 @@ CREATE TABLE user_votes (
 CREATE TABLE user_issues (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   short_issue_id varchar(32) UNIQUE,
-  user_id bigint unsigned,
-  created_at bigint,
-  updated_at bigint,
-  comment_body text,
-  negative_responses int unsigned,
-  neutral_responses int unsigned,
-  positive_responses int unsigned,
+  user_id bigint unsigned NOT NULL,
+  created_at bigint NOT NULL,
+  updated_at bigint NOT NULL,
+  comment text,
   bill_id varchar(10),
   article_link text,
   article_title text,
   article_img text,
+  old_user_id varchar(36),
+  old_issue_id varchar(36),
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
 
 CREATE TABLE user_issue_responses (
