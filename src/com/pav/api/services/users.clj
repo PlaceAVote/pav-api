@@ -2,7 +2,8 @@
   (:require [buddy.hashers :as h]
             [com.pav.api.schema.user :as us]
             [com.pav.api.utils.utils :as utils]
-            [com.pav.api.dbwrapper.user :as dbw]
+            [com.pav.api.dbwrapper.user :as dbwu]
+            [com.pav.api.dbwrapper.issue :as dbwi]
             [com.pav.api.dynamodb.user :as du]
             [com.pav.api.dynamodb.votes :as dv]
             [com.pav.api.redis.redis :as redis-dao]
@@ -80,7 +81,7 @@ default-followers (:default-followers env))
   "Create new user profile profile to dynamo and redis."
   (when profile
     (try
-      (dbw/create-user profile)
+      (dbwu/create-user profile)
       (redis-dao/create-user-profile profile)
       (index-user (indexable-profile profile))
       (pre-populate-newsfeed profile)
@@ -426,7 +427,7 @@ default-followers (:default-followers env))
                            (merge new-payload (retrieve-bill-title (:bill_id new-payload)))
                            graph-data (:user_id user))
                           (remove (comp nil? second)) (into {}))
-          new-issue (du/create-bill-issue issue-payload)
+          new-issue (dbwi/create-user-issue issue-payload)
           to-populate (construct-issue-feed-object user new-issue)]
       ;;if issue contains article_img then upload image to cdn
       (if (:article_img graph-data)
