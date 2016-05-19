@@ -11,7 +11,8 @@
             :old_user_id (:author comment)
             :user_id (:user_id (u-sql/get-user-by-old-id (:author comment)))
             :created_at (bigint->long (:timestamp comment))
-            :updated_at (bigint->long (:timestamp comment)))]
+            :updated_at (bigint->long (:timestamp comment))
+            :score (bigint->long (:score comment)))]
     (if-let [p (:parent_id c)]
       (assoc c :parent_id (:id (sql/get-bill-comment-by-old-id p)) :old_parent_id p)
       c)))
