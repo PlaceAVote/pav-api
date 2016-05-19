@@ -12,6 +12,10 @@
     (log/info "Persisted new user issue " issue)
     id))
 
+(defn update-user-issue [user_id issue_id updates]
+  (log/infof "Updating user issue for user '%s' and issue '%s'" user_id issue_id)
+  (sql/update! db/db user-issues-table updates [(u/sstr "id=? and user_id=?") issue_id user_id]))
+
 (defn get-user-issue-by-old-id [old_issue_id]
   (first (sql/query db/db
            [(u/sstr "SELECT * FROM " user-issues-table " WHERE old_issue_id=?") old_issue_id]

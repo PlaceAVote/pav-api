@@ -444,7 +444,7 @@ default-followers (:default-followers env))
   (let [update-map (merge update-map (get-issue-graph-data update-map) (retrieve-bill-title (:bill_id update-map)))]
     (println "Updated map" update-map)
     (merge
-      (du/update-user-issue user_id issue_id update-map)
+      (dbwi/update-user-issue user_id issue_id update-map)
       (select-keys (get-user-by-id user_id) [:first_name :last_name :img_url])
       (get-user-issue-emotional-response issue_id user_id))))
 

@@ -13,6 +13,7 @@
    negative_responses :- s/Num
    neutral_responses  :- s/Num
    positive_responses :- s/Num
+   deleted            :- s/Bool
    comment            :- (s/maybe str-schema)
    bill_id            :- (s/maybe str-schema)
    bill_title         :- (s/maybe str-schema)
@@ -43,6 +44,7 @@
            :timestamp (.getTime (Date.))
            :negative_responses 0
            :neutral_responses 0
-           :positive_responses 0})
+           :positive_responses 0
+           :deleted false})
         (merge (select-keys graph-data [:article_img :article_link :article_title]))
         assoc-issue-image))))

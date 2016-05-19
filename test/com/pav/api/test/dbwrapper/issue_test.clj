@@ -35,7 +35,8 @@
                                      :article_img
                                      :article_link
                                      :article_title
-                                     :comment]) =>
+                                     :comment
+                                     :deleted]) =>
           (select-values sql-ret [:old_issue_id
                                   :old_user_id
                                   :created_at
@@ -44,4 +45,23 @@
                                   :article_img
                                   :article_link
                                   :article_title
-                                  :comment]))))))
+                                  :comment
+                                  :deleted])))
+
+      (fact "Update Existing User Issue."
+        (let [user (tu/create-user)
+              issue_payload (new-user-issue
+                              {:bill_id "hr2-114" :bill_title "bill title" :comment "issue comment"}
+                              {:article_img "http://img.com" :article_link "http://link.com" :article_title "wolly"}
+                              (:user_id user))
+              new-issue (u/create-user-issue issue_payload)
+              updated-issue (u/update-user-issue (:user_id user) (:issue_id new-issue) {:comment "new issue comment"})
+              dynamo-ret (dynamodb/get-user-issue (:issue_id new-issue))
+              sql-ret (sql/get-user-issue-by-old-id (:issue_id new-issue))]
+          (map? updated-issue) => true
+          (select-values dynamo-ret [:comment]) =>
+          (select-values sql-ret [:comment])))
+
+
+
+      )))

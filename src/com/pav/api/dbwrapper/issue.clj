@@ -14,10 +14,20 @@
        :old_user_id    (:user_id issue)
        :old_issue_id   (:issue_id issue)
        :created_at     (:timestamp issue)
-       :updated_at     (:timestamp issue)})))
+       :updated_at     (:timestamp issue)
+       :deleted        (or (:deleted issue) false)})))
 
 (defn create-user-issue [issue]
   (prog1
     (du/create-bill-issue issue)
     (with-sql-backend
       (-> issue dynamo-issue->sql sql-i/create-user-issue))))
+
+(defn update-user-issue [user_id issue_id updates]
+  (prog1
+    (du/update-user-issue user_id issue_id updates)
+    (with-sql-backend
+      (sql-i/update-user-issue
+        (:user_id (sql-u/get-user-by-old-id user_id))
+        (:id (sql-i/get-user-issue-by-old-id issue_id))
+        updates))))

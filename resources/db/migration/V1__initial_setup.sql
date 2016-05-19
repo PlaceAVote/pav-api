@@ -86,6 +86,7 @@ CREATE TABLE user_issues (
   article_link text,
   article_title text,
   article_img text,
+  deleted bool NOT NULL DEFAULT false,
   old_user_id varchar(36),
   old_issue_id varchar(36),
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
