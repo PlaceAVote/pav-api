@@ -129,4 +129,7 @@
 (defn migrate-all-data
   "Migrate all data to SQL database."
   []
-  (migrate-users))
+  (migrate-users)
+  (migrate-user-votes)
+  (migrate-bill-comments)
+  (migrate-user-issues))
