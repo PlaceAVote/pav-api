@@ -59,7 +59,7 @@
      (:migrate-database options)       (migrate-db-on-startup)
      (:create-dynamodb-tables options) (create-all-tables!)
      (:migrate-data options)           (migrate-all-data)
-     (:start-server options)           (do
-                                         (start-server {:port 8080})
-                                         (log/info "Server Listening on port 8080"))
-     errors                            (exit 1 (error-msg errors)))))
+     errors                            (exit 1 (error-msg errors)))
+    (when (:start-server options)
+      (start-server {:port 8080})
+      (log/info "Server Listening on port 8080"))))
