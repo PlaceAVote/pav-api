@@ -3,6 +3,7 @@
             [com.pav.api.db.migrations :refer [migrate-db-on-startup]]
             [com.pav.api.dbwrapper.from-dynamodb :refer [migrate-all-data]]
             [com.pav.api.dynamodb.db :refer [create-all-tables!]]
+            [com.pav.api.db.db :refer [drop-all-tables!]]
             [clojure.tools.cli :as cli]
             [clojure.tools.logging :as log]
             [clojure.string :as str])
@@ -26,6 +27,10 @@
     :parse-fn parse-args
     :default-desc "false"
     :default false]
+   ["-t" "--drop-all-tables [option]" "Drop all tables in SQL database."
+    :parse-fn parse-args
+    :default-desc "false"
+    :default false]
    ["-h" "--help" "Display help"]])
 
 (defn- error-msg [errors]
@@ -45,6 +50,8 @@
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-options)]
     (cond
      (:help options)                   (exit 1 (usage summary))
+     ;; NOTE: order is important
+     (:drop-all-tables options)        (drop-all-tables!)
      (:migrate-database options)       (migrate-db-on-startup)
      (:create-dynamodb-tables options) (create-all-tables!)
      (:migrate-data options)           (migrate-all-data)
