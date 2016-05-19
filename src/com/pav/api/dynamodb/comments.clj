@@ -1,7 +1,7 @@
 (ns com.pav.api.dynamodb.comments
   (:require [taoensso.faraday :as far]
             [com.pav.api.dynamodb.db :as dy]
-            [com.pav.api.dynamodb.common :refer [batch-delete-from-feed]]
+            [com.pav.api.dynamodb.common :refer [batch-delete-from-feed full-table-scan]]
             [taoensso.truss :as t]
             [clojure.tools.logging :as log]
             [clojure.core.async :refer [go]])
@@ -282,19 +282,9 @@
 (defn retrieve-all-bill-comments
   "Performs full table scan and retrieves all bill comment records"
   []
-  (loop [comments (far/scan dy/client-opts dy/comment-details-table-name)
-         acc []]
-    (if (:last-prim-kvs (meta comments))
-      (recur (far/scan dy/client-opts dy/comment-details-table-name {:last-prim-kvs (:last-prim-kvs (meta comments))})
-        (into acc comments))
-      (into acc comments))))
+  (full-table-scan dy/comment-details-table-name))
 
 (defn retrieve-all-bill-comment-scores
   "Performs full table scan and retrieves all bill comment scoring records"
   []
-  (loop [scores (far/scan dy/client-opts dy/comment-user-scoring-table)
-         acc []]
-    (if (:last-prim-kvs (meta scores))
-      (recur (far/scan dy/client-opts dy/comment-user-scoring-table {:last-prim-kvs (:last-prim-kvs (meta scores))})
-        (into acc scores))
-      (into acc scores))))
+  (full-table-scan dy/comment-user-scoring-table))
