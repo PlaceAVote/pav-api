@@ -18,3 +18,10 @@ SQL storage is disabled."}
   `(binding [*enable-sql-backend* true]
      (with-sql-backend
        ~@body)))
+
+(defn bigint->long
+  "Convert from Clojure's BigInt to long if possible."
+  [n]
+  (if (instance? clojure.lang.BigInt n)
+    (.longValue n)
+    n))

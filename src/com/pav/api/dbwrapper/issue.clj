@@ -1,5 +1,5 @@
 (ns com.pav.api.dbwrapper.issue
-  (:require [com.pav.api.dbwrapper.helpers :refer [with-sql-backend]]
+  (:require [com.pav.api.dbwrapper.helpers :refer [with-sql-backend bigint->long]]
             [com.pav.api.db.user :as sql-u]
             [com.pav.api.db.issue :as sql-i]
             [com.pav.api.utils.utils :refer [prog1]]
@@ -13,8 +13,8 @@
        :user_id        (:user_id (sql-u/get-user-by-old-id (:user_id issue)))
        :old_user_id    (:user_id issue)
        :old_issue_id   (:issue_id issue)
-       :created_at     (:timestamp issue)
-       :updated_at     (:timestamp issue)
+       :created_at     (bigint->long (:timestamp issue))
+       :updated_at     (bigint->long (:timestamp issue))
        :deleted        (or (:deleted issue) false)})))
 
 (defn dynamo-issueres->sql-issueres [issue-res]

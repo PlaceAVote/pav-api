@@ -2,17 +2,10 @@
   "Temporary wrapper that does dynamodb and sql parallel storage."
   (:require [com.pav.api.dynamodb.user :as dynamo]
             [com.pav.api.db.user :as sql]
-            [com.pav.api.dbwrapper.helpers :refer [with-sql-backend]]
+            [com.pav.api.dbwrapper.helpers :refer [with-sql-backend bigint->long]]
             [com.pav.api.utils.utils :refer [prog1]])
   (:import java.text.SimpleDateFormat
            java.util.Date))
-
-(defn- bigint->long
-  "Convert from Clojure's BigInt to long if possible."
-  [n]
-  (if (instance? clojure.lang.BigInt n)
-    (.longValue n)
-    n))
 
 (defn- parse-dob
   "Parse date of birth in form MM/DD/YYYY to long."
