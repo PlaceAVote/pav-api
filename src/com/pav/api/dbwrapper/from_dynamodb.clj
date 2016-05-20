@@ -3,16 +3,20 @@
   (:require [com.pav.api.dynamodb.user :as du]
             [com.pav.api.db.user :as su]
             [com.pav.api.dbwrapper.user :refer [convert-user-profile]]
+            [com.pav.api.dbwrapper.helpers :refer [bigint->long]]
             [com.pav.api.dynamodb.comments :as dc]
             [com.pav.api.db.comment :as sc]
             [com.pav.api.dbwrapper.comment :refer [dynamodb->sql-comment dynamo-comment-score->sql-comment-score]]
             [com.pav.api.dynamodb.votes :as dv]
+            [com.pav.api.dynamodb.db :as dy :refer [client-opts]]
             [com.pav.api.db.vote :as sv]
             [com.pav.api.dbwrapper.vote :refer [dynamo-vote->sql-vote]]
             [com.pav.api.db.issue :as si]
+            [com.pav.api.db.followers :as uf]
             [com.pav.api.dbwrapper.issue :refer [dynamo-issue->sql dynamo-issueres->sql-issueres]]
+            [com.pav.api.db.db :as db]
             [clojure.tools.logging :as log]
-            [com.pav.api.db.db :as db]))
+            [taoensso.faraday :as far]))
 
 (defn- migrate-user
   "Copy single user from dynamodb to sql table."
@@ -128,6 +132,22 @@
       (migrate-user-issue i))
     (doseq [ir issue-responses]
       (migrate-user-issue-response ir))))
+
+(defn- migrate-user-followings
+  "Copy user followings."
+  [user_id]
+  (let [get-sql-id #(some-> % :user_id su/get-user-by-old-id :user_id)
+        ;; raw access to dynamo, since (user-following) will return modified
+        ;; query without timestamp
+        dynamo-get-followings #(far/query client-opts dy/following-table-name {:user_id [:eq %]})]
+    (if-let [follower-sql-id (get-sql-id user_id)]
+      (doseq [f (dynamo-get-followings user_id)]
+        (if-let [following-sql-id (get-sql-id f)]
+          (uf/follow-user follower-sql-id
+                          following-sql-id
+                          (-> f :timestamp bigint->long))
+          (log/errorf "Unable to find following '%s' for follower '%s" (:user_id f) user_id)))
+      (log/errorf "Unable to find user '%s' in SQL table. No followings will be migrated!" user_id))))
 
 (defn migrate-all-data
   "Migrate all data to SQL database."

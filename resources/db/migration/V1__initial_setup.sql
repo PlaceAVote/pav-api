@@ -62,6 +62,7 @@ CREATE TABLE user_followers (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
   following_id bigint unsigned,
+  created_at bigint,
   FOREIGN KEY(user_id) REFERENCES user_info(user_id) ON DELETE CASCADE,
   FOREIGN KEY(following_id) REFERENCES user_info(user_id) ON DELETE CASCADE);
 
