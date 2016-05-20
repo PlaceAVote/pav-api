@@ -14,11 +14,13 @@
   "Create new following relation. If 'timestamp' is not set, it will
 user current time."
   ([follower_id following_id timestamp]
+     (assert (not= follower_id following_id) "You are trying to follow itself.")
      (when-not (following? follower_id following_id)
-       (sql/insert! t/user-followers-table {:user_id follower_id
-                                            :following_id following_id
-                                            :created_at timestamp})))
-  ([follower_id following_id] (follower_id following_id (current-time))))
+       (sql/with-db-transaction [d db/db]
+         (sql/insert! d t/user-followers-table {:user_id follower_id
+                                                :following_id following_id
+                                                :created_at timestamp}))))
+  ([follower_id following_id] (follow-user follower_id following_id (current-time))))
 
 (defn unfollow-user
   "Remove following relation."
@@ -53,4 +55,6 @@ user current time."
 (defn following?
   "Check if 'follower' follows 'following'."
   [follower following]
-  (sql/query db/db [(sstr "SELECT COUNT(*) FROM " t/user-followers-table " WHERE user_id = ? AND following_id = ?") follower following]))
+  (-> (sql/query db/db [(sstr "SELECT * FROM " t/user-followers-table " WHERE user_id = ? AND following_id = ? LIMIT 1") follower following])
+      seq
+      boolean))

@@ -133,28 +133,29 @@
     (doseq [ir issue-responses]
       (migrate-user-issue-response ir))))
 
+(defn- dynamo-get-followings
+  "Return raw followings from dynamodb, without any preprocessing."
+  [id]
+  (far/query client-opts dy/following-table-name {:user_id [:eq id]}))
+
 (defn- migrate-user-followings
   "Copy user followings."
-  [user_id]
-  (let [get-sql-id #(some-> % :user_id su/get-user-by-old-id :user_id)
-        ;; raw access to dynamo, since (user-following) will return modified
-        ;; query without timestamp
-        dynamo-get-followings #(far/query client-opts dy/following-table-name {:user_id [:eq %]})]
-    (if-let [follower-sql-id (get-sql-id user_id)]
-      (doseq [f (dynamo-get-followings user_id)]
-        (if-let [following-sql-id (get-sql-id f)]
-          (uf/follow-user follower-sql-id
-                          following-sql-id
-                          (-> f :timestamp bigint->long))
-          (log/errorf "Unable to find following '%s' for follower '%s" (:user_id f) user_id)))
-      (log/errorf "Unable to find user '%s' in SQL table. No followings will be migrated!" user_id))))
+  [user]
+  (let [id (:user_id user)
+        dynamo-id->sql-id #(some-> % su/get-user-by-old-id :user_id)
+        sql-id (dynamo-id->sql-id id)]
+    (doseq [f (dynamo-get-followings id)]
+      (if-let [sql-fid (-> f :following dynamo-id->sql-id)]
+        (when-not (= sql-id sql-fid)
+          (uf/follow-user sql-id sql-fid (-> f :timestamp bigint->long)))
+        (log/warnf "User '%s' not found in SQL database" (:following f))))))
 
 (defn migrate-users-followings
   "Copy followings from all users."
   []
   (log/info "MIGRATION USER FOLLOWINGS")
   (doseq [u (du/retrieve-all-user-records)]
-    (-> u :user_id migrate-user-followings)))
+    (migrate-user-followings u)))
 
 (defn migrate-all-data
   "Migrate all data to SQL database."
