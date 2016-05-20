@@ -33,24 +33,19 @@
   (update-bill-comment {:deleted true :updated_at (.getTime (Date.))} comment_id))
 
 (defn- update-comment-score [conn comment_id op]
-  (let [i (case op :like 1 :dislike -1)]
+  (let [i (case op :like 1 :dislike -1 true 1 false -1)]
     (sql/execute! conn [(sstr "UPDATE " t/comments-table " SET score=score + ? WHERE id=?") i comment_id])))
 
-(defn insert-user-comment-scoring-record [conn comment_id user_id op & {:keys [old_comment_id old_user_id]
-                                                                      :or {old_comment_id nil old_user_id nil}}]
-  (let [liked (case op :like true :dislike false)]
-    (sql/insert! conn t/user-comment-scores-table {:comment_id comment_id :user_id user_id :liked liked
-                                                   :old_comment_id old_comment_id :old_user_id old_user_id
-                                                   :created_at (.getTime (Date.)) :updated_at (.getTime (Date.))})))
+(defn insert-user-comment-scoring-record [conn scoring-record]
+  (sql/insert! conn t/user-comment-scores-table scoring-record))
 
 (defn- delete-user-bill-comment-ref [conn comment_id user_id]
   (sql/delete! conn t/user-comment-scores-table ["comment_id=? AND user_id=?" comment_id user_id]))
 
-(defn score-bill-comment [comment_id user_id op & {:keys [old_comment_id old_user_id]
-                                                   :or {old_comment_id nil old_user_id nil}}]
+(defn score-bill-comment [scoring-record]
   (sql/with-db-transaction [d db/db]
-    (update-comment-score d comment_id op)
-    (insert-user-comment-scoring-record d comment_id user_id op :old_user_id old_user_id :old_comment_id old_comment_id)))
+    (update-comment-score d (:comment_id scoring-record) (:liked scoring-record))
+    (insert-user-comment-scoring-record d scoring-record)))
 
 (defn revoke-liked-bill-comment-score [comment_id user_id]
   (log/info "Removing bill comment score for User " user_id " and Comment " comment_id)

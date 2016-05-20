@@ -8,7 +8,7 @@
                                              comment-user-scoring-table]]
             [com.pav.api.dynamodb.comments :as dynamodb]
             [com.pav.api.db.comment :as sql]
-            [com.pav.api.domain.comment :refer [new-bill-comment]]))
+            [com.pav.api.domain.comment :refer [new-bill-comment new-comment-score]]))
 
 (with-sql-backend-enabled
   (against-background [(before :facts (do
@@ -99,7 +99,7 @@
         (let [user (tu/create-user)
               comment-payload (new-bill-comment {:bill_id "hr2-114" :body "comment body"} user)
               new-comment (u/create-bill-comment comment-payload)
-              _ (u/score-bill-comment (:comment_id comment-payload) (:user_id user) :like)
+              _ (u/score-bill-comment (new-comment-score (:comment_id comment-payload) (:user_id user) true))
               ;;gather data from both tables
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
               sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))
@@ -117,7 +117,7 @@
         (let [user (tu/create-user)
               comment-payload (new-bill-comment {:bill_id "hr2-114" :body "comment body"} user)
               new-comment (u/create-bill-comment comment-payload)
-              _ (u/score-bill-comment (:comment_id comment-payload) (:user_id user) :dislike)
+              _ (u/score-bill-comment (new-comment-score (:comment_id comment-payload) (:user_id user) false))
               ;;gather data from both tables
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
               sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))
@@ -135,7 +135,7 @@
         (let [user (tu/create-user)
               comment-payload (new-bill-comment {:bill_id "hr2-114" :body "comment body"} user)
               new-comment (u/create-bill-comment comment-payload)
-              _ (u/score-bill-comment (:comment_id comment-payload) (:user_id user) :like)
+              _ (u/score-bill-comment (new-comment-score (:comment_id comment-payload) (:user_id user) true))
               _ (u/revoke-liked-bill-comment-score (:comment_id comment-payload) (:user_id user))
               ;;gather data from both tables
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
@@ -150,7 +150,7 @@
         (let [user (tu/create-user)
               comment-payload (new-bill-comment {:bill_id "hr2-114" :body "comment body"} user)
               new-comment (u/create-bill-comment comment-payload)
-              _ (u/score-bill-comment (:comment_id comment-payload) (:user_id user) :dislike)
+              _ (u/score-bill-comment (new-comment-score (:comment_id comment-payload) (:user_id user) false))
               _ (u/revoke-disliked-bill-comment-score (:comment_id comment-payload) (:user_id user))
               ;;gather data from both tables
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))

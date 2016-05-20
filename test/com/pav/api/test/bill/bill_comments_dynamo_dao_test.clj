@@ -141,7 +141,7 @@
                          :parent_id nil
                          :body "comment body goes here!!!"}
             _ (dc/create-bill-comment new-comment)
-            _ (dc/score-comment "comment:0" "user1" :like)
+            _ (dc/score-comment {:comment_id "comment:0" :user_id "user1" :liked :like})
             ;;create number of comment replies to ensure there is more than one comment in the result payload.
             _ (dotimes [n 11]
                 (dc/create-bill-comment
@@ -160,7 +160,7 @@
                          :parent_id nil
                          :body "comment body goes here!!!"}
             _ (dc/create-bill-comment new-comment)
-            _ (dc/score-comment "comment:0" "user1" :dislike)
+            _ (dc/score-comment {:comment_id "comment:0" :user_id "user1" :liked :dislike})
             ;;create number of comment replies to ensure there is more than one comment in the result payload.
             _ (dotimes [n 11]
                 (dc/create-bill-comment

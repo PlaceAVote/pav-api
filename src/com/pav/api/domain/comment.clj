@@ -24,5 +24,15 @@
       (merge {:score 0 :timestamp (.getTime (Date.)) :has_children false :deleted false})
       map->NewDynamoBillComment)))
 
+(s/defrecord NewDynamoCommentScore
+  [comment_id :- str-schema
+   user_id    :- str-schema
+   liked      :- s/Bool])
+
+(s/defn ^:always-validate new-comment-score :- NewDynamoCommentScore
+  "Create new comment score record for persistence to DynamoDB."
+  [comment_id user_id liked]
+  (map->NewDynamoCommentScore {:comment_id comment_id :user_id user_id :liked liked}))
+
 (comment
   (new-dynamo-bill-comment {:bill_id "hr2-114" :body "comment body" :parent_id "101"} {:user_id "110101"}))

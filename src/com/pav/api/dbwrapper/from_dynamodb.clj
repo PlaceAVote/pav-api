@@ -5,7 +5,7 @@
             [com.pav.api.dbwrapper.user :refer [convert-user-profile]]
             [com.pav.api.dynamodb.comments :as dc]
             [com.pav.api.db.comment :as sc]
-            [com.pav.api.dbwrapper.comment :refer [dynamodb->sql-comment]]
+            [com.pav.api.dbwrapper.comment :refer [dynamodb->sql-comment dynamo-comment-score->sql-comment-score]]
             [com.pav.api.dynamodb.votes :as dv]
             [com.pav.api.db.vote :as sv]
             [com.pav.api.dbwrapper.vote :refer [dynamo-vote->sql-vote]]
@@ -48,8 +48,7 @@
       (let [{existing-user :user_id} (su/get-user-by-old-id old_user_id)
             {existing-comment :comment_id} (sc/get-bill-comment-by-old-id old_comment_id)]
         (if (and existing-user existing-comment)
-          (sc/insert-user-comment-scoring-record db/db existing-comment existing-user (if (:liked score) :like :dislike)
-            :old_comment_id old_comment_id :old_user_id old_user_id)
+          (->> score dynamo-comment-score->sql-comment-score (sc/insert-user-comment-scoring-record db/db))
           (log/infof "Could not find existing comment '%' and user '%s' in user_comment_scores table "
             old_comment_id old_user_id)))
       (catch Throwable e

@@ -12,7 +12,7 @@
             [clojure.tools.logging :as log]
             [clojure.core.async :refer [go]]
             [com.pav.api.dynamodb.user :as du]
-            [com.pav.api.domain.comment :refer [new-bill-comment]])
+            [com.pav.api.domain.comment :refer [new-bill-comment new-comment-score]])
   (:import (java.util UUID Date)))
 
 (defn- new-issue-comment [comment author]
@@ -105,7 +105,7 @@
   (dc/get-user-bill-comments bill-id :user_id user_id :sort-by sort-by :last_comment_id last_comment_id))
 
 (defn score-bill-comment [user_id comment-id operation]
-  (dbwrapper/score-bill-comment comment-id user_id operation)
+  (dbwrapper/score-bill-comment (new-comment-score comment-id user_id (case operation :like true :dislike false)))
   (process-event
     (create-comment-score-timeline-event
       operation user_id (assoc (dc/get-bill-comment comment-id) :timestamp (.getTime (Date.))))))

@@ -3,7 +3,8 @@
             [com.pav.api.db.comment :as sql]
             [com.pav.api.db.user :as u-sql]
             [com.pav.api.dbwrapper.helpers :refer [with-sql-backend bigint->long]]
-            [com.pav.api.utils.utils :refer [prog1]]))
+            [com.pav.api.utils.utils :refer [prog1]])
+  (:import (java.util Date)))
 
 (defn dynamodb->sql-comment [comment]
   (let [c (assoc comment
@@ -16,6 +17,16 @@
     (if-let [p (:parent_id c)]
       (assoc c :parent_id (:id (sql/get-bill-comment-by-old-id p)) :old_parent_id p)
       c)))
+
+(defn dynamo-comment-score->sql-comment-score [{:keys [comment_id user_id liked]}]
+  {:old_comment_id comment_id
+   :old_user_id    user_id
+   :liked          liked
+   :user_id        (:user_id (u-sql/get-user-by-old-id user_id))
+   :comment_id     (:id (sql/get-bill-comment-by-old-id comment_id))
+   :created_at     (.getTime (Date.))
+   :updated_at     (.getTime (Date.))})
+
 
 (defn create-bill-comment [comment]
   (prog1
@@ -35,16 +46,11 @@
     (with-sql-backend
       (sql/mark-bill-comment-for-deletion (:id (sql/get-bill-comment-by-old-id comment_id))))))
 
-(defn score-bill-comment [comment_id user_id op]
+(defn score-bill-comment [scoring-record]
   (prog1
-    (dynamo/score-comment comment_id user_id op)
+    (dynamo/score-comment scoring-record)
     (with-sql-backend
-      (sql/score-bill-comment
-        (:id (sql/get-bill-comment-by-old-id comment_id))
-        (:user_id (u-sql/get-user-by-old-id user_id))
-        op
-        :old_user_id user_id
-        :old_comment_id comment_id))))
+      (-> scoring-record dynamo-comment-score->sql-comment-score sql/score-bill-comment))))
 
 (defn revoke-liked-bill-comment-score [comment_id user_id]
   (prog1

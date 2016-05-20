@@ -158,20 +158,24 @@
 (defn get-scoring-operation [operation]
   (case operation
     :like    {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" 1}}
-    :dislike {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" -1}}))
+    :dislike {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" -1}}
+    true     {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" 1}}
+    false    {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" -1}}))
 
 (defn new-user-scoring-record [comment_id user_id operation]
   (case operation
-    :like {:comment_id comment_id :user_id user_id :liked true}
-    :dislike {:comment_id comment_id :user_id user_id :liked false}))
+    :like    {:comment_id comment_id :user_id user_id :liked true}
+    :dislike {:comment_id comment_id :user_id user_id :liked false}
+    true     {:comment_id comment_id :user_id user_id :liked true}
+    false    {:comment_id comment_id :user_id user_id :liked false}))
 
-(defn score-comment [comment-id user_id operation]
-  (let [op (get-scoring-operation operation)
-        parent-comment-key (-> (far/query dy/client-opts dy/bill-comment-table-name {:comment_id [:eq comment-id]}
+(defn score-comment [{:keys [comment_id user_id liked]}]
+  (let [op (get-scoring-operation liked)
+        parent-comment-key (-> (far/query dy/client-opts dy/bill-comment-table-name {:comment_id [:eq comment_id]}
                                  {:index "comment-idx" :limit 1 :span-reqs {:max 1}}) first :id)]
-    (far/update-item dy/client-opts dy/bill-comment-table-name {:id parent-comment-key :comment_id comment-id} op)
-    (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment-id} op)
-    (far/put-item dy/client-opts dy/comment-user-scoring-table (new-user-scoring-record comment-id user_id operation))))
+    (far/update-item dy/client-opts dy/bill-comment-table-name {:id parent-comment-key :comment_id comment_id} op)
+    (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id} op)
+    (far/put-item dy/client-opts dy/comment-user-scoring-table (new-user-scoring-record comment_id user_id liked))))
 
 (defn get-top-comments
   "Retrieve top comments and user meta data for comments, user_id is optional."
