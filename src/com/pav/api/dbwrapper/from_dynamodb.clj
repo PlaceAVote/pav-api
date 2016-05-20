@@ -149,10 +149,18 @@
           (log/errorf "Unable to find following '%s' for follower '%s" (:user_id f) user_id)))
       (log/errorf "Unable to find user '%s' in SQL table. No followings will be migrated!" user_id))))
 
+(defn migrate-users-followings
+  "Copy followings from all users."
+  []
+  (log/info "MIGRATION USER FOLLOWINGS")
+  (doseq [u (du/retrieve-all-user-records)]
+    (-> u :user_id migrate-user-followings)))
+
 (defn migrate-all-data
   "Migrate all data to SQL database."
   []
   (migrate-users)
   (migrate-user-votes)
   (migrate-bill-comments)
-  (migrate-user-issues))
+  (migrate-user-issues)
+  (migrate-users-followings))
