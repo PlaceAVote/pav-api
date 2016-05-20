@@ -45,11 +45,10 @@
       (:user_id found) (:comment_id found))
     (try
       (log/infof "Migrating bill comment score for user '%s' and comment '%s'" old_user_id old_comment_id)
-      (let [{u-exists :user_id c-exists :comment_id :as sql-score} (dynamo-comment-score->sql-comment-score score)]
-        (if (and u-exists c-exists)
-          (do
-            (log/info "Bill Score Payload " sql-score)
-            (sc/insert-user-comment-scoring-record db/db sql-score))
+      (let [{existing-user :user_id} (su/get-user-by-old-id old_user_id)
+            {existing-comment :id} (sc/get-bill-comment-by-old-id old_comment_id)]
+        (if (and existing-user existing-comment)
+          (->> score dynamo-comment-score->sql-comment-score (sc/insert-user-comment-scoring-record db/db))
           (log/infof "Could not find existing comment '%' and user '%s' in user_comment_scores table "
             old_comment_id old_user_id)))
       (catch Throwable e
