@@ -1,5 +1,6 @@
-
 ## PlaceAVote API
+[![CircleCI](https://circleci.com/gh/PlaceAVote/pav-api/tree/mysql.svg?style=svg&circle-token=e5b69ee207f8360c352dfd8a269ef0aece5f0493)](https://circleci.com/gh/PlaceAVote/pav-api/tree/mysql)
+
 This is our core API which is response for managing our users, bills, comments and voting.
 
 ## Prerequisites
