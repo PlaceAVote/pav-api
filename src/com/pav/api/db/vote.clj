@@ -8,11 +8,10 @@
 
 
 (defn create-user-vote-record [vote]
-  (try
-    (sql/with-db-transaction [d db/db]
-      (let [id (extract-value (sql/insert! d user-votes-table vote))]
-        (log/info "Persisted User Vote to user_votes table" vote)
-        id))))
+  (sql/with-db-transaction [d db/db]
+    (let [id (extract-value (sql/insert! d user-votes-table vote))]
+      (log/info "Persisted User Vote to user_votes table" vote)
+      id)))
 
 (defn get-user-vote-by-old-id [vote_id]
   (first (sql/query db/db [(u/sstr "SELECT * FROM " user-votes-table " WHERE old_vote_id=?") vote_id])))
