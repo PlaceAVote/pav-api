@@ -45,12 +45,12 @@ user current time."
 (defn count-followers
   "Number of followers."
   [user_id]
-  (sql/query db/db [(sstr "SELECT COUNT(following_id) FROM " t/user-followers-table " WHERE user_id = ?") user_id]))
+  (extract-value (sql/query db/db [(sstr "SELECT COUNT(following_id) FROM " t/user-followers-table " WHERE user_id = ?") user_id])))
 
 (defn count-following
   "How many users this user follows."
   [user_id]
-  (sql/query db/db [(sstr "SELECT COUNT(user_id) FROM " t/user-followers-table " WHERE following_id = ?") user_id]))
+  (extract-value (sql/query db/db [(sstr "SELECT COUNT(user_id) FROM " t/user-followers-table " WHERE following_id = ?") user_id])))
 
 (defn following?
   "Check if 'follower' follows 'following'."

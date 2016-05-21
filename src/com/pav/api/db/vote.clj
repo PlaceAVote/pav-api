@@ -6,7 +6,6 @@
             [com.pav.api.utils.utils :as u]
             [com.pav.api.db.common :refer [extract-value unclobify]]))
 
-
 (defn create-user-vote-record [vote]
   (sql/with-db-transaction [d db/db]
     (let [id (extract-value (sql/insert! d user-votes-table vote))]
