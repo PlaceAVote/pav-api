@@ -463,7 +463,7 @@
         update-status => 201
         (:body body) => "Issue comment has been updated"
         (keys body) => (just [:comment_id :issue_id :author :author_first_name :author_last_name :author_img_url
-                              :body :score :timestamp :updated_at :deleted] :in-any-order)))
+                              :body :score :timestamp :updated_at :deleted :liked :disliked] :in-any-order)))
 
     (fact "Given an existing issue comment, When the author deletes the comment, Then verify a 204"
       (let [{body :body} (pav-req :put "/user" (new-pav-user))

@@ -12,21 +12,8 @@
             [clojure.tools.logging :as log]
             [clojure.core.async :refer [go]]
             [com.pav.api.dynamodb.user :as du]
-            [com.pav.api.domain.comment :refer [new-bill-comment new-comment-score]])
+            [com.pav.api.domain.comment :refer [new-bill-comment new-comment-score new-issue-comment]])
   (:import (java.util UUID Date)))
-
-(defn- new-issue-comment [comment author]
-  (let [timestamp (.getTime (Date.))]
-    (-> comment
-      (merge {:comment_id        (.toString (UUID/randomUUID))
-              :timestamp         timestamp
-              :updated_at        timestamp
-              :score             0
-              :author            (:user_id author)
-              :author_first_name (:first_name author)
-              :author_last_name  (:last_name author)
-              :author_img_url    (:img_url author)
-              :deleted           false}))))
 
 (defn assoc-bill-comment-count [comment]
   (dc/assoc-bill-comment-count comment))
@@ -38,7 +25,7 @@
   (dbwrapper/create-bill-comment comment))
 
 (defn persist-issue-comment [comment]
-  (dc/create-issue-comment comment))
+  (dbwrapper/create-issue-comment comment))
 
 (defn- publish-comment-reply-notifications [{:keys [bill_id parent_id author] :as comment}]
   (let [notification_id (.toString (UUID/randomUUID))
@@ -77,6 +64,9 @@
 (defn- bill-comment-response [comment]
   {:record (assoc comment :liked false :disliked false :replies [])})
 
+(defn- issue-comment-response [comment]
+  (assoc comment :liked false :disliked false :updated_at (:timestamp comment)))
+
 (defn create-bill-comment
   "Create Bill User Comment"
   ([comment user]
@@ -92,12 +82,17 @@
 
 (defn create-user-issue-comment [comment user_id]
   (let [user (du/get-user-by-id user_id)
-        new-dynamo-comment (new-issue-comment comment user)]
+        new-dynamo-comment (new-issue-comment comment user)
+        comment_with-user-metadata (assoc-user-metadata-with-comment new-dynamo-comment user)]
     (persist-issue-comment new-dynamo-comment)
-    (assoc new-dynamo-comment :liked false :disliked false)))
+    (issue-comment-response comment_with-user-metadata)))
 
 (defn update-user-issue-comment [comment_id payload]
-  (dc/update-user-issue-comment (:body payload) comment_id))
+  (let [updated (dc/update-user-issue-comment (:body payload) comment_id)
+        user (du/get-user-by-id (:author updated))]
+    (->
+      (assoc-user-metadata-with-comment updated user)
+      issue-comment-response)))
 
 (defn delete-user-issue-comment [comment_id]
   (dc/mark-user-issue-for-deletion comment_id))

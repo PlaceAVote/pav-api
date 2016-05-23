@@ -327,7 +327,7 @@
   :available-media-types ["application/json"]
   :put! (fn [ctx] {:record (comment-service/create-user-issue-comment (retrieve-body ctx) (retrieve-token-user-id ctx))})
   :handle-malformed {:errors [{:body "Please specify a issue_id and body"}]}
-  :handle-created :record
+  :handle-created (fn [{record :record}] (cheshire.core/generate-string record))
   :handle-unauthorized {:error "Not Authorized"})
 
 (defresource update-user-issue-comment [comment_id]

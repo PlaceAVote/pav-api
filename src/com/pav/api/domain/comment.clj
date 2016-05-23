@@ -34,5 +34,23 @@
   [comment_id user_id liked]
   (map->NewDynamoCommentScore {:comment_id comment_id :user_id user_id :liked liked}))
 
-(comment
-  (new-dynamo-bill-comment {:bill_id "hr2-114" :body "comment body" :parent_id "101"} {:user_id "110101"}))
+(s/defrecord NewDynamoIssueComment
+  [author       :- str-schema
+   issue_id     :- str-schema
+   body         :- str-schema
+   comment_id   :- str-schema
+   score        :- s/Int
+   timestamp    :- Long
+   updated_at   :- Long
+   deleted      :- s/Bool])
+
+(s/defn ^:always-validate new-issue-comment :- NewDynamoIssueComment
+  [{:keys [issue_id body]} {:keys [user_id]}]
+  (map->NewDynamoIssueComment {:comment_id (.toString (UUID/randomUUID))
+                               :issue_id issue_id
+                               :author user_id
+                               :body body
+                               :score 0
+                               :timestamp (.getTime (Date.))
+                               :updated_at (.getTime (Date.))
+                               :deleted false}))

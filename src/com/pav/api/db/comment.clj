@@ -7,17 +7,30 @@
             [com.pav.api.db.common :refer [extract-value unclobify]])
   (:import (java.util Date)))
 
+(defn- insert-comment [d comment]
+  (->>
+    (select-keys comment [:user_id :parent_id :body :has_children :score :created_at
+                          :updated_at :deleted :old_user_id :old_comment_id :old_parent_id])
+    (sql/insert! d t/comments-table)
+    extract-value))
+
 (defn create-bill-comment [comment]
   (try
     (sql/with-db-transaction [d db/db]
-      (let [comment-payload (select-keys comment [:user_id :parent_id :body :has_children :score :created_at
-                                                  :updated_at :deleted :old_user_id :old_comment_id :old_parent_id])
-            id (extract-value (sql/insert! d t/comments-table comment-payload))]
-        (log/info "Persisted comment " comment-payload)
+      (let [id (insert-comment d comment)]
         (sql/insert! d t/user-bill-comments-table {:comment_id id :bill_id (:bill_id comment)})
-        id))))
+        id))
+    (catch Throwable e (log/error "Error occured writing bill comment for " comment " with " e))))
 
-(defn get-bill-comment-by-old-id
+(defn create-issue-comment [comment]
+  (try
+    (sql/with-db-transaction [d db/db]
+      (let [id (insert-comment d comment)]
+        (sql/insert! d t/user-issue-comments-table {:comment_id id :issue_id (:issue_id comment)})
+        id))
+    (catch Throwable e (log/error "Error occured writing issue comment for " comment " with " e))))
+
+(defn get-comment-by-old-id
   "Temporary function to retrieve comments by dynamodb comment_id"
   [comment_id]
   (first

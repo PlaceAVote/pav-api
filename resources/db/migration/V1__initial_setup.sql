@@ -121,15 +121,15 @@ CREATE TABLE comments (
 
 CREATE TABLE user_issue_comments (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  issue_id int,
-  comment_id int,
+  issue_id int NOT NULL,
+  comment_id int NOT NULL,
   FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE,
   FOREIGN KEY(issue_id) REFERENCES user_issues(id) ON DELETE CASCADE);
 
 CREATE TABLE user_bill_comments (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  comment_id int,
-  bill_id varchar(10),
+  comment_id int NOT NULL,
+  bill_id varchar(10) NOT NULL,
   FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE);
 
 CREATE TABLE user_comment_scores (

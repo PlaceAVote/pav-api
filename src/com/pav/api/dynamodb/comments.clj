@@ -262,7 +262,9 @@
                    {:last-prim-kvs (select-keys last_comment [:issue_id :score :comment_id])})))
         comments (far/query dy/client-opts dy/user-issue-comments-table-name {:issue_id [:eq issue_id]} opts)]
     {:total           (count comments)
-     :comments        (assoc-user-issue-comment-scores user_id comments)
+     :comments        (->>
+                        (assoc-user-issue-comment-scores user_id comments)
+                        (mapv #(associate-user-info %)))
      :last_comment_id (:comment_id (:last-prim-kvs (meta comments)))}))
 
 (defn mark-user-issue-for-deletion [comment_id]

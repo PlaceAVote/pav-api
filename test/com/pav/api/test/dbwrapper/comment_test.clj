@@ -25,7 +25,7 @@
               comment-payload (new-bill-comment {:bill_id "hr2-114" :body "comment body"} user)
               new-comment (u/create-bill-comment comment-payload)
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
-              sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))]
+              sql-ret (sql/get-comment-by-old-id (:comment_id new-comment))]
           (map? new-comment) => true
           (select-values dynamo-ret [:author
                                      :comment_id
@@ -53,7 +53,7 @@
                                                  (new-bill-comment {:bill_id "hr2-114" :body "comment body"} user)
                                                  :parent_id (:comment_id parent_comment)))
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-reply))
-              sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-reply))]
+              sql-ret (sql/get-comment-by-old-id (:comment_id new-reply))]
           (map? new-reply) => true
           (:parent_id new-reply) => (:comment_id parent_comment)
           (select-values dynamo-ret [:author
@@ -81,7 +81,7 @@
               new-comment (u/create-bill-comment comment-payload)
               update-ret (u/update-bill-comment (:comment_id comment-payload) {:body "updated comment body"})
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
-              sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))]
+              sql-ret (sql/get-comment-by-old-id (:comment_id new-comment))]
           (map? update-ret) => true
           (select-values dynamo-ret [:body]) => (select-values sql-ret [:body])))
 
@@ -91,7 +91,7 @@
               new-comment (u/create-bill-comment comment-payload)
               deleted-ret (u/mark-bill-comment-for-deletion (:comment_id comment-payload) (:user_id user))
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
-              sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))]
+              sql-ret (sql/get-comment-by-old-id (:comment_id new-comment))]
           (map? deleted-ret) => true
           (select-values dynamo-ret [:deleted]) => (select-values sql-ret [:deleted])))
 
@@ -102,7 +102,7 @@
               _ (u/score-bill-comment (new-comment-score (:comment_id comment-payload) (:user_id user) true))
               ;;gather data from both tables
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
-              sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))
+              sql-ret (sql/get-comment-by-old-id (:comment_id new-comment))
               dynamo-score-evt (dynamodb/get-user-bill-comment-score (:comment_id new-comment) (:user_id user))
               sql-score-evt (sql/get-user-bill-comment-score (:id sql-ret) (:user_id sql-ret))]
           (select-values dynamo-ret [:score]) => (select-values sql-ret [:score])
@@ -120,7 +120,7 @@
               _ (u/score-bill-comment (new-comment-score (:comment_id comment-payload) (:user_id user) false))
               ;;gather data from both tables
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
-              sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))
+              sql-ret (sql/get-comment-by-old-id (:comment_id new-comment))
               dynamo-score-evt (dynamodb/get-user-bill-comment-score (:comment_id new-comment) (:user_id user))
               sql-score-evt (sql/get-user-bill-comment-score (:id sql-ret) (:user_id sql-ret))]
           (select-values dynamo-ret [:score]) => (select-values sql-ret [:score])
@@ -139,7 +139,7 @@
               _ (u/revoke-liked-bill-comment-score (:comment_id comment-payload) (:user_id user))
               ;;gather data from both tables
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
-              sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))
+              sql-ret (sql/get-comment-by-old-id (:comment_id new-comment))
               dynamo-score-evt (dynamodb/get-user-bill-comment-score (:comment_id new-comment) (:user_id user))
               sql-score-evt (sql/get-user-bill-comment-score (:id sql-ret) (:user_id sql-ret))]
           (select-values dynamo-ret [:score]) => (select-values sql-ret [:score])
@@ -154,7 +154,7 @@
               _ (u/revoke-disliked-bill-comment-score (:comment_id comment-payload) (:user_id user))
               ;;gather data from both tables
               dynamo-ret (dynamodb/get-bill-comment (:comment_id new-comment))
-              sql-ret (sql/get-bill-comment-by-old-id (:comment_id new-comment))
+              sql-ret (sql/get-comment-by-old-id (:comment_id new-comment))
               dynamo-score-evt (dynamodb/get-user-bill-comment-score (:comment_id new-comment) (:user_id user))
               sql-score-evt (sql/get-user-bill-comment-score (:id sql-ret) (:user_id sql-ret))]
           (select-values dynamo-ret [:score]) => (select-values sql-ret [:score])

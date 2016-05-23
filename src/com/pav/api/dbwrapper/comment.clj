@@ -15,7 +15,7 @@
             :updated_at (bigint->long (:timestamp comment))
             :score (bigint->long (:score comment)))]
     (if-let [p (:parent_id c)]
-      (assoc c :parent_id (:id (sql/get-bill-comment-by-old-id p)) :old_parent_id p)
+      (assoc c :parent_id (:id (sql/get-comment-by-old-id p)) :old_parent_id p)
       c)))
 
 (defn dynamo-comment-score->sql-comment-score [{:keys [comment_id user_id liked]}]
@@ -23,7 +23,7 @@
    :old_user_id    user_id
    :liked          liked
    :user_id        (:user_id (u-sql/get-user-by-old-id user_id))
-   :comment_id     (:id (sql/get-bill-comment-by-old-id comment_id))
+   :comment_id     (:id (sql/get-comment-by-old-id comment_id))
    :created_at     (.getTime (Date.))
    :updated_at     (.getTime (Date.))})
 
@@ -34,17 +34,23 @@
     (with-sql-backend
       (sql/create-bill-comment (-> comment dynamodb->sql-comment)))))
 
+(defn create-issue-comment [comment]
+  (prog1
+    (dynamo/create-issue-comment comment)
+    (with-sql-backend
+      (sql/create-issue-comment (-> comment dynamodb->sql-comment)))))
+
 (defn update-bill-comment [comment_id props]
   (prog1
     (dynamo/update-bill-comment props comment_id)
     (with-sql-backend
-      (sql/update-bill-comment props (:id (sql/get-bill-comment-by-old-id comment_id))))))
+      (sql/update-bill-comment props (:id (sql/get-comment-by-old-id comment_id))))))
 
 (defn mark-bill-comment-for-deletion [comment_id user_id]
   (prog1
     (dynamo/delete-comment comment_id user_id)
     (with-sql-backend
-      (sql/mark-bill-comment-for-deletion (:id (sql/get-bill-comment-by-old-id comment_id))))))
+      (sql/mark-bill-comment-for-deletion (:id (sql/get-comment-by-old-id comment_id))))))
 
 (defn score-bill-comment [scoring-record]
   (prog1
@@ -57,7 +63,7 @@
     (dynamo/remove-liked-comment user_id comment_id)
     (with-sql-backend
       (sql/revoke-liked-bill-comment-score
-        (:id (sql/get-bill-comment-by-old-id comment_id))
+        (:id (sql/get-comment-by-old-id comment_id))
         (:user_id (u-sql/get-user-by-old-id user_id))))))
 
 (defn revoke-disliked-bill-comment-score [comment_id user_id]
@@ -65,5 +71,5 @@
     (dynamo/remove-disliked-comment user_id comment_id)
     (with-sql-backend
       (sql/revoke-disliked-bill-comment-score
-        (:id (sql/get-bill-comment-by-old-id comment_id))
+        (:id (sql/get-comment-by-old-id comment_id))
         (:user_id (u-sql/get-user-by-old-id user_id))))))

@@ -33,7 +33,7 @@
 (defn- migrate-bill-comment
   "Copy single bill comment from dynamodb to sql table"
   [comment]
-  (if-let [found (sc/get-bill-comment-by-old-id (:comment_id comment))]
+  (if-let [found (sc/get-comment-by-old-id (:comment_id comment))]
     (log/infof "Skipping comment found using new id '%s'" (:id found))
     (try
       (log/infof "Migrating comment '%s'" (:comment_id comment))
@@ -50,7 +50,7 @@
     (try
       (log/infof "Migrating bill comment score for user '%s' and comment '%s'" old_user_id old_comment_id)
       (let [{existing-user :user_id} (su/get-user-by-old-id old_user_id)
-            {existing-comment :id} (sc/get-bill-comment-by-old-id old_comment_id)]
+            {existing-comment :id} (sc/get-comment-by-old-id old_comment_id)]
         (if (and existing-user existing-comment)
           (->> score dynamo-comment-score->sql-comment-score (sc/insert-user-comment-scoring-record db/db))
           (log/infof "Could not find existing comment '%s' and user '%s' in user_comment_scores table "
