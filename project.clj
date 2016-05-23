@@ -129,5 +129,5 @@
                             :facebook-mode                       "test"
                             :facebook-app-id                     "TEST"
                             :facebook-client-app-secret          "TEST"
-                            :sql-backend_enabled                 "false"}
+                            :sql-backend-enabled                 "false"}
              :plugins      [[lein-midje "3.1.3"]]}})
