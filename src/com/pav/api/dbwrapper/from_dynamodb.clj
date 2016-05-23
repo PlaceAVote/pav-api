@@ -41,6 +41,17 @@
       (catch Throwable e
         (log/errorf "Failed for comment '%s' with %s" (:comment_id comment) (.getMessage e))))))
 
+(defn- migrate-issue-comment
+  "Copy single issue comment from dynamodb to sql table"
+  [comment]
+  (if-let [found (sc/get-comment-by-old-id (:comment_id comment))]
+    (log/infof "Skipping comment found using new id '%s'" (:id found))
+    (try
+      (log/infof "Migrating comment '%s'" (:comment_id comment))
+      (-> comment dynamodb->sql-comment sc/create-issue-comment)
+      (catch Throwable e
+        (log/errorf "Failed for comment '%s' with %s" (:comment_id comment) (.getMessage e))))))
+
 (defn migrate-bill-comment-score
   "Copy single bill comment scoring record from dynamodb to sql table"
   [{old_comment_id :comment_id old_user_id :user_id :as score}]
@@ -57,6 +68,24 @@
             old_comment_id old_user_id)))
       (catch Throwable e
         (log/errorf "Failed for bill comment scoring record for user '%s' and comment '%s' with %s"
+          old_user_id old_comment_id (.getMessage e))))))
+
+(defn migrate-issue-comment-score
+  "Copy single issue comment scoring record from dynamodb to sql table"
+  [{old_comment_id :comment_id old_user_id :user_id :as score}]
+  (if-let [found (sc/get-bill-comment-score-by-old-ids old_comment_id old_user_id)]
+    (log/infof "Skipping comment scoring record found using old_user_id '%s' and old_comment_id '%s'"
+      (:user_id found) (:id found))
+    (try
+      (log/infof "Migrating issue comment score for user '%s' and comment '%s'" old_user_id old_comment_id)
+      (let [{existing-user :user_id} (su/get-user-by-old-id old_user_id)
+            {existing-comment :id} (sc/get-comment-by-old-id old_comment_id)]
+        (if (and existing-user existing-comment)
+          (->> score dynamo-comment-score->sql-comment-score (sc/insert-user-comment-scoring-record db/db))
+          (log/infof "Could not find existing comment '%s' and user '%s' in user_comment_scores table "
+            old_comment_id old_user_id)))
+      (catch Throwable e
+        (log/errorf "Failed for issue comment scoring record for user '%s' and comment '%s' with %s"
           old_user_id old_comment_id (.getMessage e))))))
 
 (defn- migrate-users
@@ -133,6 +162,17 @@
     (doseq [ir issue-responses]
       (migrate-user-issue-response ir))))
 
+(defn- migrate-issue-comments
+  "Copy all dynamodb issue comments to sql user_issue_comments and comments table"
+  []
+  (log/info "MIGRATION ISSUE COMMENTS AND SCORES")
+  (let [comments (dc/retrieve-all-issue-comments)
+        scores (dc/retrieve-all-issue-comment-scores)]
+    (doseq [c comments]
+      (migrate-issue-comment c))
+    (doseq [s scores]
+      (migrate-issue-comment-score s))))
+
 (defn- dynamo-get-followings
   "Return raw followings from dynamodb, without any preprocessing."
   [id]
@@ -164,4 +204,5 @@
   (migrate-user-votes)
   (migrate-bill-comments)
   (migrate-user-issues)
+  (migrate-issue-comments)
   (migrate-users-followings))

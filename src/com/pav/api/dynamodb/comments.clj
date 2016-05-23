@@ -294,3 +294,13 @@
   "Performs full table scan and retrieves all bill comment scoring records"
   []
   (full-table-scan dy/comment-user-scoring-table))
+
+(defn retrieve-all-issue-comments
+  "Performs full table scan of issue comments table"
+  []
+  (full-table-scan dy/user-issue-comments-table-name))
+
+(defn retrieve-all-issue-comment-scores
+  "Performs full table scan of issue comment scores table"
+  []
+  (full-table-scan dy/user-issue-comments-scoring-table))
