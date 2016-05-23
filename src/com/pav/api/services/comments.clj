@@ -82,6 +82,9 @@
 (defn delete-bill-comment [comment_id user_id]
   (dc/delete-comment comment_id user_id))
 
+(defn- bill-comment-response [comment]
+  {:record (assoc comment :liked false :disliked false :replies [])})
+
 (defn create-bill-comment [comment user]
   (let [author user
         new-comment-id (create-comments-key)
@@ -89,12 +92,11 @@
         new-dynamo-comment (new-dynamo-comment new-comment-id author comment-with-img-url)]
     (persist-comment new-dynamo-comment)
     (publish-comment-events new-dynamo-comment)
-    {:record new-dynamo-comment}))
+    (bill-comment-response new-dynamo-comment)))
 
 (defn create-user-issue-comment [comment user_id]
   (let [user (du/get-user-by-id user_id)
-        new-dynamo-comment (new-issue-comment comment user)
-        ]
+        new-dynamo-comment (new-issue-comment comment user)]
     (persist-issue-comment new-dynamo-comment)
     (assoc new-dynamo-comment :liked false :disliked false)))
 
@@ -112,7 +114,7 @@
                                (assoc :parent_id comment-id))]
     (persist-comment new-dynamo-comment)
     (publish-comment-events new-dynamo-comment)
-    {:record new-dynamo-comment}))
+    (bill-comment-response new-dynamo-comment)))
 
 (defn get-bill-comments
   [user_id bill-id & {:keys [sort-by last_comment_id]

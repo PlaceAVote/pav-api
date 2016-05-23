@@ -31,7 +31,7 @@
         status => 201
         body => (contains expected-comment-response)
         (keys body) => (contains [:bill_id :author :author_first_name :author_last_name :body :score :comment_id :id
-                                  :timestamp :parent_id :has_children] :in-any-order)))
+                                  :timestamp :parent_id :has_children :liked :disliked :replies] :in-any-order)))
 
     (fact "Update an existing comment and verify its new body"
       (let [{body :body} (pav-req :put "/bills/comments" test-token test-comment)
