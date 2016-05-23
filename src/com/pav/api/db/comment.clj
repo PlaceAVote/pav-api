@@ -8,6 +8,7 @@
   (:import (java.util Date)))
 
 (defn- insert-comment [d comment]
+  (log/info "Persisting New Comment to " t/comments-table " with " comment)
   (->>
     (select-keys comment [:user_id :parent_id :body :has_children :score :created_at
                           :updated_at :deleted :old_user_id :old_comment_id :old_parent_id])
