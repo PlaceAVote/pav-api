@@ -74,6 +74,9 @@
 (defn delete-bill-comment [comment_id user_id]
   (dbwrapper/mark-bill-comment-for-deletion comment_id user_id))
 
+(defn- bill-comment-response [comment]
+  {:record (assoc comment :liked false :disliked false :replies [])})
+
 (defn create-bill-comment
   "Create Bill User Comment"
   ([comment user]
@@ -83,7 +86,7 @@
      (log/info "Persisting new comment " comment-with-user-meta)
      (persist-comment new-comment)
      (publish-comment-events comment-with-user-meta)
-     {:record comment-with-user-meta}))
+     (bill-comment-response comment-with-user-meta)))
   ([parent_id comment user]
     (create-bill-comment (assoc comment :parent_id parent_id) user)))
 
