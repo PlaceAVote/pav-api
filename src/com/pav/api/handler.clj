@@ -132,6 +132,6 @@
       wrap-json-response))
 
 (defn start-server [options]
-  (binding [db/*enable-sql-backend* (:sql-backend-enabled env)]
+  (binding [db/*enable-sql-backend* (Boolean/valueOf (:sql-backend-enabled env))]
     (init)
     (run-server #'app options)))
