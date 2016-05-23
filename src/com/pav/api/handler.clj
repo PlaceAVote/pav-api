@@ -35,7 +35,8 @@
             [com.pav.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.api.resources.docs :refer [swagger-docs]]
             [com.pav.api.authentication.authentication :refer [token-handler]]
-            [com.pav.api.services.questions :refer [bootstrap-wizard-questions]]))
+            [com.pav.api.services.questions :refer [bootstrap-wizard-questions]]
+            [com.pav.api.dbwrapper.helpers :as db]))
 
 
 (defn init []
@@ -131,5 +132,6 @@
       wrap-json-response))
 
 (defn start-server [options]
-  (init)
-  (run-server #'app options))
+  (binding [db/*enable-sql-backend* (:sql-backend_enabled env)]
+    (init)
+    (run-server #'app options)))

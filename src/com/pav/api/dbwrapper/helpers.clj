@@ -19,6 +19,14 @@ SQL storage is disabled."}
      (with-sql-backend
        ~@body)))
 
+(defmacro with-sql-backend-enabled
+  "Same as 'with-sql-backend', but with '*enable-sql-backend*' set to true."
+  [& body]
+  `(binding [*enable-sql-backend* true]
+     (with-sql-backend
+       ~@body)))
+
+
 (defn bigint->long
   "Convert from Clojure's BigInt to long if possible."
   [n]

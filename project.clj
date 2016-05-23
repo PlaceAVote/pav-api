@@ -128,5 +128,6 @@
                             :google-geolocation-apikey           "AIzaSyB2taZNvNDGG0Fvyur-o3Xf0g6vd8sYuUM"
                             :facebook-mode                       "test"
                             :facebook-app-id                     "TEST"
-                            :facebook-client-app-secret          "TEST"}
+                            :facebook-client-app-secret          "TEST"
+                            :sql-backend_enabled                 "false"}
              :plugins      [[lein-midje "3.1.3"]]}})
