@@ -201,8 +201,8 @@
   "Migrate all data to SQL database."
   []
   (migrate-users)
+  (migrate-users-followings)
   (migrate-user-votes)
   (migrate-bill-comments)
   (migrate-user-issues)
-  (migrate-issue-comments)
-  (migrate-users-followings))
+  (migrate-issue-comments))

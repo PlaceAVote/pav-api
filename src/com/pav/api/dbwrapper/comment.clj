@@ -9,7 +9,7 @@
 
 (defn dynamodb->sql-comment [comment]
   (let [c (assoc comment
-            :issue_id (i-sql/get-user-issue-by-old-id (:issue_id comment))
+            :issue_id (:id (i-sql/get-user-issue-by-old-id (:issue_id comment)))
             :old_comment_id (:comment_id comment)
             :old_user_id (:author comment)
             :user_id (:user_id (u-sql/get-user-by-old-id (:author comment)))
