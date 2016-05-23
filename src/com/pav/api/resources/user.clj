@@ -350,7 +350,7 @@
                            (comment-service/is-issue-author? comment_id (retrieve-token-user-id ctx))))
   :allowed-methods [:delete]
   :available-media-types ["application/json"]
-  :delete! (fn [_]  {:record (comment-service/delete-user-issue-comment comment_id)})
+  :delete! (fn [ctx]  {:record (comment-service/delete-user-issue-comment comment_id (retrieve-token-user-id ctx))})
   :handle-unauthorized {:error "Not Authorized"})
 
 (defresource user-issue-comments [issue_id]

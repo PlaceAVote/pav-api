@@ -170,6 +170,7 @@
     false    {:comment_id comment_id :user_id user_id :liked false}))
 
 (defn score-comment [{:keys [comment_id user_id liked]}]
+  (println "here " comment_id user_id liked)
   (let [op (get-scoring-operation liked)
         parent-comment-key (-> (far/query dy/client-opts dy/bill-comment-table-name {:comment_id [:eq comment_id]}
                                  {:index "comment-idx" :limit 1 :span-reqs {:max 1}}) first :id)]
@@ -223,7 +224,7 @@
 (defn create-issue-comment [comment]
   (far/put-item dy/client-opts dy/user-issue-comments-table-name comment))
 
-(defn update-user-issue-comment [new-body comment_id]
+(defn update-user-issue-comment [{new-body :body} comment_id]
   (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id}
     {:update-expr     "SET #body = :body, #updated = :updated"
      :expr-attr-names {"#body" "body" "#updated" "updated_at"}
@@ -274,16 +275,15 @@
      :expr-attr-vals  {":deleted" true ":updated" (.getTime (Date.))}
      :return :all-new}))
 
-(defn score-issue-comment [comment_id user_id operation]
-  (let [op (get-scoring-operation operation)]
-    (far/put-item dy/client-opts dy/user-issue-comments-scoring-table (new-user-scoring-record comment_id user_id operation))
+(defn score-issue-comment [{:keys [comment_id user_id liked]}]
+  (let [op (get-scoring-operation liked)]
+    (far/put-item dy/client-opts dy/user-issue-comments-scoring-table (new-user-scoring-record comment_id user_id liked))
     (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id} (merge op {:return :all-new}))))
 
 (defn revoke-issue-score [user_id comment_id operation]
   (let [op (get-scoring-operation operation)]
     (far/delete-item dy/client-opts dy/user-issue-comments-scoring-table {:comment_id comment_id :user_id user_id})
     (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id} (merge op {:return :all-new}))))
-
 
 (defn retrieve-all-bill-comments
   "Performs full table scan and retrieves all bill comment records"

@@ -88,14 +88,18 @@
     (issue-comment-response comment_with-user-metadata)))
 
 (defn update-user-issue-comment [comment_id payload]
-  (let [updated (dc/update-user-issue-comment (:body payload) comment_id)
+  (let [updated (dbwrapper/update-user-issue-comment payload comment_id)
         user (du/get-user-by-id (:author updated))]
     (->
       (assoc-user-metadata-with-comment updated user)
       issue-comment-response)))
 
-(defn delete-user-issue-comment [comment_id]
-  (dc/mark-user-issue-for-deletion comment_id))
+(defn delete-user-issue-comment [comment_id user_id]
+  (let [user (du/get-user-by-id user_id)
+        updated (dbwrapper/mark-user-issue-for-deletion comment_id)]
+    (->
+      (assoc-user-metadata-with-comment updated user)
+      issue-comment-response)))
 
 (defn get-bill-comments
   [user_id bill-id & {:keys [sort-by last_comment_id]
@@ -112,7 +116,7 @@
   (dbwrapper/revoke-liked-bill-comment-score comment_id user_id))
 
 (defn revoke-disliked-comment [user_id comment_id]
-  (dbwrapper/revoke-disliked-bill-comment-score comment_id user_id ))
+  (dbwrapper/revoke-disliked-bill-comment-score comment_id user_id))
 
 (defn get-top-comments [bill-id user_id]
   ((memo/ttl dc/get-top-comments :ttl/threshold 1800000) bill-id user_id))
@@ -132,7 +136,9 @@
   (dc/get-user-issue-comments issue_id :user_id user_id :sort-by sort-by :last_comment_id last_comment_id))
 
 (defn score-issue-comment [user_id comment_id operation]
-  (dc/score-issue-comment comment_id user_id operation))
+  (dbwrapper/score-issue-comment (new-comment-score comment_id user_id (case operation :like true :dislike false))))
 
 (defn revoke-issue-score [user_id comment_id operation]
-  (dc/revoke-issue-score user_id comment_id operation))
+  (case operation
+    :like (dbwrapper/revoke-liked-issue-comment-score comment_id user_id)
+    :dislike (dbwrapper/revoke-disliked-issue-comment-score comment_id user_id)))
