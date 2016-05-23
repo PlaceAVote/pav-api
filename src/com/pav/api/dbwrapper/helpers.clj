@@ -1,10 +1,11 @@
 (ns com.pav.api.dbwrapper.helpers
-  "Some helpers for turning on/off sql backend.")
+  "Some helpers for turning on/off sql backend."
+  (:require [environ.core :refer [env]]))
 
 (def ^{:dynamic true
        :doc "Setting this to true, will enable storage to SQL backend. By default,
 SQL storage is disabled."}
-  *enable-sql-backend* false)
+  *enable-sql-backend* (Boolean/valueOf (:sql-backend-enabled env)))
 
 (defmacro with-sql-backend
   "Wrapper around *enable-sql-backend*."
