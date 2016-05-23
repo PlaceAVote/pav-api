@@ -3,16 +3,23 @@
   (:require [com.pav.api.test.utils.utils :as tu :refer [flush-sql-tables flush-selected-dynamo-tables select-values]]
             [com.pav.api.dbwrapper.helpers :refer [with-sql-backend-enabled]]
             [com.pav.api.dbwrapper.issue :as u]
-            [com.pav.api.dynamodb.db :refer [user-table-name user-issues-table-name user-issue-responses-table-name]]
+            [com.pav.api.dbwrapper.comment :as uc]
+            [com.pav.api.dynamodb.db :refer [user-table-name user-issues-table-name user-issue-responses-table-name
+                                             user-issue-comments-table-name user-issue-comments-scoring-table]]
             [com.pav.api.dynamodb.user :as dynamodb]
+            [com.pav.api.dynamodb.comments :as dc]
             [com.pav.api.db.issue :as sql]
-            [com.pav.api.domain.issue :refer [new-user-issue]]))
+            [com.pav.api.db.comment :as sql-c]
+            [com.pav.api.domain.issue :refer [new-user-issue]]
+            [com.pav.api.domain.comment :refer [new-issue-comment]]))
 
 (with-sql-backend-enabled
   (against-background [(before :facts (do
                                         (flush-selected-dynamo-tables [user-table-name
                                                                        user-issues-table-name
-                                                                       user-issue-responses-table-name])
+                                                                       user-issue-responses-table-name
+                                                                       user-issue-comments-table-name
+                                                                       user-issue-comments-scoring-table])
                                         (flush-sql-tables)))]
 
     (facts "Test cases for Vote DBWrapper"
@@ -101,4 +108,30 @@
               _ (u/delete-user-issue-emotional-response (:issue_id new-issue) (:user_id user))
               dynamo-ret (dynamodb/get-user-issue-emotional-response (:issue_id new-issue) (:user_id user))
               sql-ret (sql/get-user-issue-response-by-old-ids (:issue_id new-issue) (:user_id user))]
-          (and (= dynamo-ret {:emotional_response "none"}) (nil? sql-ret)) => true)))))
+          (and (= dynamo-ret {:emotional_response "none"}) (nil? sql-ret)) => true))
+
+      (fact "Comment on issue"
+        (let [user (tu/create-user)
+              issue_payload (new-user-issue
+                              {:bill_id "hr2-114" :bill_title "bill title" :comment "issue comment"}
+                              {:article_img "http://img.com" :article_link "http://link.com" :article_title "wolly"}
+                              (:user_id user))
+              new-issue (u/create-user-issue issue_payload)
+              issue-comment (new-issue-comment {:issue_id (:issue_id new-issue) :body "issue comment"} user)
+              _ (uc/create-issue-comment issue-comment)
+              dynamo-ret (dc/get-issue-comment (:comment_id issue-comment))
+              sql-ret (sql-c/get-comment-by-old-id (:comment_id issue-comment))]
+          (select-values dynamo-ret [:author
+                                     :comment_id
+                                     :timestamp
+                                     :timestamp
+                                     :body
+                                     :score
+                                     :deleted]) =>
+          (select-values sql-ret [:old_user_id
+                                  :old_comment_id
+                                  :created_at
+                                  :updated_at
+                                  :body
+                                  :score
+                                  :deleted]))))))
