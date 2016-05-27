@@ -2,11 +2,13 @@
   (:require [msgpack.core :as msg]
             [msgpack.clojure-extensions]
             [clj-http.client :as http]
-            [cheshire.core :as ch])
-  (:import (java.io ByteArrayInputStream)
-           (org.apache.commons.codec.binary Base64)
-           (java.nio ByteBuffer)
-           (java.util UUID)))
+            [cheshire.core :as ch]
+            [clojure.tools.logging :as log])
+  (:import java.io.ByteArrayInputStream
+           org.apache.commons.codec.binary.Base64
+           java.nio.ByteBuffer
+           java.util.UUID
+           java.util.Date))
 
 (defn record-in-ctx [ctx]
   (get ctx :record))
@@ -110,3 +112,72 @@ without 'http(s)://'."
 http or https, depending on Java version. Make sure suburl to start with slash."
   [suburl]
   (http-to-json (str "congress.api.sunlightfoundation.com" suburl) (is-java7-or-6?)))
+
+(defn- unkeywordize
+  "Convert it to uppercase, environment-like name."
+  [s]
+  (-> s name .toUpperCase (.replaceAll "-" "_")))
+
+(defn reload-env!
+  "Force 'env' to be reloaded. This is using some trickery behind clojure's back
+and should be used only from REPL (that is mainly designed for).
+
+'env' is notorious because you can't reload it in runtime, when you change e.g. system
+property, and this function fixes that. Param 'require-opts' is a list of require
+statement for loading 'env' object and is options since it will introduce 'env' var
+in your namespace, the way you'd like. For example, you can use it as:
+
+  (reload-env! '[environ.core :refer [env]])
+
+to introduce it as 'env' or:
+
+  (reload-env! '[environ.core :as ec])
+
+to introduce it as 'ec/env'.
+
+Note that calling this function without arguments will bring 'env' in your namespace."
+  ([require-opts]
+     (.unbindRoot (ns-resolve 'environ.core 'env))
+     (require require-opts :reload))
+  ([] (reload-env! '[environ.core :refer [env]])))
+
+(defn set-env!
+  "Set environment variable in runtime. This will not set actual system environment
+variable, but variable usable from 'environ'."
+  [var val]
+  (System/setProperty (unkeywordize var) val)
+  (reload-env!))
+
+(defn current-time
+  "Current system time as Long number."
+  []
+  (.getTime (Date.)))
+
+(defmacro prog1
+  "Evaluate all expressions (like begin), but return result of first expression."
+  [& body]
+  `(let [ret# ~(first body)]
+     ~@(rest body)
+     ret#))
+
+(defmacro time-log
+  "Same as clojure 'time', except it will take as input function (or block)
+name and output time result to log/info log. Returns value of last evaluated expression."
+  [label & body]
+  `(let [start# (. System (nanoTime))
+         ret# (do ~@body)]
+     (log/infof "Elapsed time for %s: %s msecs"
+                ~label (/ (double (- (. System (nanoTime)) start#)) 1000000.0))
+     ret#))
+
+(defmacro sstr
+  "Same as '(str)' but expand it's arguments in compile time. It is 10 times faster than
+ordinary '(str)'. WARNING: since arguments are expanded in compile time, make sure all of them
+are static or funny things will happen."
+  [& args]
+  (apply str (map eval args)))
+
+(defmacro sformat
+  "Static format, just as '(sstr)'. Watch for non-static variables."
+  [fmt & args]
+  (apply (partial format fmt) (map eval args)))

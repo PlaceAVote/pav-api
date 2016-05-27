@@ -1,7 +1,7 @@
 (ns com.pav.api.dynamodb.comments
   (:require [taoensso.faraday :as far]
             [com.pav.api.dynamodb.db :as dy]
-            [com.pav.api.dynamodb.common :refer [batch-delete-from-feed]]
+            [com.pav.api.dynamodb.common :refer [batch-delete-from-feed full-table-scan]]
             [taoensso.truss :as t]
             [clojure.tools.logging :as log]
             [clojure.core.async :refer [go]])
@@ -23,14 +23,17 @@
   [{:keys [bill_id] :as event}]
   (assoc event :comment_count (get-comment-count bill_id)))
 
-(defn- associate-user-img [{:keys [author] :as comment}]
-  (if-let [{img :img_url} (if author (far/get-item dy/client-opts dy/user-table-name {:user_id author}))]
-    (assoc comment :author_img_url img)
+(defn- associate-user-info [{:keys [author] :as comment}]
+  (if-let [{i :img_url f :first_name l :last_name} (if author (far/get-item dy/client-opts dy/user-table-name {:user_id author}))]
+    (assoc comment :author_img_url i :author_first_name f :author_last_name l)
     comment))
 
+(defn get-user-bill-comment-score [comment_id user_id]
+  (far/get-item dy/client-opts dy/comment-user-scoring-table
+    {:comment_id comment_id :user_id user_id}))
+
 (defn associate-user-score [comment user_id]
-  (if-let [scoring-record (and user_id (far/get-item dy/client-opts dy/comment-user-scoring-table
-                                         {:comment_id (:comment_id comment) :user_id user_id}))]
+  (if-let [scoring-record (and user_id (get-user-bill-comment-score (:comment_id comment) user_id))]
     (if (:liked scoring-record)
       (assoc comment :liked true :disliked false)
       (assoc comment :liked false :disliked true))
@@ -44,7 +47,7 @@
          (far/batch-get-item dy/client-opts {dy/comment-details-table-name {:prim-kvs {:comment_id comment-ids}}}))
     (mapv #(cond-> % (:deleted %) (dissoc :body)))
     (mapv #(associate-user-score % user_id))
-    (mapv #(associate-user-img %))
+    (mapv #(associate-user-info %))
     (sort-by sort-key >)))
 
 (defn get-bill-comments
@@ -102,10 +105,13 @@
       ;;create pointer to comment with :id=bill_id and also track the time of creation and current score for sorting purposes.
       (far/put-item dy/client-opts dy/bill-comment-table-name
         {:id bill_id :comment_id comment_id :timestamp timestamp :score score})
-      (far/put-item dy/client-opts dy/comment-details-table-name comment))
-    (create-bill-comment-reply comment)))
+      (far/put-item dy/client-opts dy/comment-details-table-name comment)
+      comment)
+    (do
+      (create-bill-comment-reply comment)
+      comment)))
 
-(defn update-bill-comment [new-body comment_id]
+(defn update-bill-comment [{new-body :body} comment_id]
   (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id}
     {:update-expr "SET #body = :body" :expr-attr-names {"#body" "body"} :expr-attr-vals {":body" new-body}
      :return :all-new}))
@@ -152,20 +158,25 @@
 (defn get-scoring-operation [operation]
   (case operation
     :like    {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" 1}}
-    :dislike {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" -1}}))
+    :dislike {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" -1}}
+    true     {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" 1}}
+    false    {:update-expr "ADD #a :n" :expr-attr-names {"#a" "score"} :expr-attr-vals {":n" -1}}))
 
 (defn new-user-scoring-record [comment_id user_id operation]
   (case operation
-    :like {:comment_id comment_id :user_id user_id :liked true}
-    :dislike {:comment_id comment_id :user_id user_id :liked false}))
+    :like    {:comment_id comment_id :user_id user_id :liked true}
+    :dislike {:comment_id comment_id :user_id user_id :liked false}
+    true     {:comment_id comment_id :user_id user_id :liked true}
+    false    {:comment_id comment_id :user_id user_id :liked false}))
 
-(defn score-comment [comment-id user_id operation]
-  (let [op (get-scoring-operation operation)
-        parent-comment-key (-> (far/query dy/client-opts dy/bill-comment-table-name {:comment_id [:eq comment-id]}
+(defn score-comment [{:keys [comment_id user_id liked]}]
+  (println "here " comment_id user_id liked)
+  (let [op (get-scoring-operation liked)
+        parent-comment-key (-> (far/query dy/client-opts dy/bill-comment-table-name {:comment_id [:eq comment_id]}
                                  {:index "comment-idx" :limit 1 :span-reqs {:max 1}}) first :id)]
-    (far/update-item dy/client-opts dy/bill-comment-table-name {:id parent-comment-key :comment_id comment-id} op)
-    (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment-id} op)
-    (far/put-item dy/client-opts dy/comment-user-scoring-table (new-user-scoring-record comment-id user_id operation))))
+    (far/update-item dy/client-opts dy/bill-comment-table-name {:id parent-comment-key :comment_id comment_id} op)
+    (far/update-item dy/client-opts dy/comment-details-table-name {:comment_id comment_id} op)
+    (far/put-item dy/client-opts dy/comment-user-scoring-table (new-user-scoring-record comment_id user_id liked))))
 
 (defn get-top-comments
   "Retrieve top comments and user meta data for comments, user_id is optional."
@@ -213,7 +224,7 @@
 (defn create-issue-comment [comment]
   (far/put-item dy/client-opts dy/user-issue-comments-table-name comment))
 
-(defn update-user-issue-comment [new-body comment_id]
+(defn update-user-issue-comment [{new-body :body} comment_id]
   (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id}
     {:update-expr     "SET #body = :body, #updated = :updated"
      :expr-attr-names {"#body" "body" "#updated" "updated_at"}
@@ -252,7 +263,9 @@
                    {:last-prim-kvs (select-keys last_comment [:issue_id :score :comment_id])})))
         comments (far/query dy/client-opts dy/user-issue-comments-table-name {:issue_id [:eq issue_id]} opts)]
     {:total           (count comments)
-     :comments        (assoc-user-issue-comment-scores user_id comments)
+     :comments        (->>
+                        (assoc-user-issue-comment-scores user_id comments)
+                        (mapv #(associate-user-info %)))
      :last_comment_id (:comment_id (:last-prim-kvs (meta comments)))}))
 
 (defn mark-user-issue-for-deletion [comment_id]
@@ -262,12 +275,32 @@
      :expr-attr-vals  {":deleted" true ":updated" (.getTime (Date.))}
      :return :all-new}))
 
-(defn score-issue-comment [comment_id user_id operation]
-  (let [op (get-scoring-operation operation)]
-    (far/put-item dy/client-opts dy/user-issue-comments-scoring-table (new-user-scoring-record comment_id user_id operation))
+(defn score-issue-comment [{:keys [comment_id user_id liked]}]
+  (let [op (get-scoring-operation liked)]
+    (far/put-item dy/client-opts dy/user-issue-comments-scoring-table (new-user-scoring-record comment_id user_id liked))
     (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id} (merge op {:return :all-new}))))
 
 (defn revoke-issue-score [user_id comment_id operation]
   (let [op (get-scoring-operation operation)]
     (far/delete-item dy/client-opts dy/user-issue-comments-scoring-table {:comment_id comment_id :user_id user_id})
     (far/update-item dy/client-opts dy/user-issue-comments-table-name {:comment_id comment_id} (merge op {:return :all-new}))))
+
+(defn retrieve-all-bill-comments
+  "Performs full table scan and retrieves all bill comment records"
+  []
+  (full-table-scan dy/comment-details-table-name))
+
+(defn retrieve-all-bill-comment-scores
+  "Performs full table scan and retrieves all bill comment scoring records"
+  []
+  (full-table-scan dy/comment-user-scoring-table))
+
+(defn retrieve-all-issue-comments
+  "Performs full table scan of issue comments table"
+  []
+  (full-table-scan dy/user-issue-comments-table-name))
+
+(defn retrieve-all-issue-comment-scores
+  "Performs full table scan of issue comment scores table"
+  []
+  (full-table-scan dy/user-issue-comments-scoring-table))

@@ -250,7 +250,7 @@
   ;; on for PUT we have to implement 'handle-created'
   :put! (fn [ctx] {::user-issue-response
                    (service/create-bill-issue (retrieve-token-user-id ctx) (retrieve-body ctx))})
-  :handle-created ::user-issue-response
+  :handle-created (fn [{record ::user-issue-response}] (cheshire.core/generate-string record))
   :handle-unauthorized {:error "Not Authorized"})
 
 (defresource get-user-issue [issue_id]
@@ -327,7 +327,7 @@
   :available-media-types ["application/json"]
   :put! (fn [ctx] {:record (comment-service/create-user-issue-comment (retrieve-body ctx) (retrieve-token-user-id ctx))})
   :handle-malformed {:errors [{:body "Please specify a issue_id and body"}]}
-  :handle-created :record
+  :handle-created (fn [{record :record}] (cheshire.core/generate-string record))
   :handle-unauthorized {:error "Not Authorized"})
 
 (defresource update-user-issue-comment [comment_id]
@@ -350,7 +350,7 @@
                            (comment-service/is-issue-author? comment_id (retrieve-token-user-id ctx))))
   :allowed-methods [:delete]
   :available-media-types ["application/json"]
-  :delete! (fn [_]  {:record (comment-service/delete-user-issue-comment comment_id)})
+  :delete! (fn [ctx]  {:record (comment-service/delete-user-issue-comment comment_id (retrieve-token-user-id ctx))})
   :handle-unauthorized {:error "Not Authorized"})
 
 (defresource user-issue-comments [issue_id]

@@ -34,14 +34,13 @@
                                                 like-user-issue-comment dislike-user-issue-comment]]
             [com.pav.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.api.resources.docs :refer [swagger-docs]]
-            [com.pav.api.dynamodb.db :refer [create-all-tables!]]
             [com.pav.api.authentication.authentication :refer [token-handler]]
-            [com.pav.api.services.questions :refer [bootstrap-wizard-questions]]))
+            [com.pav.api.services.questions :refer [bootstrap-wizard-questions]]
+            [com.pav.api.dbwrapper.helpers :as db]))
 
 
 (defn init []
   (log/info "API is starting")
-  (create-all-tables!)
   (start-notification-listener)
   (-> "resources/questions.edn"
       slurp

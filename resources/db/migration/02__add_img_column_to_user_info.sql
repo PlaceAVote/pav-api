@@ -1,1 +1,0 @@
-ALTER TABLE user_info ADD img_url VARCHAR(200)

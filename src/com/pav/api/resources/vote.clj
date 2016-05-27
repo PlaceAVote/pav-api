@@ -3,21 +3,13 @@
             [com.pav.api.services.votes :as vs]
             [com.pav.api.services.users :as us]
             [com.pav.api.utils.utils :as utils]
-            [com.pav.api.schema.vote :refer [new-vote-record-malformed?]])
-  (:import (java.util UUID Date)))
+            [com.pav.api.schema.vote :refer [new-vote-record-malformed?]]))
 
 (defn retrieve-user-token [payload]
   (get-in payload [:request :identity]))
 
 (defn valid-token? [payload]
   (contains? (retrieve-user-token payload) :user_id))
-
-(defn new-vote-record [payload user_id]
-  (-> payload
-    (assoc :vote-id (.toString (UUID/randomUUID)))
-    (assoc :created_at (.getTime (Date.)))
-    (assoc :timestamp (.getTime (Date.)))
-    (assoc :user_id user_id)))
 
 (defresource cast-vote
   :service-available? {:representation {:media-type "application/json"}}
@@ -26,8 +18,7 @@
   :authorized? (fn [ctx] (us/is-authenticated? (utils/retrieve-user-details ctx)))
   :malformed? (fn [ctx] (new-vote-record-malformed? (get-in ctx [:request :body])))
   :conflict? (fn [ctx] (vs/has-user-voted? (utils/retrieve-token-user-id ctx) (get-in ctx [:request :body :bill_id])))
-  :put! (fn [ctx] (-> (new-vote-record (get-in ctx [:request :body]) (utils/retrieve-token-user-id ctx))
-                      vs/create-user-vote-record))
+  :put! (fn [ctx] (vs/create-user-vote-record (get-in ctx [:request :body]) (utils/retrieve-token-user-id ctx)))
   :handle-malformed {:error "Check payload is valid"}
   :handle-conflict  {:error "User has already voted on this issue"}
   :handle-created   {:message "Vote created successfully"}

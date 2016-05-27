@@ -1,5 +1,6 @@
 (ns com.pav.api.resources.bill
   (:require [liberator.core :refer [resource defresource]]
+            [liberator.representation :refer [as-response]]
             [com.pav.api.services.bills :as bs]
             [com.pav.api.services.comments :as cs]
             [com.pav.api.services.users :as us]
@@ -27,7 +28,7 @@
   :available-media-types ["application/json"]
   :put! (fn [ctx] (cs/create-bill-comment (u/retrieve-body ctx) (u/retrieve-user-details ctx)))
   :handle-malformed {:errors [{:body "Please specify a comment body and bill_id"}]}
-  :handle-created :record
+  :handle-created (fn [{record :record}] (cheshire.core/generate-string record))
   :handle-unauthorized {:error "Not Authorized"})
 
 (defresource update-comment [comment_id]
@@ -57,8 +58,8 @@
   :malformed? (fn [ctx] (new-bill-comment-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
-  :put! (fn [ctx] (cs/create-bill-comment-reply comment-id (u/retrieve-body ctx) (u/retrieve-user-details ctx)))
-  :handle-created :record
+  :put! (fn [ctx] (cs/create-bill-comment comment-id (u/retrieve-body ctx) (u/retrieve-user-details ctx)))
+  :handle-created (fn [{record :record}] (cheshire.core/generate-string record))
   :handle-malformed {:errors [{:body "Please specify a comment body and bill_id"}]}
   :handle-unauthorized {:error "Not Authorized"})
 

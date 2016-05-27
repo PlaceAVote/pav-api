@@ -5,12 +5,13 @@
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.dynamodb.db :as dy :refer [client-opts]]
-            [com.pav.api.dynamodb.common :refer [batch-delete-from-feed]]
+            [com.pav.api.dynamodb.common :refer [batch-delete-from-feed full-table-scan]]
             [com.pav.api.dynamodb.comments :refer [associate-user-score get-bill-comment]]
             [com.pav.api.notifications.ws-handler :refer [publish-notification]]
             [com.pav.api.s3.user :as s3]
             [com.pav.api.utils.utils :refer [uuid->base64Str
-                                             base64->uuidStr]]
+                                             base64->uuidStr
+                                             prog1]]
             [clj-http.client :as http]
             [clojure.core.async :refer [thread go]]
             [com.pav.api.elasticsearch.user :as es]
@@ -307,31 +308,15 @@
   (far/batch-write-item client-opts
                         {dy/user-question-answers-table-name {:put answers}}))
 
-(defn- upload-issue-image [key img_url]
+(defn upload-issue-image [key img_url]
   (let [{stream :body headers :headers} (http/get img_url {:insecure? true :as :stream})]
     (s3/upload-issue-img (:cdn-bucket-name env) key stream (headers "Content-Type"))))
 
-(defn assoc-and-upload-issue-image
-  "Upload issue image to s3 bucket and associate address with issue payload."
-  [{:keys [article_img issue_id] :as issue}]
-  (let [key (str "users/issues/images/" issue_id "/main.jpg")]
-    (upload-issue-image key article_img)
-    (assoc issue :article_img (str (:cdn-url env) "/" key))))
-
 (defn create-bill-issue
-  "Create bill issues with details like user_id, bill_id and so on. Returns
-new ID assigned as issue_id and timestamp stored in table."
-  [details]
-  (let [id (UUID/randomUUID)
-        short_id (uuid->base64Str id)
-        timestamp (.getTime (Date.))
-        issue-data (cond-> details
-                     true (merge
-                            {:issue_id (.toString id) :short_issue_id short_id :timestamp timestamp
-                             :positive_responses 0 :neutral_responses 0 :negative_responses 0})
-                     (:article_img details) assoc-and-upload-issue-image)]
-    (far/put-item client-opts dy/user-issues-table-name issue-data)
-    issue-data))
+  "Create bill issues."
+  [issue]
+  (far/put-item client-opts dy/user-issues-table-name issue)
+  issue)
 
 (defn publish-batch-to-feed
   "Batch up items and persist to dynamodb in batches of 25 items."
@@ -355,7 +340,8 @@ new ID assigned as issue_id and timestamp stored in table."
   (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id user_id}
     {:update-expr     "SET #deleted = :val, #updated = :updated"
      :expr-attr-names {"#deleted" "deleted" "#updated" "updated_at"}
-     :expr-attr-vals  {":val" true ":updated" (.getTime (Date.))}}))
+     :expr-attr-vals  {":val" true ":updated" (.getTime (Date.))}
+     :return :all-new}))
 
 (defn delete-user-issue-from-timeline
   "Remove user issue from users personal timeline."
@@ -373,20 +359,6 @@ new ID assigned as issue_id and timestamp stored in table."
       (if (:last-prim-kvs (meta issues))
         (recur (far/query client-opts dy/userfeed-table-name {:issue_id [:eq issue_id]}
                  {:index "issueid-idx" :last-prim-kvs (:last-prim-kvs (meta issues))}))))))
-
-;;Temporarily disabled.
-;(defn populate-user-and-followers-feed-table
-;  "Populate given user and that users followers feed when user an publishes issue."
-;  [user_id data]
-;  (let [author-event  (assoc data :user_id user_id)
-;        follower-evts (->> (user-followers user_id)
-;                           ;; Remove any followers with the same user_id.  Temporary fix to avoid the same issue we
-;                           ;;discovered in development
-;                           (remove #(= user_id (:user_id %)))
-;                           (map #(assoc data :user_id (:user_id %))))
-;        follower-and-author-evts (conj follower-evts author-event)]
-;    (far/put-item client-opts dy/timeline-table-name (assoc author-event :event_id (.toString (UUID/randomUUID))))
-;    (persist-to-newsfeed follower-and-author-evts)))
 
 (defn publish-as-global-feed-item
   "Publish new issues to all users feeds.  This process is executed in seperate thread."
@@ -434,14 +406,16 @@ new ID assigned as issue_id and timestamp stored in table."
                         "neutral" {:neutral_responses [:add 1]}
                         "negative" {:negative_responses [:add 1]})]
     ;;update users emotional response
-    (far/update-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id user_id}
-      {:update-map {:emotional_response [:put response]}})
-    ;; update issue count
-    (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id issue-author}
-      {:update-map count-payload})
-    ;; notify author of response
-    (when-not (= user_id (:user_id user-issue))
-      (publish-issues-notification user_id user user-issue response))))
+    (prog1
+      (far/update-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id user_id}
+        {:update-map {:emotional_response [:put response]}
+         :return :all-new})
+      ;; update issue count
+      (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id issue-author}
+        {:update-map count-payload})
+      ;; notify author of response
+      (when-not (= user_id (:user_id user-issue))
+        (publish-issues-notification user_id user user-issue response)))))
 
 (defn get-user-issue-emotional-response [issue_id user_id]
   (try
@@ -478,12 +452,17 @@ new ID assigned as issue_id and timestamp stored in table."
 (defn retrieve-all-user-records
   "Performs full table scan and retrieves all user records"
   []
-  (loop [user-records (far/scan client-opts dy/user-table-name)
-         acc []]
-    (if (:last-prim-kvs (meta user-records))
-      (recur (far/scan client-opts dy/user-table-name {:last-prim-kvs (:last-prim-kvs (meta user-records))})
-        (into acc user-records))
-      (into acc user-records))))
+  (full-table-scan dy/user-table-name))
+
+(defn retrieve-all-user-issues
+  "Performs full table scan and retrieves all user issue records"
+  []
+  (full-table-scan dy/user-issues-table-name))
+
+(defn retrieve-all-user-issue-responses
+  "Performs full table scan of user issue responses"
+  []
+  (full-table-scan dy/user-issue-responses-table-name))
 
 (defn user-count-between [start end]
   (->

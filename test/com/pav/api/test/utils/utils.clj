@@ -14,7 +14,13 @@
            [clojurewerkz.elastisch.rest.bulk :as erb]
            [clojurewerkz.elastisch.common.bulk :as ecb]
            [clojure.edn :as edn]
-           [com.pav.api.dynamodb.db :as db]))
+           [com.pav.api.dynamodb.db :as db]
+           [com.pav.api.db.migrations :as sql-migrations]
+           [com.pav.api.db.db :as sql-db]
+           [com.pav.api.dbwrapper.helpers :refer [with-sql-backend]]
+           [com.pav.api.dbwrapper.user :as du]
+           [com.pav.api.domain.user :refer [assoc-common-attributes]]
+           [com.pav.api.utils.utils :refer [time-log]]))
 
 (defn new-pav-user
   ([{:keys [email password first_name last_name dob topics gender zipcode]
@@ -96,13 +102,18 @@
   (bootstrap-wizard-questions wizard-questions))
 
 (defn flush-redis []
-  (wcar redis-conn
-        (car/flushall)
-        (car/flushdb)))
+  (time-log "flush-redis"
+    (wcar redis-conn
+          (car/flushall)
+          (car/flushdb))))
 
 (defn flush-dynamo-tables []
-  (db/delete-all-tables! client-opts)
-  (db/create-all-tables! client-opts))
+  (time-log "flush-dynamo-tables"
+    (db/recreate-all-tables! client-opts)))
+
+(defn flush-selected-dynamo-tables [tables]
+  (time-log "flush-selected-dynamo-tables"
+    (db/recreate-tables! client-opts tables)))
 
 (defn make-request
   ([method url payload]
@@ -124,9 +135,25 @@
 
 (defn flush-es-indexes []
   (try
-    (esi/delete es-connection "pav")
-    (esi/delete es-connection "congress")
-    (esi/create es-connection "pav")
-    (esi/create es-connection "congress")
+    (time-log "flush-es-indexes"
+      (esi/delete es-connection "pav")
+      (esi/delete es-connection "congress")
+      (esi/create es-connection "pav")
+      (esi/create es-connection "congress"))
     (catch Exception e
       (println "Error while connecting to ElasticSearch: " e))))
+
+(defn flush-sql-tables []
+  (with-sql-backend
+    (time-log "flush-sql-tables"
+      (sql-migrations/migrate!)
+      (sql-db/empty-all-tables-unsafe!))))
+
+(defn create-user []
+  (-> (assoc-common-attributes (new-pav-user)) du/create-user))
+
+(defn select-values
+  "Return values in order for given keys. Removes nil."
+  [mp ks]
+  (remove nil?
+    (reduce #(conj %1 (get mp %2)) [] ks)))

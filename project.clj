@@ -28,7 +28,8 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [clj-http "2.0.0"]
                  [org.clojure/core.memoize "0.5.8"]
-								 [amazonica "0.3.48"]
+                 [clj-time "0.11.0"]
+                 [amazonica "0.3.48" :exclustions [joda-time]]
                  [enlive "1.1.6"]
                  [com.taoensso/truss "1.0.0"]
                  [com.taoensso/faraday "1.9.0-beta1" :exclusions [joda-time
@@ -36,10 +37,14 @@
                                                                   com.amazonaws/aws-java-sdk-kms
                                                                   com.amazonaws/aws-java-sdk-core]]
                  [com.taoensso/encore "2.33.0"]
-                 [clj-time "0.11.0"]]
+                 [org.clojure/java.jdbc "0.5.8"]
+                 [com.h2database/h2 "1.4.191"]
+                 [mysql/mysql-connector-java "5.1.38"]
+                 [org.flywaydb/flyway-core "4.0"]
+                 [org.clojure/tools.cli "0.3.5"]]
   :plugins [[lein-environ "1.0.0"]
-						[lein-release "1.0.5"]
-            [lein-essthree "0.2.1"]]
+            [lein-release "1.0.5"]
+            [lein-essthree "0.2.1" :exclusions [org.clojure/clojure]]]
   :essthree {:deploy {:type :library
                       :bucket "pav-maven-artifact-repository"
                       :snapshots     true
@@ -54,11 +59,19 @@
   :min-lein-version "2.0.0"
   :javac-options ["-target" "1.8" "-source" "1.8"]
   :main system
+  :aliases {"migrate"       ["run" "-m" "com.pav.api.db.migrations/migrate!"]
+            "repair"        ["run" "-m" "com.pav.api.db.migrations/repair!"]
+            "info"          ["run" "-m" "com.pav.api.db.migrations/info"]
+            "drop-tables"   ["run" "-m" "com.pav.api.db.db/drop-all-tables!"]
+            "migrate-data"  ["run" "-m" "com.pav.api.dbwrapper.from-dynamodb/migrate-all-data"]}
   :profiles
   {
    :uberjar {:jvm-opts     ^:replace ["-Xms256m" "-Xmx512m" "-Xss512k" "-XX:MaxMetaspaceSize=150m"]
              :aot          [system com.pav.api.migrations.migrations]
-             :env          {:auth-pub-key "resources/pav_auth_pubkey.pem"}
+             :env          {:auth-pub-key "resources/pav_auth_pubkey.pem"
+                            :db-url       "h2:mem:pav;DB_CLOSE_DELAY=-1"
+                            :db-user      "pavuser"
+                            :db-pwd       "pavpass"}
              :uberjar-name "pav-user-api.jar"}
    :production
             {:ring
@@ -70,6 +83,12 @@
                             :auth-priv-key-pwd                   "password"
                             :auth-pub-key                        "test-resources/pav_auth_pubkey.pem"
                             :auth-pub-key-pwd                    "password"
+                            ;; db url should be in form: mysql://url/db or h2:file:///tmp/pav
+                            ;:db-url                              "mysql://127.0.0.1:3306/pav"
+                            ;:db-url                              "h2:file:///tmp/pav"
+                            :db-url                              "h2:mem:pav"
+                            :db-user                             "pavuser"
+                            :db-pwd                              "pavpass"
                             :redis-url                           "redis://127.0.0.1:6379"
                             :access-key                          "Whatever"
                             :secret-key                          "whatever"
@@ -109,5 +128,6 @@
                             :google-geolocation-apikey           "AIzaSyB2taZNvNDGG0Fvyur-o3Xf0g6vd8sYuUM"
                             :facebook-mode                       "test"
                             :facebook-app-id                     "TEST"
-                            :facebook-client-app-secret          "TEST"}
+                            :facebook-client-app-secret          "TEST"
+                            :sql-backend-enabled                 "false"}
              :plugins      [[lein-midje "3.1.3"]]}})
