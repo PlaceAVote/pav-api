@@ -54,7 +54,10 @@
     (->>
       (esrsp/hits-from
         (esd/search connection "congress" "billmeta"
-          :query (q/terms :pav_topic (map clojure.string/lower-case topics))))
+          :query (q/terms :pav_topic (map clojure.string/lower-case topics))
+          :_source [:featured_img_link :govtrack_link :featured_img_links
+                    :bill_id :featured_bill_summary :featured_bill_title
+                    :pav_topic :points_against :congress :pav_tags :points_infavor]))
       (map :_source))))
 
 (defn search-for-topic
