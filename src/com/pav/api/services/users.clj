@@ -534,11 +534,12 @@ so it can be fed to ':malformed?' handler."
 
 
 (defn user-dob->age [dob]
-  (->
-    (or
-      (try (f/unparse utc-dob-parser (f/parse utc-dob-parser dob)) (catch Exception _))
-      (try (f/unparse dob-parser (f/parse dob-parser dob)) (catch Exception _)))
-    c/from-string (t/interval (t/now)) t/in-years))
+  (when dob
+    (->
+      (or
+        (try (f/unparse utc-dob-parser (f/parse utc-dob-parser dob)) (catch Exception _))
+        (try (f/unparse dob-parser (f/parse dob-parser dob)) (catch Exception _)))
+      c/from-string (t/interval (t/now)) t/in-years)))
 
 (comment
   (user-dob->age "05/10/1984")
