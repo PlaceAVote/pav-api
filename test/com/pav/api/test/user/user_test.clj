@@ -26,6 +26,16 @@
       status => 400
       body => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
 
+  (fact "Create new user, When zipcode contains invalid characters, Then return 400 exception"
+    (let [{status :status body :body} (pav-req :put "/user" (new-pav-user {:zipcode "10023-2105"}))]
+      status => 400
+      body => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
+
+  (fact "Create new user, When zipcode is greater than 5 digits, Then return 400 exception"
+    (let [{status :status body :body} (pav-req :put "/user" (new-pav-user {:zipcode "1002321"}))]
+      status => 400
+      body => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
+
   (fact "Create new user, When zip+4 code doesn't correspond to a state and district, Then return 400 exception"
     (let [{status :status body :body} (pav-req :put "/user" (new-pav-user {:zipcode "00045"}))]
       status => 400
