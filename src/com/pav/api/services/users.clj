@@ -337,11 +337,14 @@ default-followers (:default-followers env))
       indexable-profile
       index-user))
 
-(defn update-account-settings [user_id param-map]
+(defn update-account-settings [user_id {:keys [zipcode] :as param-map}]
   (when (seq param-map)
-    (du/update-account-settings user_id param-map)
-    (redis-dao/update-account-settings user_id param-map)
-    (update-user-profile user_id param-map)))
+    (let [p (if zipcode
+              (merge param-map (loc/retrieve-location-by-zip zipcode))
+              param-map)]
+      (du/update-account-settings user_id p)
+      (redis-dao/update-account-settings user_id p)
+      (update-user-profile user_id p))))
 
 (defn get-account-settings [user_id]
   (-> (get-user-by-id user_id)
