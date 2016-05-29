@@ -200,6 +200,10 @@
           "city": {
             "type": "string",
             "format": "string"
+          },
+          "zipcode": {
+            "type": "string",
+            "format": "string"
           }
         }
       }
@@ -714,6 +718,10 @@
           "format": "string"
         },
         "city": {
+          "type": "string",
+          "format": "string"
+        },
+        "zipcode": {
           "type": "string",
           "format": "string"
         }

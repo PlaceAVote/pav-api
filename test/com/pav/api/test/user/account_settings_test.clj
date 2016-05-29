@@ -21,7 +21,7 @@
 			status => 200
 			body =>
 				(merge {:user_id user_id :public true :social_login false}
-					(select-keys user [:first_name :last_name :dob :gender :email :img_url]))))
+					(select-keys user [:first_name :last_name :dob :gender :email :img_url :zipcode]))))
 
 	(fact "Retrieve a facebook users account settings"
 		(let [user (new-fb-user)
@@ -30,14 +30,14 @@
           {status :status body :body} (pav-req :get "/user/me/settings" token {})]
 			status => 200
 			body => (merge {:user_id user_id :public true :social_login true}
-                (select-keys user [:first_name :last_name :dob :gender :email :img_url]))))
+                (select-keys user [:first_name :last_name :dob :gender :email :img_url :zipcode]))))
 
 	(fact "Update a users account settings"
 		(let [user (new-pav-user)
           {body :body} (pav-req :put "/user" user)
           {token :token} body
           changes {:public false :first_name "Ted" :last_name "Baker" :gender "female" :dob "06/10/1986"
-                   :email "Johnny5@placeavote.com" :city "New York City"}
+                   :email "Johnny5@placeavote.com" :city "New York City" :zipcode "22302"}
           _ (pav-req :post "/user/me/settings" token changes)
 					{status :status body :body} (pav-req :get "/user/me/settings" token {})]
 			status => 200
@@ -48,7 +48,7 @@
           {body :body} (pav-req :put "/user" user)
           {token :token} body
           changes {:public false :first_name "Ted" :last_name "Baker" :gender "f" :dob "06/10/1986"
-                   :email "Johnny5@placeavote.com" :city "New York City"}
+                   :email  "Johnny5@placeavote.com" :city "New York City" :zipcode "22302"}
           {status :status body :body} (pav-req :post "/user/me/settings" token changes)]
       status => 400
       body => {:errors [{:gender "Please specify a valid gender.  Valid values are male, female and they"}]}))
@@ -58,7 +58,7 @@
           {body :body} (pav-req :put "/user/facebook" user)
           {token :token} body
           changes {:public false :first_name "Ted" :last_name "Baker" :gender "female" :dob "06/10/1986"
-                   :email  "Johnny5@placeavote.com" :city "New York City"}
+                   :email  "Johnny5@placeavote.com" :city "New York City" :zipcode "22302"}
           _ (pav-req :post "/user/me/settings" token changes)
           {status :status body :body} (pav-req :get "/user/me/settings" token {})]
       status => 200
@@ -94,4 +94,4 @@
 			status => 200
 			body =>
 			(merge {:user_id user_id :public true :social_login false}
-				(select-keys user [:first_name :last_name :dob :gender :email :img_url])))))
+				(select-keys user [:first_name :last_name :dob :gender :email :img_url :zipcode])))))

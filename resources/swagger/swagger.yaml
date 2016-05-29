@@ -157,6 +157,9 @@ parameters:
         city:
           type: string
           format: string
+        zipcode:
+          type: string
+          format: string
   ConfirmTokenParam:
     name: confirm-token
     in: path
@@ -537,6 +540,9 @@ definitions:
         type: string
         format: string
       city:
+        type: string
+        format: string
+      zipcode:
         type: string
         format: string
   FeedEventRecords:
