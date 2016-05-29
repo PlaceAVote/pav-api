@@ -82,7 +82,8 @@ just skipp it."
          (sql/drop-table-ddl table))
        (catch java.sql.SQLException e
          (let [msg (.getMessage e)]
-           (if (.startsWith msg "Unknown table")
+           (if (or (.startsWith msg "Unknown table")
+                   (.contains msg "not found; "))
              (log/debugf "Failed to delete table '%s'. Probably table does not exist, so no worry" table)
              ;; something goes bad, just record it so we can remove other tables
              (do
