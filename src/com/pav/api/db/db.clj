@@ -22,15 +22,19 @@ db_close_delay=-1 to keep memory reference live as long as JVM is alive."
   (let [[subproto path] (-> url .toLowerCase (.split ":" 2))
         ;; for keeping H2 in mysql mode
         mysql-mode-str "mode=mysql"
+        ;; force it to keep lowercased table names
+        to-upper-tables "database_to_upper=false"
         ;; In case of memory mode, make sure database is alive as long as JVM is alive.
         ;; Otherwise, it will be recreated for every new call, which will make migrations unusable.
         h2-mem-persistent "db_close_delay=-1"
         addons (if (= "h2" subproto)
                  (str
-                  (if-not (.contains path mysql-mode-str)
+                  (when-not (.contains path mysql-mode-str)
                     (str ";" mysql-mode-str))
-                  (if (and (.contains path "mem:")
-                           (not (.contains path h2-mem-persistent)))
+                  (when-not (.contains path to-upper-tables)
+                    (str ";" to-upper-tables))
+                  (when (and (.contains path "mem:")
+                             (not (.contains path h2-mem-persistent)))
                     (str ";" h2-mem-persistent))))
         ret {:subprotocol subproto, :subname path}]
     (if addons
@@ -118,7 +122,8 @@ Works fast, but can yield malformed constraints."
   ;; Make sure tables are deleted in proper order, to obey foreign key constraints. If
   ;; safe-drop-table was set to ignore this exception, some tables would be deleted and some
   ;; not, so throw this so dev knows something is wrong.
-  (doseq [t [table/user-followers-table
+  (doseq [t ["schema_version" ;; this is flyway metadata
+             table/user-followers-table
              table/user-creds-fb-table
              table/user-confirmation-tokens-table
              table/user-creds-pav-table
@@ -134,9 +139,7 @@ Works fast, but can yield malformed constraints."
              table/activity-feed-subscribers-table
              table/user-activity-feeds-table
              table/activity-event-types-table
-             table/user-info-table
-             "schema_version" ;; this is flyway metadata
-             ]]
+             table/user-info-table]]
     (safe-drop-table t true)))
 
 (defn set-db-url!
