@@ -37,7 +37,7 @@
                                                                   com.amazonaws/aws-java-sdk-kms
                                                                   com.amazonaws/aws-java-sdk-core]]
                  [com.taoensso/encore "2.33.0"]
-                 [org.clojure/java.jdbc "0.5.8"]
+                 [org.clojure/java.jdbc "0.6.1"]
                  [com.h2database/h2 "1.4.191"]
                  [mysql/mysql-connector-java "5.1.38"]
                  [org.flywaydb/flyway-core "4.0"]
@@ -69,7 +69,7 @@
    :uberjar {:jvm-opts     ^:replace ["-Xms256m" "-Xmx512m" "-Xss512k" "-XX:MaxMetaspaceSize=150m"]
              :aot          [system com.pav.api.migrations.migrations]
              :env          {:auth-pub-key "resources/pav_auth_pubkey.pem"
-                            :db-url       "h2:mem:pav;DB_CLOSE_DELAY=-1"
+                            :db-url       "h2:mem:pav"
                             :db-user      "pavuser"
                             :db-pwd       "pavpass"}
              :uberjar-name "pav-user-api.jar"}
@@ -78,7 +78,8 @@
              {:open-browser? false, :stacktraces? false, :auto-reload? false}}
    :dev
             {:dependencies [[ring-mock "0.1.5"] [ring/ring-devel "1.3.1" :exclusions [ring/ring-core]]
-                            [midje "1.7.0" :exclusions [org.clojure/tools.macro]]]
+                            [midje "1.7.0" :exclusions [org.clojure/tools.macro]]
+                            [org.clojure/test.check "0.9.0"]]
              :env          {:auth-priv-key                       "test-resources/pav_auth_privkey.pem"
                             :auth-priv-key-pwd                   "password"
                             :auth-pub-key                        "test-resources/pav_auth_pubkey.pem"
