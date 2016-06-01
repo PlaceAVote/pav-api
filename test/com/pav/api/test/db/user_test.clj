@@ -21,6 +21,8 @@
 (defn- string-or-nil? [v]
   (or (string? v) (nil? v)))
 
+;; Make sure the first test is always executed, in case you'd like to run some of them. The first
+;; test will create all necessary random accounts.
 (deftest user-functions-test
   (against-background [(before :contents (clear-db))]
     (fact "generate random users"
@@ -47,25 +49,26 @@
     => (just {:result true :num-tests 100 :seed anything})
     
     (fact "check get-user-by-id == get-user-by-email"
-     (let [[s e] (u/first-last-ids)]
-       (tc/quick-check 100
-         (prop/for-all [id (gen/choose s e)]
+      (let [[s e] (u/first-last-ids)]
+        (tc/quick-check 100
+          (prop/for-all [id (gen/choose s e)]
             (let [data  (u/get-user-by-id id)
                   email (:email data)]
               (u/get-user-by-email email) => data)))))
     => (just {:result true :num-tests 100 :seed anything})
     
-    (fact "check get-user-profile-by-facebook-id == get-user-by-id"
+    (fact "check get-user-by-facebook-id == get-user-by-id"
       (let [[s e] (u/first-last-ids)]
         (tc/quick-check 100
           (prop/for-all [id (gen/choose s e)]
             (when-not (u/has-user-password? id)
               (let [data   (u/get-user-by-id id)
                     tokens (u/get-fb-id-and-token id)
-                    data2  (u/get-user-profile-by-facebook-id (:facebook_id tokens))]
+                    data2  (u/get-user-by-facebook-id (:facebook_id tokens))]
                 tokens => (just {:facebook_id string?, :facebook_token string?})
-                ;data => data2
-                ))))))
+                ;; (get-user-profile-by-facebook-id) will do JOIN, returning both user
+                ;; details and facebook tokens
+                data2 => (contains data) ))))))
     => (just {:result true :num-tests 100 :seed anything})
 
     (fact "check get-user-password, update-user-password and get-fb-id-and-token"

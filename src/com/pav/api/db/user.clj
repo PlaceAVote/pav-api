@@ -35,7 +35,7 @@ other for easier transition from DynamoDB, since it will be removed in future."
    (sql/query db/db [(sstr "SELECT * FROM " t/user-info-table " WHERE email = ? LIMIT 1") email]
               {:row-fn unclobify})))
 
-(defn get-user-profile-by-facebook-id
+(defn get-user-by-facebook-id
   "Return full user details by given facebook id."
   [facebook_id]
   (first
@@ -44,6 +44,10 @@ other for easier transition from DynamoDB, since it will be removed in future."
                            "ON u.user_id = c.user_id "
                            "WHERE c.facebook_id = ?") facebook_id]
               {:row-fn unclobify})))
+
+(def get-user-profile-by-facebook-id
+  "Alias for get-user-by-facebook-id, for compatibility reasons."
+  get-user-by-facebook-id)
 
 (defn- create-confirmation-record
   "Helper to insert confirmation token. Be careful with calling
