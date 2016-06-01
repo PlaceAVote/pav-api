@@ -19,8 +19,7 @@
   (migrate!))
 
 (defn- string-or-nil? [v]
-  (or (string? v)
-      (nil? v)))
+  (or (string? v) (nil? v)))
 
 (deftest user-functions-test
   (against-background [(before :contents (clear-db))]
@@ -56,22 +55,37 @@
               (u/get-user-by-email email) => data)))))
     => (just {:result true :num-tests 100 :seed anything})
     
-    (fact "check get-user-password and update-user-password"
+    (fact "check get-user-profile-by-facebook-id == get-user-by-id"
+      (let [[s e] (u/first-last-ids)]
+        (tc/quick-check 100
+          (prop/for-all [id (gen/choose s e)]
+            (when-not (u/has-user-password? id)
+              (let [data   (u/get-user-by-id id)
+                    tokens (u/get-fb-id-and-token id)
+                    data2  (u/get-user-profile-by-facebook-id (:facebook_id tokens))]
+                tokens => (just {:facebook_id string?, :facebook_token string?})
+                ;data => data2
+                ))))))
+    => (just {:result true :num-tests 100 :seed anything})
+
+    (fact "check get-user-password, update-user-password and get-fb-id-and-token"
      (let [[s e] (u/first-last-ids)]
        (tc/quick-check 100
          (prop/for-all [id   (gen/choose s e)
                         pass (gen/not-empty gen/string-alphanumeric)]
            (string-or-nil? (u/get-user-password id)) => true
+           (if (u/has-user-password? id)
+             ;; if we do have password
+             (do
+               ;; set new password
+               (coll? (u/update-user-password id pass)) => true
+               (u/get-user-password id) => pass
+               (-> id u/get-user-by-id :old_user_id (u/get-user-password true)) => pass)
 
-           ;; make sure we have password set
-           (when (u/has-user-password? id)
-             ;; set new password
-             (coll? (u/update-user-password id pass)) => true
-             (u/get-user-password id) => pass
-             (-> id
-                 u/get-user-by-id
-                 :old_user_id
-                 (u/get-user-password true)) => pass
-                 )))))
+             ;; no password, mush have fb tokens
+             (let [tokens  (u/get-fb-id-and-token id)
+                   tokens2 (-> id u/get-user-by-id :old_user_id (u/get-fb-id-and-token true))]
+               tokens => (just {:facebook_id string?, :facebook_token string?})
+               tokens => tokens2))))))
     => (just {:result true :num-tests 100 :seed anything})
  ))

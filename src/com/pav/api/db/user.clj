@@ -42,7 +42,8 @@ other for easier transition from DynamoDB, since it will be removed in future."
    (sql/query db/db [(sstr "SELECT * FROM " t/user-info-table " AS u "
                            "JOIN " t/user-creds-fb-table " AS c "
                            "ON u.user_id = c.user_id "
-                           "WHERE c.facebook_id = ?") facebook_id])))
+                           "WHERE c.facebook_id = ?") facebook_id]
+              {:row-fn unclobify})))
 
 (defn- create-confirmation-record
   "Helper to insert confirmation token. Be careful with calling
@@ -96,7 +97,8 @@ facebook keys for login."
   ([id is-old-id?]
      (let [id (figure-id id is-old-id?)]
        (first
-        (sql/query db/db [(sstr "SELECT facebook_id, facebook_token FROM " t/user-creds-fb-table " WHERE user_id = ? LIMIT 1") id]))))
+        (sql/query db/db [(sstr "SELECT facebook_id, facebook_token FROM " t/user-creds-fb-table " WHERE user_id = ? LIMIT 1") id]
+                   {:row-fn unclobify}))))
   ([id] (get-fb-id-and-token id false)))
 
 (defn create-user
