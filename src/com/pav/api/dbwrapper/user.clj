@@ -3,9 +3,9 @@
   (:require [com.pav.api.dynamodb.user :as dynamo]
             [com.pav.api.db.user :as sql]
             [com.pav.api.dbwrapper.helpers :refer [with-sql-backend bigint->long]]
-            [com.pav.api.utils.utils :refer [prog1]])
-  (:import java.text.SimpleDateFormat
-           java.util.Date))
+            [com.pav.api.utils.utils :refer [prog1]]
+            [com.pav.api.redis.redis :as redis])
+  (:import java.text.SimpleDateFormat))
 
 (defn- parse-dob
   "Parse date of birth in form MM/DD/YYYY to long."
@@ -34,6 +34,15 @@
     :updated_at (-> user-profile :updated_at bigint->long)
     :dob (-> user-profile :dob parse-dob)))
 
+(defn format-account-settings [updates]
+  (cond-> (select-keys updates [:email :first_name :last_name
+                                :gender :zipcode :public :state
+                                :address :dob :district :lat :lng])
+    (:lat updates)      (assoc :latitude (:lat updates))
+    (:lng updates)      (assoc :longtitude (:lng updates))
+    (:district updates) (update-in [:district] bigint->long)
+    (:dob updates)      (update-in [:dob] parse-dob)))
+
 (defn create-user [user-profile]
   (prog1
    (dynamo/create-user user-profile)
@@ -45,3 +54,13 @@
    (dynamo/delete-user user-id)
    (with-sql-backend
      (sql/delete-user user-id))))
+
+(defn update-user-profile [user_id updates]
+  (prog1
+    (dynamo/update-account-settings user_id updates)
+    (redis/update-account-settings user_id updates)
+    (with-sql-backend
+      (->>
+        updates
+        format-account-settings
+        (sql/update-account-settings (:user_id (sql/get-user-by-old-id user_id)))))))

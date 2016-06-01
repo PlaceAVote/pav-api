@@ -46,4 +46,29 @@
                                 :longtitude
                                 :public_profile
                                 :district])))
+
+    (fact "Given new user, When updating the user profile, verify contents in mysql"
+      (let [user (assoc-common-attributes (tu/new-pav-user))
+            ret  (u/create-user user)
+            _ (u/update-user-profile (:user_id ret)
+                {:first_name "fname" :last_name "lname"
+                 :dob "10/01/1984" :zipcode "97322"
+                 :district 4 :state "OR"})
+            dynamo-ret (dynamodb/get-user-by-id (:user_id ret))
+            sql-ret    (sql/get-user-by-old-id (:user_id ret))]
+        (map? ret) => true
+        (tu/select-values dynamo-ret [:first_name
+                                      :last_name
+                                      :zipcode
+                                      :lng
+                                      :lat
+                                      :district
+                                      :state]) =>
+        (tu/select-values sql-ret [:first_name
+                                   :last_name
+                                   :zipcode
+                                   :longtitude
+                                   :latitude
+                                   :district
+                                   :state])))
 ))
