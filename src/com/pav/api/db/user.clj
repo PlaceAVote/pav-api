@@ -13,7 +13,8 @@
 Returns nil if not found."
   [id]
   (first
-   (sql/query db/db [(sstr "SELECT * FROM " t/user-info-table " WHERE user_id = ? LIMIT 1") id])))
+   (sql/query db/db [(sstr "SELECT * FROM " t/user-info-table " WHERE user_id = ? LIMIT 1") id]
+              {:row-fn unclobify})))
 
 (defn get-user-by-old-id
   "Return user by old ID schema used for DynamoDB. User ID in this case is
@@ -73,7 +74,7 @@ that in a given transaction."
     (-> id get-user-by-old-id :user_id)
     id))
 
-(defn- get-user-password
+(defn get-user-password
   "Retrieve user password using id or old_id, depending on occasion."
   ([id is-old-id?]
      (let [id (figure-id id is-old-id?)]
@@ -84,7 +85,13 @@ that in a given transaction."
            :password)))
   ([id] (get-user-password id false)))
 
-(defn- get-fb-id-and-token
+(defn has-user-password?
+  "Returns nil if user does not has password. The is probably has
+facebook keys for login."
+  ([id is-old-id?] (boolean (get-user-password id is-old-id?)))
+  ([id] (has-user-password? id false)))
+
+(defn get-fb-id-and-token
   "Retrieve facebook token and id using database id or old_id."
   ([id is-old-id?]
      (let [id (figure-id id is-old-id?)]
@@ -158,8 +165,27 @@ facebook :token value, which will create facebook related credentials (inside us
   []
   (sql/query db/db (sstr "SELECT * FROM " t/user-info-table)))
 
+(defn user-count
+  "Return number of users. This is NOT the same as (count (retrieve-all-user-records))
+because of Clojure's chunked sequenes, (count) will not return correct number."
+  []
+  (extract-value
+   (sql/query db/db [(sstr "SELECT COUNT(*) FROM " t/user-info-table)])))
+
 (defn user-count-between
   "Return number of users created between 'start' and 'end' dates."
   [start end]
   (extract-value
    (sql/query db/db [(sstr "SELECT COUNT(*) FROM " t/user-info-table " WHERE created_at >= ? AND created_at <=?") start end])))
+
+(defn first-last-ids
+  "Return first and last ID's. Mainly as helper for testing."
+  []
+  (let [getter (fn [asc?]
+                 (extract-value
+                  (sql/query db/db [(str "SELECT user_id FROM " t/user-info-table " ORDER BY user_id"
+                                          (if asc?
+                                            " ASC "
+                                            " DESC ")
+                                          "LIMIT 1")])))]
+    [(getter true) (getter false)]))

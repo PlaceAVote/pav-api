@@ -34,7 +34,6 @@ user current time."
            seq
            (map :following_id)))
 
-
 (defn user-followers
   "Return all id's that follows this user."
   [user_id]
