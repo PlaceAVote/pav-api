@@ -331,7 +331,7 @@ default-followers (:default-followers env))
      [true {:record profile}]
      [false {:error {:error_message "User Profile does not exist"}}])))
 
-(defn- update-user-profile [user_id param-map]
+(defn- index-user-profile [user_id param-map]
   (-> (get-user-by-id user_id)
       (merge param-map)
       indexable-profile
@@ -342,9 +342,8 @@ default-followers (:default-followers env))
     (let [p (if zipcode
               (merge param-map (loc/retrieve-location-by-zip zipcode))
               param-map)]
-      (du/update-account-settings user_id p)
-      (redis-dao/update-account-settings user_id p)
-      (update-user-profile user_id p))))
+      (dbwu/update-user-profile user_id p)
+      (index-user-profile user_id p))))
 
 (defn get-account-settings [user_id]
   (-> (get-user-by-id user_id)
