@@ -13,4 +13,4 @@
 (def county-code-schema (s/both s/Str (s/pred (complement empty?)) (s/pred #(contains? iso3-codes %))))
 (def gender-schema (s/both s/Str (s/pred (complement empty?)) (s/enum "male" "female" "they")))
 (def str-schema (s/both (s/pred (complement empty?)) s/Str))
-(def zip-schema #"^[0-9]{5}")
+(def zip-schema #"^[0-9]{5}$")

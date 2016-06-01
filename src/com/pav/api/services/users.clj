@@ -331,17 +331,19 @@ default-followers (:default-followers env))
      [true {:record profile}]
      [false {:error {:error_message "User Profile does not exist"}}])))
 
-(defn- update-user-profile [user_id param-map]
+(defn- index-user-profile [user_id param-map]
   (-> (get-user-by-id user_id)
       (merge param-map)
       indexable-profile
       index-user))
 
-(defn update-account-settings [user_id param-map]
+(defn update-account-settings [user_id {:keys [zipcode] :as param-map}]
   (when (seq param-map)
-    (du/update-account-settings user_id param-map)
-    (redis-dao/update-account-settings user_id param-map)
-    (update-user-profile user_id param-map)))
+    (let [p (if zipcode
+              (merge param-map (loc/retrieve-location-by-zip zipcode))
+              param-map)]
+      (dbwu/update-user-profile user_id p)
+      (index-user-profile user_id p))))
 
 (defn get-account-settings [user_id]
   (-> (get-user-by-id user_id)
@@ -534,11 +536,12 @@ so it can be fed to ':malformed?' handler."
 
 
 (defn user-dob->age [dob]
-  (->
-    (or
-      (try (f/unparse utc-dob-parser (f/parse utc-dob-parser dob)) (catch Exception _))
-      (try (f/unparse dob-parser (f/parse dob-parser dob)) (catch Exception _)))
-    c/from-string (t/interval (t/now)) t/in-years))
+  (when dob
+    (->
+      (or
+        (try (f/unparse utc-dob-parser (f/parse utc-dob-parser dob)) (catch Exception _))
+        (try (f/unparse dob-parser (f/parse dob-parser dob)) (catch Exception _)))
+      c/from-string (t/interval (t/now)) t/in-years)))
 
 (comment
   (user-dob->age "05/10/1984")

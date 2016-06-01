@@ -69,7 +69,7 @@ CREATE TABLE user_followers (
 CREATE TABLE user_votes (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id bigint unsigned,
-  bill_id varchar(10),
+  bill_id varchar(30),
   vote bool,
   created_at bigint,
   updated_at bigint,
@@ -84,7 +84,7 @@ CREATE TABLE user_issues (
   created_at bigint NOT NULL,
   updated_at bigint NOT NULL,
   comment text,
-  bill_id varchar(10),
+  bill_id varchar(30),
   article_link text,
   article_title text,
   article_img text,
@@ -129,7 +129,7 @@ CREATE TABLE user_issue_comments (
 CREATE TABLE user_bill_comments (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   comment_id int NOT NULL,
-  bill_id varchar(10) NOT NULL,
+  bill_id varchar(30) NOT NULL,
   FOREIGN KEY(comment_id) REFERENCES comments(id) ON DELETE CASCADE);
 
 CREATE TABLE user_comment_scores (

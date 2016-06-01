@@ -66,7 +66,8 @@
 	 (s/optional-key :dob)        dob-schema
 	 (s/optional-key :public)     s/Bool
 	 (s/optional-key :gender)     gender-schema
-	 (s/optional-key :city)     	str-schema})
+	 (s/optional-key :city)     	str-schema
+   (s/optional-key :zipcode)    zip-schema})
 
 (def ValidateUserProperties
   {:email email-schema})

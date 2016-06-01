@@ -148,7 +148,7 @@ facebook :token value, which will create facebook related credentials (inside us
   (sql/update! db/db t/user-creds-pav-table {:password password} ["user_id = ?" user_id]))
 
 (defn update-account-settings [user_id param-map]
-  )
+  (sql/update! db/db t/user-info-table param-map ["user_id = ?" user_id]))
 
 (defn assign-facebook-id [user_id facebook_id]
   )
