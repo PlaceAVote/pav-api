@@ -536,8 +536,8 @@ so it can be fed to ':malformed?' handler."
 
 (defn- convert-date-utc-str [dob]
   (or
-    (f/unparse utc-dob-parser (f/parse utc-dob-parser dob))
-    (f/unparse dob-parser (f/parse dob-parser dob))))
+    (try (f/unparse utc-dob-parser (f/parse utc-dob-parser dob)) (catch Exception _))
+    (try (f/unparse dob-parser (f/parse dob-parser dob)) (catch Exception _))))
 
 (defn find-interval [date]
   (if (t/after? date (t/now))
@@ -569,4 +569,8 @@ so it can be fed to ':malformed?' handler."
   (user-dob->age "05/06/2016")
 
   (user-dob->age "05/06/2016")
+
+  (user-dob->age "11/28/2015")
+  (f/unparse dob-parser (f/parse dob-parser "11/28/2015"))
+
   (f/show-formatters))
