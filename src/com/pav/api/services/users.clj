@@ -534,14 +534,22 @@ so it can be fed to ':malformed?' handler."
   (f/formatter (t/default-time-zone)
     "YYYY-MM-dd" "dd/MM/YYYY"))
 
+(defn- convert-date-utc-str [dob]
+  (or
+    (f/unparse utc-dob-parser (f/parse utc-dob-parser dob))
+    (f/unparse dob-parser (f/parse dob-parser dob))))
 
 (defn user-dob->age [dob]
   (when dob
-    (->
-      (or
-        (try (f/unparse utc-dob-parser (f/parse utc-dob-parser dob)) (catch Exception _))
-        (try (f/unparse dob-parser (f/parse dob-parser dob)) (catch Exception _)))
-      c/from-string (t/interval (t/now)) t/in-years)))
+    (try
+      (->
+        (convert-date-utc-str dob)
+        c/from-string
+        (t/interval (t/now))
+        t/in-years)
+      (catch Exception e
+        (log/error "Error occured parsing DOB " dob " with " e)
+        nil))))
 
 (comment
   (user-dob->age "05/10/1984")
