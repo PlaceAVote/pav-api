@@ -539,13 +539,18 @@ so it can be fed to ':malformed?' handler."
     (f/unparse utc-dob-parser (f/parse utc-dob-parser dob))
     (f/unparse dob-parser (f/parse dob-parser dob))))
 
+(defn find-interval [date]
+  (if (t/after? date (t/now))
+    (t/interval (t/now) date)
+    (t/interval date (t/now))))
+
 (defn user-dob->age [dob]
   (when dob
     (try
       (->
         (convert-date-utc-str dob)
         c/from-string
-        (t/interval (t/now))
+        find-interval
         t/in-years)
       (catch Exception e
         (log/error "Error occured parsing DOB " dob " with " e)
@@ -560,4 +565,8 @@ so it can be fed to ':malformed?' handler."
   (user-dob->age "14/05/1996")
   (user-dob->age "1996/05/14")
 
+  (user-dob->age "05/10/1984")
+  (user-dob->age "05/06/2016")
+
+  (user-dob->age "05/06/2016")
   (f/show-formatters))
