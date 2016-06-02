@@ -173,7 +173,8 @@ facebook :token value, which will create facebook related credentials (inside us
 
 (defn user-count
   "Return number of users. This is NOT the same as (count (retrieve-all-user-records))
-because of Clojure's chunked sequenes, (count) will not return correct number."
+because of Clojure's chunked sequenes, (count) will not return correct number, unless you
+realise sequence with 'doall'."
   []
   (extract-value
    (sql/query db/db [(sstr "SELECT COUNT(*) FROM " t/user-info-table)])))

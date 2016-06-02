@@ -1,5 +1,5 @@
 (ns com.pav.api.test.db.user-test
-  "Helpers for easier data generation."
+  "User testing code."
   (:use midje.sweet
         clojure.test)
   (:require [clojure.test.check :as tc]
