@@ -75,7 +75,8 @@
                                           {:emotional_response "positive"})
             response body]
         status => 201
-        (:emotional_response response) => "positive"))
+        (:emotional_response response) => "positive"
+        response => (contains {:positive_responses 1 :neutral_responses 0 :negative_responses 0} :in-any-order)))
 
     (fact "Add new emotional response, When issue_id is invalid, Then throw 400 error"
       (let [{body :body} (pav-req :put "/user" (new-pav-user))
@@ -128,12 +129,13 @@
             ;;respond negatively
             _ (pav-req :post (str "/user/issue/" issue_id "/response") token {:emotional_response "negative"})
             ;;delete negative response
-            {delete-status :status} (pav-req :delete (str "/user/issue/" issue_id "/response") token {})
+            {delete-status :status del-res :body} (pav-req :delete (str "/user/issue/" issue_id "/response") token {})
             ;; read it
             {status :status body :body} (pav-req :get (str "/user/issue/" issue_id "/response") token {})
             response body]
         delete-status => 204
         status => 200
+        del-res => (contains {:positive_responses 0 :neutral_responses 0 :negative_responses 0} :in-any-order)
         (:emotional_response response) => "none"))
 
     (fact "Delete emotional_response, When deleting emotional response twice, ensure score is not minus in users feed."
@@ -528,4 +530,5 @@
         status => 200
         liked false
         disliked true
-        score => -1))))
+        score => -1))
+    ))

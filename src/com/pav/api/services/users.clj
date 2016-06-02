@@ -475,10 +475,10 @@ so it can be fed to ':malformed?' handler."
   "Set emotional response for given issue_id."
   [issue_id user_id body]
   (when-let [resp (:emotional_response body)]
-    (dbwi/update-user-issue-emotional-response issue_id user_id resp)
-    ;; return body as is, since we already check it's content with
-    ;; 'validate-user-issue-emotional-response'
-    body))
+    (->
+      (dbwi/update-user-issue-emotional-response issue_id user_id resp)
+      (select-keys [:positive_responses :negative_responses :neutral_responses])
+      (merge body))))
 
 (defn get-user-issue-emotional-response
   "Retrieve emotional response for given issue_id."
@@ -489,8 +489,10 @@ so it can be fed to ':malformed?' handler."
 (defn delete-user-issue-emotional-response
   "Delete emotional response for given issue_id and user_id"
   [issue_id user_id]
-  (select-keys (dbwi/delete-user-issue-emotional-response issue_id user_id)
-    [:emotional_response]))
+  (->
+    (dbwi/delete-user-issue-emotional-response issue_id user_id)
+    (select-keys [:positive_responses :negative_responses :neutral_responses])
+    (assoc :emotional_response "none")))
 
 (defn user-issue-exist? [issue_id]
   (not (empty? (du/get-user-issue issue_id))))
