@@ -2044,7 +2044,19 @@
               "properties": {
                 "emotional_response": {
                   "type": "string",
-                  "format": "positive, neutral, negative, none"
+                  "format": "string"
+                },
+                "positive_responses": {
+                  "type": "number",
+                  "format": "number"
+                },
+                "neutral_responses": {
+                  "type": "number",
+                  "format": "number"
+                },
+                "negative_responses": {
+                  "type": "number",
+                  "format": "number"
                 }
               }
             }
@@ -2078,7 +2090,19 @@
               "properties": {
                 "emotional_response": {
                   "type": "string",
-                  "format": "positive, neutral, negative, none"
+                  "format": "string"
+                },
+                "positive_responses": {
+                  "type": "number",
+                  "format": "number"
+                },
+                "neutral_responses": {
+                  "type": "number",
+                  "format": "number"
+                },
+                "negative_responses": {
+                  "type": "number",
+                  "format": "number"
                 }
               }
             }

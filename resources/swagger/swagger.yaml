@@ -1397,7 +1397,16 @@ paths:
             properties:
               emotional_response:
                 type: string
-                format: 'positive, neutral, negative, none'
+                format: string
+              positive_responses:
+                type: number
+                format: number
+              neutral_responses:
+                type: number
+                format: number
+              negative_responses:
+                type: number
+                format: number
         '400':
           description: Bad Request
         '401':
@@ -1417,7 +1426,16 @@ paths:
             properties:
               emotional_response:
                 type: string
-                format: 'positive, neutral, negative, none'
+                format: string
+              positive_responses:
+                type: number
+                format: number
+              neutral_responses:
+                type: number
+                format: number
+              negative_responses:
+                type: number
+                format: number
         '400':
           description: Bad Request
         '401':

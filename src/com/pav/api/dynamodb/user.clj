@@ -407,12 +407,13 @@
                         "negative" {:negative_responses [:add 1]})]
     ;;update users emotional response
     (prog1
+      ;; update issue count
+      (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id issue-author}
+        {:update-map count-payload
+         :return :all-new})
       (far/update-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id user_id}
         {:update-map {:emotional_response [:put response]}
          :return :all-new})
-      ;; update issue count
-      (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id issue-author}
-        {:update-map count-payload})
       ;; notify author of response
       (when-not (= user_id (:user_id user-issue))
         (publish-issues-notification user_id user user-issue response)))))
@@ -439,7 +440,8 @@
       (when current-response
         (far/delete-item client-opts dy/user-issue-responses-table-name {:issue_id issue_id :user_id user_id})
         (if count-payload
-          (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id author_id} count-payload))))))
+          (far/update-item client-opts dy/user-issues-table-name {:issue_id issue_id :user_id author_id}
+            (merge count-payload {:return :all-new})))))))
 
 (defn get-user-issue
   ([issue_id] (first (far/query client-opts dy/user-issues-table-name {:issue_id [:eq issue_id]})))

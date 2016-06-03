@@ -311,8 +311,10 @@
                                                           (retrieve-token-user-id ctx)
                                                           (retrieve-body ctx))})
   :delete! (fn [ctx]
-             (service/delete-user-issue-emotional-response issue_id (retrieve-token-user-id ctx)))
+             {::user-issue-emotional-response
+              (service/delete-user-issue-emotional-response issue_id (retrieve-token-user-id ctx))})
   :handle-created ::user-issue-emotional-response
+  :handle-no-content ::user-issue-emotional-response
   :handle-ok (fn [ctx]
                (service/get-user-issue-emotional-response issue_id
                                                           (retrieve-token-user-id ctx)))
