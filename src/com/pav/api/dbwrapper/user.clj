@@ -32,7 +32,7 @@
     :public_profile (:public user-profile)
     :created_at (-> user-profile :created_at bigint->long)
     :updated_at (-> user-profile :updated_at bigint->long)
-    :dob (-> user-profile :dob read-string)))
+    :dob (-> user-profile :dob bigint->long)))
 
 (defn format-account-settings [updates]
   (cond-> (select-keys updates [:email :first_name :last_name
@@ -41,7 +41,7 @@
     (:lat updates)      (assoc :latitude (:lat updates))
     (:lng updates)      (assoc :longtitude (:lng updates))
     (:district updates) (update-in [:district] bigint->long)
-    (:dob updates)      (update-in [:dob] read-string)))
+    (:dob updates)      (update-in [:dob] bigint->long)))
 
 (defn create-user [user-profile]
   (prog1

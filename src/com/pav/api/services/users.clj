@@ -337,11 +337,11 @@ default-followers (:default-followers env))
       indexable-profile
       index-user))
 
-(defn update-account-settings [user_id {:keys [zipcode] :as param-map}]
+(defn update-account-settings [user_id {:keys [zipcode dob] :as param-map}]
   (when (seq param-map)
-    (let [p (if zipcode
-              (merge param-map (loc/retrieve-location-by-zip zipcode))
-              param-map)]
+    (let [p (cond-> param-map
+              (:zipcode param-map) (merge (loc/retrieve-location-by-zip zipcode))
+              dob (update-in [:dob] read-string))]
       (dbwu/update-user-profile user_id p)
       (index-user-profile user_id p))))
 

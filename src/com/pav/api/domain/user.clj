@@ -18,6 +18,7 @@
              :created_at (.getTime (Date.))
              :confirmation-token (.toString (UUID/randomUUID)))
 		  (update-in [:email] clojure.string/lower-case)
+      (update-in [:dob] read-string)
       (merge {:public true} (retrieve-location-by-zip (:zipcode user-profile)))))
 
 (defn hash-password [user-profile]
