@@ -36,7 +36,7 @@
     :parse-fn parse-args
     :default-desc "true"
     :default true]
-   ["-fdob" "--format-user-dobs [option]" "Format existing users date of births from Strings to Timestamps."
+   ["-f" "--format-user-dobs [option]" "Format existing users date of births from Strings to Timestamps."
     :parse-fn parse-args
     :default-desc "false"
     :default false]
