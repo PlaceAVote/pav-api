@@ -14,9 +14,9 @@ machine:
   services:
     - redis
 test:
-  override:
-    - lein midje
-    - cp -r target/surefire-reports/* $CIRCLE_TEST_REPORTS
+  post:
+    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+    - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec mv {} $CIRCLE_TEST_REPORTS/junit/ \;
 deployment:
   development-mysql:
     branch: mysql
