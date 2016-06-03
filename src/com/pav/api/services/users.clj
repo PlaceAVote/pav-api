@@ -527,20 +527,6 @@ so it can be fed to ':malformed?' handler."
 (defn send-contact-form-email [body]
   (mandril/send-contact-form-email body))
 
-(def dob-parser
-  (f/formatter (t/default-time-zone)
-    "YYYY-MM-dd"
-    "MM/dd/YYYY" "YYYY/MM/dd"))
-
-(def utc-dob-parser
-  (f/formatter (t/default-time-zone)
-    "YYYY-MM-dd" "dd/MM/YYYY"))
-
-(defn- convert-date-utc-str [dob]
-  (or
-    (try (f/unparse utc-dob-parser (f/parse utc-dob-parser dob)) (catch Exception _))
-    (try (f/unparse dob-parser (f/parse dob-parser dob)) (catch Exception _))))
-
 (defn find-interval [date]
   (if (t/after? date (t/now))
     (t/interval (t/now) date)
@@ -550,8 +536,8 @@ so it can be fed to ':malformed?' handler."
   (when dob
     (try
       (->
-        (convert-date-utc-str dob)
-        c/from-string
+        dob
+        c/from-long
         find-interval
         t/in-years)
       (catch Exception e
@@ -559,20 +545,5 @@ so it can be fed to ':malformed?' handler."
         nil))))
 
 (comment
-  (user-dob->age "05/10/1984")
-  (user-dob->age "1984/10/05")
-  (user-dob->age "05/10/1984")
-
-  (user-dob->age "05/14/1996")
-  (user-dob->age "14/05/1996")
-  (user-dob->age "1996/05/14")
-
-  (user-dob->age "05/10/1984")
-  (user-dob->age "05/06/2016")
-
-  (user-dob->age "05/06/2016")
-
-  (user-dob->age "11/28/2015")
-  (f/unparse dob-parser (f/parse dob-parser "11/28/2015"))
-
-  (f/show-formatters))
+  (user-dob->age 465782400000) ;; => 31
+  )
