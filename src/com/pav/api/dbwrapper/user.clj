@@ -7,7 +7,7 @@
             [com.pav.api.redis.redis :as redis])
   (:import java.text.SimpleDateFormat))
 
-(defn- parse-dob
+(defn parse-dob
   "Parse date of birth in form MM/DD/YYYY to long."
   [in]
   (cond
