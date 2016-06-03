@@ -15,6 +15,7 @@ machine:
     - redis
 test:
   override:
+    - lein midje
     - cp -r target/surefire-reports/* $CIRCLE_TEST_REPORTS
 deployment:
   development-mysql:
