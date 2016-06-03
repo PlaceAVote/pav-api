@@ -475,10 +475,10 @@ so it can be fed to ':malformed?' handler."
   "Set emotional response for given issue_id."
   [issue_id user_id body]
   (when-let [resp (:emotional_response body)]
-    (dbwi/update-user-issue-emotional-response issue_id user_id resp)
-    ;; return body as is, since we already check it's content with
-    ;; 'validate-user-issue-emotional-response'
-    body))
+    (->
+      (dbwi/update-user-issue-emotional-response issue_id user_id resp)
+      (select-keys [:positive_responses :negative_responses :neutral_responses])
+      (merge body))))
 
 (defn get-user-issue-emotional-response
   "Retrieve emotional response for given issue_id."
@@ -489,8 +489,10 @@ so it can be fed to ':malformed?' handler."
 (defn delete-user-issue-emotional-response
   "Delete emotional response for given issue_id and user_id"
   [issue_id user_id]
-  (select-keys (dbwi/delete-user-issue-emotional-response issue_id user_id)
-    [:emotional_response]))
+  (->
+    (dbwi/delete-user-issue-emotional-response issue_id user_id)
+    (select-keys [:positive_responses :negative_responses :neutral_responses])
+    (assoc :emotional_response "none")))
 
 (defn user-issue-exist? [issue_id]
   (not (empty? (du/get-user-issue issue_id))))
@@ -534,14 +536,27 @@ so it can be fed to ':malformed?' handler."
   (f/formatter (t/default-time-zone)
     "YYYY-MM-dd" "dd/MM/YYYY"))
 
+(defn- convert-date-utc-str [dob]
+  (or
+    (try (f/unparse utc-dob-parser (f/parse utc-dob-parser dob)) (catch Exception _))
+    (try (f/unparse dob-parser (f/parse dob-parser dob)) (catch Exception _))))
+
+(defn find-interval [date]
+  (if (t/after? date (t/now))
+    (t/interval (t/now) date)
+    (t/interval date (t/now))))
 
 (defn user-dob->age [dob]
   (when dob
-    (->
-      (or
-        (try (f/unparse utc-dob-parser (f/parse utc-dob-parser dob)) (catch Exception _))
-        (try (f/unparse dob-parser (f/parse dob-parser dob)) (catch Exception _)))
-      c/from-string (t/interval (t/now)) t/in-years)))
+    (try
+      (->
+        (convert-date-utc-str dob)
+        c/from-string
+        find-interval
+        t/in-years)
+      (catch Exception e
+        (log/error "Error occured parsing DOB " dob " with " e)
+        nil))))
 
 (comment
   (user-dob->age "05/10/1984")
@@ -551,5 +566,13 @@ so it can be fed to ':malformed?' handler."
   (user-dob->age "05/14/1996")
   (user-dob->age "14/05/1996")
   (user-dob->age "1996/05/14")
+
+  (user-dob->age "05/10/1984")
+  (user-dob->age "05/06/2016")
+
+  (user-dob->age "05/06/2016")
+
+  (user-dob->age "11/28/2015")
+  (f/unparse dob-parser (f/parse dob-parser "11/28/2015"))
 
   (f/show-formatters))
