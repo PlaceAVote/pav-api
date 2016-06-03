@@ -28,7 +28,7 @@
             password   "stuff2"
             first_name "john"
             last_name  "stuff"
-            dob        "05/10/1984"
+            dob        "465782400000"
             topics     ["Defense"]
             gender     "male"
             zipcode    "90210"}}]
@@ -42,7 +42,7 @@
             id         (str (rand-int 1000))
             first_name "john"
             last_name  "stuff"
-            dob        "05/10/1984"
+            dob        "465782400000"
             topics     ["Defense"]
             gender     "male"
             zipcode    "12345"

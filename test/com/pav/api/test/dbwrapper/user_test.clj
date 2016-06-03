@@ -52,7 +52,7 @@
             ret  (u/create-user user)
             _ (u/update-user-profile (:user_id ret)
                 {:first_name "fname" :last_name "lname"
-                 :dob "10/01/1984" :zipcode "97322"
+                 :dob "528940800000" :zipcode "97322"
                  :district 4 :state "OR"})
             dynamo-ret (dynamodb/get-user-by-id (:user_id ret))
             sql-ret    (sql/get-user-by-old-id (:user_id ret))]
