@@ -13,6 +13,9 @@ machine:
     version: oraclejdk8
   services:
     - redis
+test:
+  override:
+    - cp -r target/surefire-reports/* $CIRCLE_TEST_REPORTS
 deployment:
   development-mysql:
     branch: mysql
