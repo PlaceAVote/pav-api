@@ -208,13 +208,18 @@
   (migrate-issue-comments))
 
 (defn- update-account-settings [user_id updates]
-  (try
-    (update-user-profile user_id updates)
-    (catch Exception e
-      (log/error "Error updating account settings for " user_id " with updates " updates " with " e))))
+  (when (seq updates)
+    (try
+      (update-user-profile user_id updates)
+      (catch Exception e
+        (log/error "Error updating account settings for " user_id " with updates " updates " with " e)))))
 
 (defn convert-user-dobs-to-timestamps []
-  (doseq [{:keys [dob user_id]} (du/retrieve-all-user-records)]
-    (->>
-      {:dob (parse-dob dob)}
-      (update-account-settings user_id))))
+  (doseq [{:keys [user_id] :as u} (du/retrieve-all-user-records)]
+    (try
+      (->>
+        (update-in u [:dob] parse-dob)
+        (select-keys [:dob])
+        (update-account-settings user_id))
+      (catch Exception e
+        (log/error "Error parsing dob " (:dob u) " for user_id " user_id " with " e)))))
