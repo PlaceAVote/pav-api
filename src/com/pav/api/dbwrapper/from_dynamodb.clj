@@ -2,7 +2,7 @@
   "Utility functions to move data from DynamoDB to SQL database."
   (:require [com.pav.api.dynamodb.user :as du]
             [com.pav.api.db.user :as su]
-            [com.pav.api.dbwrapper.user :refer [convert-user-profile]]
+            [com.pav.api.dbwrapper.user :refer [convert-user-profile parse-dob update-user-profile]]
             [com.pav.api.dbwrapper.helpers :refer [bigint->long]]
             [com.pav.api.dynamodb.comments :as dc]
             [com.pav.api.db.comment :as sc]
@@ -206,3 +206,18 @@
   (migrate-bill-comments)
   (migrate-user-issues)
   (migrate-issue-comments))
+
+(defn- update-user-dob [{:keys [user_id] :as u}]
+  (when (seq u)
+    (try
+      (let [updates (->
+                      (update-in u [:dob] parse-dob)
+                      (select-keys [:dob]))]
+        (log/infof "Updating user_id %s DOB with %d" user_id (:dob updates))
+        (update-user-profile user_id updates))
+      (catch Exception e
+        (log/error (str "Error updating account settings for " user_id " with " e))))))
+
+(defn convert-user-dobs-to-timestamps []
+  (doseq [u (du/retrieve-all-user-records)]
+    (update-user-dob u)))

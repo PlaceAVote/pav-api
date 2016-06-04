@@ -13,7 +13,8 @@
 Returns nil if not found."
   [id]
   (first
-   (sql/query db/db [(sstr "SELECT * FROM " t/user-info-table " WHERE user_id = ? LIMIT 1") id])))
+   (sql/query db/db [(sstr "SELECT * FROM " t/user-info-table " WHERE user_id = ? LIMIT 1") id]
+              {:row-fn unclobify})))
 
 (defn get-user-by-old-id
   "Return user by old ID schema used for DynamoDB. User ID in this case is
@@ -34,14 +35,19 @@ other for easier transition from DynamoDB, since it will be removed in future."
    (sql/query db/db [(sstr "SELECT * FROM " t/user-info-table " WHERE email = ? LIMIT 1") email]
               {:row-fn unclobify})))
 
-(defn get-user-profile-by-facebook-id
+(defn get-user-by-facebook-id
   "Return full user details by given facebook id."
   [facebook_id]
   (first
    (sql/query db/db [(sstr "SELECT * FROM " t/user-info-table " AS u "
                            "JOIN " t/user-creds-fb-table " AS c "
                            "ON u.user_id = c.user_id "
-                           "WHERE c.facebook_id = ?") facebook_id])))
+                           "WHERE c.facebook_id = ?") facebook_id]
+              {:row-fn unclobify})))
+
+(def get-user-profile-by-facebook-id
+  "Alias for get-user-by-facebook-id, for compatibility reasons."
+  get-user-by-facebook-id)
 
 (defn- create-confirmation-record
   "Helper to insert confirmation token. Be careful with calling
@@ -73,7 +79,7 @@ that in a given transaction."
     (-> id get-user-by-old-id :user_id)
     id))
 
-(defn- get-user-password
+(defn get-user-password
   "Retrieve user password using id or old_id, depending on occasion."
   ([id is-old-id?]
      (let [id (figure-id id is-old-id?)]
@@ -84,12 +90,19 @@ that in a given transaction."
            :password)))
   ([id] (get-user-password id false)))
 
-(defn- get-fb-id-and-token
+(defn has-user-password?
+  "Returns nil if user does not has password. The is probably has
+facebook keys for login."
+  ([id is-old-id?] (boolean (get-user-password id is-old-id?)))
+  ([id] (has-user-password? id false)))
+
+(defn get-fb-id-and-token
   "Retrieve facebook token and id using database id or old_id."
   ([id is-old-id?]
      (let [id (figure-id id is-old-id?)]
        (first
-        (sql/query db/db [(sstr "SELECT facebook_id, facebook_token FROM " t/user-creds-fb-table " WHERE user_id = ? LIMIT 1") id]))))
+        (sql/query db/db [(sstr "SELECT facebook_id, facebook_token FROM " t/user-creds-fb-table " WHERE user_id = ? LIMIT 1") id]
+                   {:row-fn unclobify}))))
   ([id] (get-fb-id-and-token id false)))
 
 (defn create-user
@@ -158,8 +171,28 @@ facebook :token value, which will create facebook related credentials (inside us
   []
   (sql/query db/db (sstr "SELECT * FROM " t/user-info-table)))
 
+(defn user-count
+  "Return number of users. This is NOT the same as (count (retrieve-all-user-records))
+because of Clojure's chunked sequenes, (count) will not return correct number, unless you
+realise sequence with 'doall'."
+  []
+  (extract-value
+   (sql/query db/db [(sstr "SELECT COUNT(*) FROM " t/user-info-table)])))
+
 (defn user-count-between
   "Return number of users created between 'start' and 'end' dates."
   [start end]
   (extract-value
    (sql/query db/db [(sstr "SELECT COUNT(*) FROM " t/user-info-table " WHERE created_at >= ? AND created_at <=?") start end])))
+
+(defn first-last-ids
+  "Return first and last ID's. Mainly as helper for testing."
+  []
+  (let [getter (fn [asc?]
+                 (extract-value
+                  (sql/query db/db [(str "SELECT user_id FROM " t/user-info-table " ORDER BY user_id"
+                                          (if asc?
+                                            " ASC "
+                                            " DESC ")
+                                          "LIMIT 1")])))]
+    [(getter true) (getter false)]))

@@ -3,7 +3,7 @@
 prevent duplicates."
   (:require [com.pav.api.db.db :as db]
             [com.pav.api.db.tables :as t]
-            [com.pav.api.db.common :refer [extract-value]]
+            [com.pav.api.db.common :refer [unclobify extract-value]]
             [com.pav.api.utils.utils :refer [sstr]]
             [clojure.java.jdbc :as sql]
             [clojure.tools.logging :as log]
@@ -13,9 +13,22 @@ prevent duplicates."
   "Return topic ID if is present or nil if not."
   [t]
   (-> (sql/query db/db [(sstr "SELECT id FROM " t/topics-table " WHERE name = ? LIMIT 1")
-                        (s/capitalize t)])
+                        (s/capitalize t)]
+                 {:row-fn unclobify})
       first
       :id))
+
+(defn get-topic-by-id
+  "Return topic map by given ID."
+  [id]
+  (first
+   (sql/query db/db [(sstr "SELECT * FROM " t/topics-table " WHERE id = ? LIMIT 1") id]
+              {:row-fn unclobify})))
+
+(defn have-topic?
+  "Return true/false if topic is present."
+  [t]
+  (-> t get-topic boolean))
 
 (defn add-topic
   "Register new topic and returns topic ID. Does not check if topic exists, hence if does
@@ -62,3 +75,15 @@ insert."
      (doseq [t topics]
        (add-user-topic transaction id t)))
   ([id topics] (add-user-topics nil id topics)))
+
+(defn first-last-ids
+  "Return first and last ID's. Mainly as helper for testing."
+  []
+  (let [getter (fn [asc?]
+                 (extract-value
+                  (sql/query db/db [(str "SELECT id FROM " t/topics-table " ORDER BY id"
+                                          (if asc?
+                                            " ASC "
+                                            " DESC ")
+                                          "LIMIT 1")])))]
+    [(getter true) (getter false)]))

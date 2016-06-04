@@ -37,7 +37,7 @@
                                                                   com.amazonaws/aws-java-sdk-kms
                                                                   com.amazonaws/aws-java-sdk-core]]
                  [com.taoensso/encore "2.33.0"]
-                 [org.clojure/java.jdbc "0.5.8"]
+                 [org.clojure/java.jdbc "0.6.1"]
                  [com.h2database/h2 "1.4.191"]
                  [mysql/mysql-connector-java "5.1.38"]
                  [org.flywaydb/flyway-core "4.0"]
@@ -69,7 +69,7 @@
    :uberjar {:jvm-opts     ^:replace ["-Xms256m" "-Xmx512m" "-Xss512k" "-XX:MaxMetaspaceSize=150m"]
              :aot          [system com.pav.api.migrations.migrations]
              :env          {:auth-pub-key "resources/pav_auth_pubkey.pem"
-                            :db-url       "h2:mem:pav;DB_CLOSE_DELAY=-1"
+                            :db-url       "h2:mem:pav"
                             :db-user      "pavuser"
                             :db-pwd       "pavpass"}
              :uberjar-name "pav-user-api.jar"}
@@ -78,7 +78,8 @@
              {:open-browser? false, :stacktraces? false, :auto-reload? false}}
    :dev
             {:dependencies [[ring-mock "0.1.5"] [ring/ring-devel "1.3.1" :exclusions [ring/ring-core]]
-                            [midje "1.7.0" :exclusions [org.clojure/tools.macro]]]
+                            [midje "1.7.0" :exclusions [org.clojure/tools.macro]]
+                            [org.clojure/test.check "0.9.0"]]
              :env          {:auth-priv-key                       "test-resources/pav_auth_privkey.pem"
                             :auth-priv-key-pwd                   "password"
                             :auth-pub-key                        "test-resources/pav_auth_pubkey.pem"
@@ -90,9 +91,9 @@
                             :db-user                             "pavuser"
                             :db-pwd                              "pavpass"
                             :redis-url                           "redis://127.0.0.1:6379"
-                            :access-key                          "Whatever"
-                            :secret-key                          "whatever"
-                            :dynamo-endpoint                     "http://localhost:8000"
+                            :access-key                          "AKIAJPQP6GFOO2N7YCXA"
+                            :secret-key                          "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"
+                            :dynamo-endpoint                     "http://dynamodb.us-east-1.amazonaws.com"
                             :dynamo-user-table-name              "users"
                             :dynamo-user-confirmation-table-name "user-confirmation-tokens"
                             :dynamo-notification-table-name      "notifications"
@@ -108,9 +109,9 @@
                             :dynamo-questions-table              "questions"
                             :dynamo-user-question-answers-table	 "user-question-answers"
                             :dynamo-user-issues-table            "user-issues"
-                            :dynamo-user-issue-responses-table   "user-issue-responses"
+                            :dynamo-user-issue-responses-table   "user-issues-responses"
                             :dynamo-user-issue-comments-table-name "user-issue-comments"
-                            :dynamo-user-issue-comments-scoring-table "user-issue-scores"
+                            :dynamo-user-issue-comments-scoring-table "user-issues-scores"
                             :redis-notification-pubsub           "redis::notifications::pubsub"
                             :es-url                              "http://localhost:9200"
                             :email-mode                          "test"

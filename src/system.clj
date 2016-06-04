@@ -1,7 +1,8 @@
  (ns system
   (:require [com.pav.api.handler :refer [app start-server]]
             [com.pav.api.db.migrations :refer [migrate-db-on-startup]]
-            [com.pav.api.dbwrapper.from-dynamodb :refer [migrate-all-data]]
+            [com.pav.api.dbwrapper.from-dynamodb :refer [migrate-all-data
+                                                         convert-user-dobs-to-timestamps]]
             [com.pav.api.dynamodb.db :refer [create-all-tables!]]
             [com.pav.api.db.db :refer [drop-all-tables!]]
             [clojure.tools.cli :as cli]
@@ -35,6 +36,10 @@
     :parse-fn parse-args
     :default-desc "true"
     :default true]
+   ["-f" "--format-user-dobs [option]" "Format existing users date of births from Strings to Timestamps."
+    :parse-fn parse-args
+    :default-desc "false"
+    :default false]
    ["-h" "--help" "Display help"]])
 
 (defn- error-msg [errors]
@@ -63,6 +68,7 @@
     (exec-cmd (:migrate-database options) (migrate-db-on-startup))
     (exec-cmd (:create-dynamodb-tables options) (create-all-tables!))
     (exec-cmd (:migrate-data options) (migrate-all-data))
+    (exec-cmd (:format-user-dobs options) (convert-user-dobs-to-timestamps))
     (exec-cmd
       (:start-server options)
       (start-server {:port 8080})
