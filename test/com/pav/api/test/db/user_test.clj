@@ -45,8 +45,8 @@
           (prop/for-all [id (gen/choose s e)]
             (let [data   (u/get-user-by-id id)
                   old_id (:old_user_id data)]
-              (u/get-user-by-old-id old_id) => data)))))
-    => (just {:result true :num-tests 100 :seed anything})
+              (u/get-user-by-old-id old_id) => data))))
+      => (just {:result true :num-tests 100 :seed anything}))
     
     (fact "check get-user-by-id == get-user-by-email"
       (let [[s e] (u/first-last-ids)]
@@ -54,22 +54,25 @@
           (prop/for-all [id (gen/choose s e)]
             (let [data  (u/get-user-by-id id)
                   email (:email data)]
-              (u/get-user-by-email email) => data)))))
-    => (just {:result true :num-tests 100 :seed anything})
+              (u/get-user-by-email email) => data))))
+      => (just {:result true :num-tests 100 :seed anything}))
     
     (fact "check get-user-by-facebook-id == get-user-by-id"
       (let [[s e] (u/first-last-ids)]
         (tc/quick-check 100
           (prop/for-all [id (gen/choose s e)]
-            (when-not (u/has-user-password? id)
+            (if-not (u/has-user-password? id)
               (let [data   (u/get-user-by-id id)
                     tokens (u/get-fb-id-and-token id)
                     data2  (u/get-user-by-facebook-id (:facebook_id tokens))]
                 tokens => (just {:facebook_id string?, :facebook_token string?})
                 ;; (get-user-profile-by-facebook-id) will do JOIN, returning both user
                 ;; details and facebook tokens
-                data2 => (contains data) ))))))
-    => (just {:result true :num-tests 100 :seed anything})
+                data2 => (contains data))
+              ;; Make sure midje knows we returns true or will report test as failing. In our
+              ;; case, it is normal user does not have password since it has FB tokens.
+              true))))
+      => (just {:result true :num-tests 100 :seed anything}))
 
     (fact "check get-user-password, update-user-password and get-fb-id-and-token"
      (let [[s e] (u/first-last-ids)]
@@ -89,6 +92,6 @@
              (let [tokens  (u/get-fb-id-and-token id)
                    tokens2 (-> id u/get-user-by-id :old_user_id (u/get-fb-id-and-token true))]
                tokens => (just {:facebook_id string?, :facebook_token string?})
-               tokens => tokens2))))))
-    => (just {:result true :num-tests 100 :seed anything})
+               tokens => tokens2)))))
+     => (just {:result true :num-tests 100 :seed anything}))
  ))
