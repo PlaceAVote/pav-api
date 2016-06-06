@@ -36,12 +36,13 @@
 
 (defn format-account-settings [updates]
   (cond-> (select-keys updates [:email :first_name :last_name
-                                :gender :zipcode :public :state
-                                :address :dob :district :lat :lng])
+                                :gender :zipcode :state :address
+                                :dob :district :lat :lng])
     (:lat updates)      (assoc :latitude (:lat updates))
     (:lng updates)      (assoc :longtitude (:lng updates))
     (:district updates) (update-in [:district] bigint->long)
-    (:dob updates)      (update-in [:dob] bigint->long)))
+    (:dob updates)      (update-in [:dob] bigint->long)
+    (:public updates)   (assoc :public_profile (:public updates))))
 
 (defn create-user [user-profile]
   (prog1
