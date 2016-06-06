@@ -41,6 +41,10 @@
       status => 400
       body => {:errors [{:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]}))
 
+  (fact "Create new user, When dob is pre Epoch 1972, Then accept DOB"
+    (let [{status :status} (pav-req :put "/user" (new-pav-user {:dob "-134182800000"}))]
+      status => 201))
+
    (fact "Create a new user from facebook login, will return 201 status and newly created user profile"
          (let [{status :status body :body} (pav-req :put "/user/facebook" (new-fb-user))]
            status => 201

@@ -131,6 +131,9 @@
     (= author user_id)
     false))
 
+(defn bill-comment-exists? [comment_id]
+  (-> (dc/get-bill-comment comment_id) seq nil? false?))
+
 (defn get-user-issue-comments [issue_id user_id & {:keys [sort-by last_comment_id]
                                                    :or   {sort-by :highest-score last_comment_id nil}}]
   (dc/get-user-issue-comments issue_id :user_id user_id :sort-by sort-by :last_comment_id last_comment_id))

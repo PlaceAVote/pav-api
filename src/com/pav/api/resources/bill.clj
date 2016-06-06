@@ -54,14 +54,16 @@
 
 (defresource create-comment-reply [comment-id]
   :service-available? {:representation {:media-type "application/json"}}
-  :authorized? (fn [ctx] (us/is-authenticated? (u/retrieve-user-details ctx)))
+  :authorized? (fn [ctx] (and
+                           (us/is-authenticated? (u/retrieve-user-details ctx))
+                           (cs/bill-comment-exists? comment-id)))
   :malformed? (fn [ctx] (new-bill-comment-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:put]
   :available-media-types ["application/json"]
   :put! (fn [ctx] (cs/create-bill-comment comment-id (u/retrieve-body ctx) (u/retrieve-user-details ctx)))
   :handle-created (fn [{record :record}] (cheshire.core/generate-string record))
   :handle-malformed {:errors [{:body "Please specify a comment body and bill_id"}]}
-  :handle-unauthorized {:error "Not Authorized"})
+  :handle-unauthorized {:error "Please check authorization token and comment_id is a valid one."})
 
 (defresource get-comments [bill_id]
   :service-available? {:representation {:media-type "application/json"}}
@@ -79,7 +81,9 @@
 
 (defresource like-comment [comment_id]
   :service-available? {:representation {:media-type "application/json"}}
-  :authorized? (fn [ctx] (us/is-authenticated? (u/retrieve-user-details ctx)))
+  :authorized? (fn [ctx] (and
+                           (us/is-authenticated? (u/retrieve-user-details ctx))
+                           (cs/bill-comment-exists? comment_id)))
   :malformed? (fn [ctx] (new-bill-score-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:post :delete]
   :available-media-types ["application/json"]
@@ -87,11 +91,13 @@
   :delete! (fn [ctx] (cs/revoke-liked-comment (u/retrieve-token-user-id ctx) comment_id))
   :handle-malformed {:error "Payload contains invalid bill_id"}
   :handle-created :record
-  :handle-unauthorized {:error "Not Authorized"})
+  :handle-unauthorized {:error "Please check authorization token and comment_id is a valid one."})
 
 (defresource dislike-comment [comment_id]
   :service-available? {:representation {:media-type "application/json"}}
-  :authorized? (fn [ctx] (us/is-authenticated? (u/retrieve-user-details ctx)))
+  :authorized? (fn [ctx] (and
+                           (us/is-authenticated? (u/retrieve-user-details ctx))
+                           (cs/bill-comment-exists? comment_id)))
   :malformed? (fn [ctx] (new-bill-score-malformed? (get-in ctx [:request :body])))
   :allowed-methods [:post :delete]
   :available-media-types ["application/json"]
@@ -99,4 +105,4 @@
   :delete! (fn [ctx] (cs/revoke-disliked-comment (u/retrieve-token-user-id ctx) comment_id))
   :handle-malformed {:error "Payload contains invalid bill_id"}
   :handle-created :record
-  :handle-unauthorized {:error "Not Authorized"})
+  :handle-unauthorized {:error "Please check authorization token and comment_id is a valid one."})

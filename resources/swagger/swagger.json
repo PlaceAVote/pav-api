@@ -724,6 +724,14 @@
         "zipcode": {
           "type": "string",
           "format": "string"
+        },
+        "district": {
+          "type": "number",
+          "format": "number"
+        },
+        "state": {
+          "type": "string",
+          "format": "string"
         }
       }
     },
