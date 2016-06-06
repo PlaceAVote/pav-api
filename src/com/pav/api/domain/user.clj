@@ -28,6 +28,9 @@
   (cond-> (select-keys profile [:user_id :first_name :last_name :country_code :state :public :img_url :city :registered])
     private? (merge (select-keys profile [:zipcode :lat :lng :email :district :gender :created_at]))))
 
+(defn- extract-account-settings [profile]
+  (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url :city :zipcode :district :state]))
+
 (defprotocol Profiles
   (presentable [profile]
     "Remove sensitive information from user profiles")
@@ -50,7 +53,7 @@
 	(assign-token-for [profile]
 		(assign-new-token (dissoc profile :password :token)))
 	(account-settings [profile]
-		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url :city :zipcode])
+		(-> (extract-account-settings profile)
 			  (assoc :social_login false)))
 	(indexable-profile [profile]
 		(dissoc profile :password :token)))
@@ -66,7 +69,7 @@
 	(assign-token-for [profile]
 		(assign-new-token (dissoc profile :token)))
 	(account-settings [profile]
-		(-> (select-keys profile [:user_id :first_name :last_name :dob :gender :public :email :img_url :city :zipcode])
+		(-> (extract-account-settings profile)
 			  (assoc :social_login true)))
 	(indexable-profile [profile]
 		(dissoc profile :token :facebook_token :facebook_id)))
