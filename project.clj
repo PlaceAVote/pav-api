@@ -79,7 +79,8 @@
    :dev
             {:dependencies [[ring-mock "0.1.5"] [ring/ring-devel "1.3.1" :exclusions [ring/ring-core]]
                             [midje "1.7.0" :exclusions [org.clojure/tools.macro]]
-                            [org.clojure/test.check "0.9.0"]]
+                            [org.clojure/test.check "0.9.0"]
+                            [com.gfredericks/test.chuck "0.2.6"]]
              :env          {:auth-priv-key                       "test-resources/pav_auth_privkey.pem"
                             :auth-priv-key-pwd                   "password"
                             :auth-pub-key                        "test-resources/pav_auth_pubkey.pem"
@@ -131,4 +132,5 @@
                             :facebook-app-id                     "TEST"
                             :facebook-client-app-secret          "TEST"
                             :sql-backend-enabled                 "false"}
-             :plugins      [[lein-midje "3.1.3"]]}})
+             :plugins      [[lein-midje "3.1.3"]
+                            [test2junit "1.2.2"]]}})
