@@ -51,16 +51,22 @@ exists, database constraints exception will be thrown."
   (some->> (sql/query db/db [(sstr "SELECT t.name FROM " t/user-topics-table " AS u "
                                    "JOIN " t/topics-table " AS t "
                                    "ON u.topic_id = t.id "
-                                   "WHERE u.user_id = ?") id])
+                                   "WHERE u.user_id = ?") id]
+                      {:row-fn unclobify})
            seq
            (map :name)))
 
 (defn add-user-topic
   "Add new topic to the given user. Does nothing if topic asigned to this user already exists.
 Optional argument is transaction, so it can run in a single transaction that does more that topic
-insert."
+insert.
+
+Returns nil if topic already exists or new topic id if wasn't seen before."
   ([transaction id t]
-     (let [insert-fn #(sql/insert! % t/user-topics-table {:user_id id :topic_id (get-or-add-topic t)})]
+     (let [t (s/capitalize t)
+           insert-fn #(extract-value
+                       (sql/insert! % t/user-topics-table
+                                    {:user_id id :topic_id (get-or-add-topic t)}))]
        (if-not (some #{t} (get-user-topics id))
          (if-not transaction
            (sql/with-db-transaction [d db/db]

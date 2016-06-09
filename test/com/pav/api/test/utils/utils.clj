@@ -163,3 +163,15 @@
   [parent child]
   (= child
      (->> child keys (select-keys parent))))
+
+(defn contains-vec?
+  "Return true/false if parent contains child vector."
+  [parent child]
+  (not
+   (some nil?
+         (map #(some #{%} parent) child))))
+
+(defn rand-int-range
+  "Return random integer in given range."
+  [s e]
+  (+ (rand-int (- e s)) s))
