@@ -16,9 +16,9 @@ machine:
 
 test:
   override:
-    - lein midje
+    - lein test2junit
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
-    - find . -type f -regex ".*/target/surefire-reports/.*xml" -exec mv {} $CIRCLE_TEST_REPORTS/junit/ \;
+    - find . -type f -regex ".*/test2junit/xml/.*xml" -exec mv {} $CIRCLE_TEST_REPORTS/junit/ \;
 
 deployment:
   development-mysql:
