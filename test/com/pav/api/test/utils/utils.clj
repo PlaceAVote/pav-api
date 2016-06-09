@@ -157,3 +157,9 @@
   [mp ks]
   (remove nil?
     (reduce #(conj %1 (get mp %2)) [] ks)))
+
+(defn contains-map?
+  "Return true/false if parent contains child map."
+  [parent child]
+  (= child
+     (->> child keys (select-keys parent))))
