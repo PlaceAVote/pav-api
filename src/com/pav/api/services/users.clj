@@ -93,7 +93,10 @@ default-followers (:default-followers env))
 
 (defn create-user-profile [user & [origin]]
   "Create new user profile, specify :facebook as the origin by default all uses are pav"
-  {:record (-> (new-user-profile user (or origin :pav)) persist-user-profile (select-keys [:token :user_id]))})
+  {:record (->
+             (new-user-profile user (or origin :pav))
+             persist-user-profile
+             (select-keys [:token :user_id :zipcode :state :district]))})
 
 (defn delete-user [{:keys [user_id] :as user_profile}]
   (du/delete-user user_id)

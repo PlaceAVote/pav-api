@@ -19,7 +19,7 @@
   (fact "Create a new user, will return 201 status and newly created token"
     (let [{status :status body :body} (pav-req :put "/user" (new-pav-user))]
       status => 201
-      (keys body) => (contains [:user_id :token] :in-any-order)))
+      (keys body) => (just [:user_id :token :zipcode :state :district] :in-any-order)))
 
   (fact "Create new user, When zip+4 contains only 2 characters, Then return 400 exception"
     (let [{status :status body :body} (pav-req :put "/user" (new-pav-user {:zipcode "77"}))]

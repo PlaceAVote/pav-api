@@ -485,6 +485,15 @@ definitions:
         format: string
       token:
         type: string
+      zipcode:
+        type: number
+        format: number
+      state:
+        type: string
+        format: string
+      district:
+        type: number
+        format: number
   UserFollowingRecords:
     type: array
     items:
