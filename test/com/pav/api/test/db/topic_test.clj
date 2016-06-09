@@ -59,7 +59,7 @@
       (is (nil? (t/add-user-topic user-id new)))))
 
   (let [[us ue] (u/first-last-ids)]
-    (checking "add multiple topics to the user" 5
+    (checking "add multiple topics to the user" 100
       [random-user-id  (gen/choose us ue)
        new-topics      (gen/not-empty (gen/vector topic-gen))]
       ;; add-user-topics returns nil since it invokes 'doseq'
