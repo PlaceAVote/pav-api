@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # optionally download and start/stop necessary databases
 
 WORK_PATH=${WORK_PATH:-".db"}
@@ -13,7 +13,7 @@ redis_checksum="e56b4b7e033ae8dbf311f9191cf6fdf3ae974d1c"
 redis_dir=$(basename $redis_url | sed 's/.tar.gz//')
 
 dynamodb_url="http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest.tar.gz"
-dynamodb_checksum="700811cf99c094eccfcfd8869bb5711906d29f6f"
+dynamodb_checksum="e0d9afdf875ac6c43482d460c5d3a403bef42559"
 dynamodb_dir="dynamodb"
 
 # portable way to figure out path of programs
@@ -34,7 +34,7 @@ calc_checksum() {
 	if [ -z $(find_path sha1sum) ]; then
 		do_fail "sha1sum tool isn't present."
 	fi
-	
+
 	sha1sum $1 | awk '{print $1}'
 }
 
@@ -49,17 +49,25 @@ do_download() {
 			downloader="$downloader -LO"
 		fi
 	fi
-	
+
 	url=$1
 	sum=$2
 	archive=$(basename $url)
-	
+
 	if [ ! -f $archive ]; then
 		trace "Downloading $archive..."
 		$downloader $url
 	fi
 
-	if [ -f $archive ] && [ $sum = $(calc_checksum $archive) ]; then
+	if [ $NO_CHECKSUM ]; then
+		trace "Skipping checksum check for $archive"
+	else
+		if [ ! $sum = $(calc_checksum $archive)]; then
+			do_fail "failed to get '$archive' from '$url'."
+		fi
+	fi
+
+	if [ -f $archive ]; then
 		# This is a trick to search for a substring in a string inside bash. There is
 		# also 'perlism' with double squae brackets, but they aren't used here.
 		if [ $archive != ${archive/dynamodb/} ]; then
@@ -78,7 +86,7 @@ do_download() {
 			fi
 		fi
 	else
-		do_fail "failed to get '$archive' from '$url'."
+		do_fail "failed to find downloaded '$archive' file."
 	fi
 }
 
@@ -135,6 +143,8 @@ Environment variables:
   ES_PATH       - absolute path of ElasticSearch installation. If set, ElasticSearch will not be downloaded.
   REDIS_PATH    - absolute path of Redis installation. If set, Redis will not be downloaded.
   DYNAMODB_PATH - absolute path of DynamoDB installation. If set, DynamoDB will not be downloaded.
+
+  NO_CHECKSUM   - do not check sha1 checksum of downloaded file. Useful for newver DynamoDB versions.
 
 EOF
 }
