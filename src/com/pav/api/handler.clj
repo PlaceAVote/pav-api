@@ -31,7 +31,7 @@
                                                 get-user-issue user-issue-emotional-response user-issue-comments
                                                 update-user-issue feed contact-form validate-user
                                                 update-user-issue-comment delete-user-issue-comment
-                                                like-user-issue-comment dislike-user-issue-comment]]
+                                                like-user-issue-comment dislike-user-issue-comment scrape-link]]
             [com.pav.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.api.resources.docs :refer [swagger-docs]]
             [com.pav.api.authentication.authentication :refer [token-handler]]
@@ -118,6 +118,7 @@
   (DELETE "/comments/:comment_id/dislike" [comment_id] (dislike-comment comment_id))
   (POST "/user/validate" [] validate-user)
   (GET "/reports/activity" [weeks] (activity-report weeks))
+  (GET "/opengraph/scrape" [link] (scrape-link link))
   (route/resources "/")
   (route/not-found "Not Found"))
 

@@ -76,6 +76,14 @@
   :handle-unauthorized {:error "Not Authorized"}
   :handle-ok (fn [ctx] (service/get-account-settings (retrieve-token-user-id ctx))))
 
+(defresource scrape-link [link]
+  :service-available? {:representation {:media-type "application/json"}}
+  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+  :allowed-methods [:get]
+  :available-media-types ["application/json"]
+  :handle-ok (service/scrape-opengraph-data link)
+  :handle-unauthorized {:error "Not Authorized"})
+
 (defresource upload-profile-image
   :service-available? {:representation {:media-type "application/json"}}
 	:authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))

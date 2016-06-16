@@ -2005,6 +2005,52 @@
         }
       }
     },
+    "/opengraph/scrape": {
+      "get": {
+        "description": "Scrape OpenGraph Data from provided HTTP resource",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          },
+          {
+            "name": "link",
+            "description": "Link you want to scrape",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "string"
+          }
+        ],
+        "tags": [
+          "Utils"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "article_link": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "article_title": {
+                  "type": "string",
+                  "format": "string"
+                },
+                "article_img": {
+                  "type": "string",
+                  "format": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token invalid"
+          }
+        }
+      }
+    },
     "/user/issue/{issue_id}/response": {
       "get": {
         "description": "Get users response to issue",

@@ -547,6 +547,13 @@ so it can be fed to ':malformed?' handler."
         (log/error "Error occured parsing DOB " dob " with " e)
         nil))))
 
+(defn scrape-opengraph-data
+  "Given a URL, scrape its open graph data."
+  [link]
+  (if-let [data (gp/extract-open-graph link)]
+    data
+    {:article_title nil :article_link link :article_img nil}))
+
 (comment
   (user-dob->age 465782400000) ;; => 31
   )
