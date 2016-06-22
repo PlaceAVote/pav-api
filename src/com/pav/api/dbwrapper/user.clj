@@ -37,7 +37,7 @@
 (defn format-account-settings [updates]
   (cond-> (select-keys updates [:email :first_name :last_name
                                 :gender :zipcode :state :address
-                                :dob :district])
+                                :dob :district :img_url])
     (:lat updates)      (assoc :latitude (:lat updates))
     (:lng updates)      (assoc :longtitude (:lng updates))
     (:district updates) (update-in [:district] bigint->long)
