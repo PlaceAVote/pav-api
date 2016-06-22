@@ -70,6 +70,7 @@
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
   :malformed? (fn [ctx] (service/validate-invite-users-payload (retrieve-body ctx)))
   :allowed-methods [:post]
+  :available-media-types ["application/json"]
   :post! (fn [ctx]
            (service/invite-users (retrieve-token-user-id ctx) (retrieve-body ctx)))
   :handle-created (fn [_] (ch/generate-string {:message "Invites sent successfully"}))
