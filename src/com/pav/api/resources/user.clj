@@ -71,7 +71,8 @@
   :malformed? (fn [ctx] (service/validate-invite-users-payload (retrieve-body ctx)))
   :allowed-methods [:post]
   :post! (fn [ctx]
-           {:response (service/invite-users (retrieve-token-user-id ctx) (retrieve-body ctx))})
+           (service/invite-users (retrieve-token-user-id ctx) (retrieve-body ctx))
+           {:response {:message "Invites sent successfully"}})
   :handle-created :response
   :handle-malformed (fn [ctx] (get-in ctx [:errors]))
   :handle-unauthorized {:error "Not Authorized"})
