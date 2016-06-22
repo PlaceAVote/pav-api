@@ -69,13 +69,10 @@
 	 (s/optional-key :city)     	str-schema
    (s/optional-key :zipcode)    zip-schema})
 
-(def Contact
-  {:name str-schema
-   :email email-schema})
-
 (def InviteUsersRequest
   {(s/optional-key :message) str-schema
-   :contacts [Contact]})
+   :contacts [{:name str-schema
+               :email email-schema}]})
 
 (def ValidateUserProperties
   {:email email-schema})
