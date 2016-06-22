@@ -31,7 +31,8 @@
                                                 get-user-issue user-issue-emotional-response user-issue-comments
                                                 update-user-issue feed contact-form validate-user
                                                 update-user-issue-comment delete-user-issue-comment
-                                                like-user-issue-comment dislike-user-issue-comment scrape-link]]
+                                                like-user-issue-comment dislike-user-issue-comment scrape-link
+                                                invite-users]]
             [com.pav.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.api.resources.docs :refer [swagger-docs]]
             [com.pav.api.authentication.authentication :refer [token-handler]]
@@ -53,6 +54,7 @@
 
 (defroutes app-routes
   (GET "/docs" [] swagger-docs)
+  (POST "/user/invite" [] invite-users)
   (POST "/user/me/settings" [] user-settings)
   (GET "/user/me/settings" [] user-settings)
   (GET "/user/me/profile" [] user-profile)

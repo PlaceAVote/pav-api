@@ -181,6 +181,9 @@ default-followers (:default-followers env))
 (defn validate-settings-update-payload [payload]
   (validate-payload payload us/validate-settings-payload))
 
+(defn validate-invite-users-payload [payload]
+  (validate-payload payload us/validate-invite-users-payload))
+
 (defn validate-password-change-payload [payload]
   (-> (validate-payload payload us/validate-change-password-payload)
       wrap-validation-errors))
@@ -347,6 +350,10 @@ default-followers (:default-followers env))
               dob (update-in [:dob] read-string))]
       (dbwu/update-user-profile user_id p)
       (index-user-profile user_id p))))
+
+(defn invite-users [user_id payload]
+  (when-let [user (get-user-by-id user_id)]
+    (mandril/send-user-invite-email user payload)))
 
 (defn get-account-settings [user_id]
   (-> (get-user-by-id user_id)

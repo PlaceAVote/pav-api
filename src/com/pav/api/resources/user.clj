@@ -65,6 +65,17 @@
   :handle-unauthorized {:error "Not Authorized"}
   :handle-ok record-in-ctx)
 
+(defresource invite-users
+  :service-available? {:representation {:media-type "application/json"}}
+  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+  :malformed? (fn [ctx] (service/validate-invite-users-payload (retrieve-body ctx)))
+  :allowed-methods [:post]
+  :post! (fn [ctx]
+           {:response (service/invite-users (retrieve-token-user-id ctx) (retrieve-body ctx))})
+  :handle-created :response
+  :handle-malformed (fn [ctx] (get-in ctx [:errors]))
+  :handle-unauthorized {:error "Not Authorized"})
+
 (defresource user-settings
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
