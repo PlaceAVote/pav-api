@@ -20,5 +20,6 @@
       (let [payload {:message "my message" :contacts [{:name "Keith" :email "keith@placeavote.com"}]}
             {body :body} (pav-req :put "/user" (new-pav-user))
             token (:token body)
-            {status :status} (pav-req :post "/user/invite" token payload)]
-        status => 201))))
+            {status :status body :body} (pav-req :post "/user/invite" token payload)]
+        status => 201
+        body => {:message "Invites sent successfully"}))))
