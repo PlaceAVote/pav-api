@@ -485,6 +485,15 @@ definitions:
         format: string
       token:
         type: string
+      zipcode:
+        type: number
+        format: number
+      state:
+        type: string
+        format: string
+      district:
+        type: number
+        format: number
   UserFollowingRecords:
     type: array
     items:
@@ -990,6 +999,38 @@ definitions:
         type: string
         format: string
 paths:
+  /user/invite:
+    post:
+      description: Invite users
+      parameters:
+        - $ref: '#/parameters/TokenParam'
+        - name: InviteUsersRequest
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                format: string
+              contacts:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      format: string
+                    name:
+                      type: string
+                      format: string
+      tags:
+        - Users
+      responses:
+        '201':
+          description: Successful response
+        '401':
+          description: Not Authorized (Check Authentication Token)  
   /user/feed:
     get:
       description: Get the current users feed
@@ -1364,6 +1405,36 @@ paths:
       responses:
         '200':
           description: Successful response
+        '401':
+          description: Token invalid
+  '/opengraph/scrape':
+    get:
+      description: Scrape OpenGraph Data from provided HTTP resource
+      parameters:
+        - $ref: '#/parameters/TokenParam'
+        - name: link
+          description: Link you want to scrape
+          in: query
+          required: false
+          type: string
+          format: string
+      tags:
+        - Utils
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            type: object
+            properties:
+              article_link:
+                type: string
+                format: string
+              article_title:
+                type: string
+                format: string
+              article_img:
+                type: string
+                format: string
         '401':
           description: Token invalid
   '/user/issue/{issue_id}/response':

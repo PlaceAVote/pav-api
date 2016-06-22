@@ -1,4 +1,4 @@
-(defproject pav-user-api "0.1.55-SNAPSHOT"
+(defproject pav-user-api "0.1.59-SNAPSHOT"
   :description "User API for registering, authenticating and managing user profiles"
   :url "https://github.com/PlaceAVote/pav-user-api"
   :dependencies [[org.clojure/clojure "1.8.0"]
@@ -122,6 +122,7 @@
                             :mandril-welcome-email-template      "welcome-email-dev"
                             :mandril-comment-reply-template      "comment-reply-template-dev"
                             :mandril-email-confirmation-template "confirm-email-dev"
+                            :mandril-invite-user-template        "invite-user-dev"
                             :cdn-bucket-name                     "placeavote-cdn"
                             :cdn-url                             "https://cdn.placeavote.com"
                             :s3-region                           "us-west-1"

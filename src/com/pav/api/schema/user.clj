@@ -69,6 +69,11 @@
 	 (s/optional-key :city)     	str-schema
    (s/optional-key :zipcode)    zip-schema})
 
+(def InviteUsersRequest
+  {(s/optional-key :message) str-schema
+   :contacts [{:name str-schema
+               :email email-schema}]})
+
 (def ValidateUserProperties
   {:email email-schema})
 
@@ -97,6 +102,9 @@
 
 (defn validate-settings-payload [payload]
 	(s/check AccountSettingUpdate payload))
+
+(defn validate-invite-users-payload [payload]
+	(s/check InviteUsersRequest payload))
 
 (defn validate-change-password-payload [passwords]
 	(s/check ChangePassword passwords))
@@ -132,6 +140,7 @@
 				(= :id k) {k "Please specify a facebook id"}
 				(= :comment k) {k "Please include a comment"}
         (= :zipcode k) {k "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}
+
 				:else {k "field is unknown"}))
 
 (defn validate-user-properties-payload [payload]

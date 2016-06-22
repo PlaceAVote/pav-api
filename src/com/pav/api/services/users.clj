@@ -93,7 +93,10 @@ default-followers (:default-followers env))
 
 (defn create-user-profile [user & [origin]]
   "Create new user profile, specify :facebook as the origin by default all uses are pav"
-  {:record (-> (new-user-profile user (or origin :pav)) persist-user-profile (select-keys [:token :user_id]))})
+  {:record (->
+             (new-user-profile user (or origin :pav))
+             persist-user-profile
+             (select-keys [:token :user_id :zipcode :state :district]))})
 
 (defn delete-user [{:keys [user_id] :as user_profile}]
   (du/delete-user user_id)
@@ -177,6 +180,9 @@ default-followers (:default-followers env))
 
 (defn validate-settings-update-payload [payload]
   (validate-payload payload us/validate-settings-payload))
+
+(defn validate-invite-users-payload [payload]
+  (validate-payload payload us/validate-invite-users-payload))
 
 (defn validate-password-change-payload [payload]
   (-> (validate-payload payload us/validate-change-password-payload)
@@ -344,6 +350,10 @@ default-followers (:default-followers env))
               dob (update-in [:dob] read-string))]
       (dbwu/update-user-profile user_id p)
       (index-user-profile user_id p))))
+
+(defn invite-users [user_id payload]
+  (when-let [user (get-user-by-id user_id)]
+    (mandril/send-user-invite-email user payload)))
 
 (defn get-account-settings [user_id]
   (-> (get-user-by-id user_id)
@@ -543,6 +553,13 @@ so it can be fed to ':malformed?' handler."
       (catch Exception e
         (log/error "Error occured parsing DOB " dob " with " e)
         nil))))
+
+(defn scrape-opengraph-data
+  "Given a URL, scrape its open graph data."
+  [link]
+  (if-let [data (gp/extract-open-graph link)]
+    data
+    {:article_title nil :article_link link :article_img nil}))
 
 (comment
   (user-dob->age 465782400000) ;; => 31

@@ -10,6 +10,7 @@
 (def welcome-email-template (:mandril-welcome-email-template env))
 (def comment-reply-template (:mandril-comment-reply-template env))
 (def email-confirmation-template (:mandril-email-confirmation-template env))
+(def invite-user-template (:mandril-invite-user-template env))
 
 (defn build-email-header
   ([api-key template]
@@ -66,6 +67,19 @@
                                      {:name "body" :content body}]}}
     (merge message)))
 
+(defn build-invite-user-body [payload sender contact message]
+  (->
+    {:message {:to [(merge {:type "to"} (select-keys contact [:email :name]))]
+               :important false
+               :inline_css true
+               :merge true
+               :merge_language "handlebars"
+               :global_merge_vars [{:name "author_first_name" :content (:first_name sender)}
+                                   {:name "author_last_name" :content (:last_name sender)}
+                                   {:name "name" :content (:name contact)}
+                                   {:name "message" :content message}]}}
+    (merge payload)))
+
 (defn build-contact-form-body [message {:keys [email name body]}]
   (-> {:message {:to         [{:email "hello@placeavote.com" :name "Placeavote" :type "to"}]
                  :headers    {:Reply-To email}
@@ -117,3 +131,11 @@
       (build-contact-form-body msg-body)
       ch/generate-string
       send-email))
+
+(defn send-user-invite-email [sender {:keys [contacts message]}]
+  (doseq [contact contacts]
+    (->
+      (build-email-header mandril-api-key invite-user-template)
+      (build-invite-user-body sender contact message)
+      ch/generate-string
+      send-template-email)))
