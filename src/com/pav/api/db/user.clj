@@ -196,3 +196,9 @@ realise sequence with 'doall'."
                                             " DESC ")
                                           "LIMIT 1")])))]
     [(getter true) (getter false)]))
+
+
+(defn batch-get-users-by-email [emails]
+  (let [in-clause (clojure.string/join "," (repeat (count emails) "?"))
+        q (str "SELECT * FROM " t/user-info-table " WHERE email IN(" in-clause ")")]
+    (sql/query db/db (into [q] emails) {:row-fn unclobify})))

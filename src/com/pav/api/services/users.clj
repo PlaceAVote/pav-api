@@ -5,6 +5,7 @@
             [com.pav.api.dbwrapper.user :as dbwu]
             [com.pav.api.dbwrapper.issue :as dbwi]
             [com.pav.api.dynamodb.user :as du]
+            [com.pav.api.db.user :as sql-u]
             [com.pav.api.dynamodb.votes :as dv]
             [com.pav.api.redis.redis :as redis-dao]
             [com.pav.api.elasticsearch.user :refer [index-user gather-latest-bills-by-subject get-bill-info]]
@@ -26,8 +27,7 @@
             [taoensso.truss :refer [have]]
             [environ.core :refer [env]]
             [clj-time.coerce :as c]
-            [clj-time.core :as t]
-            [clj-time.format :as f])
+            [clj-time.core :as t])
   (:import (java.util Date UUID)
            (java.sql Timestamp)))
 
@@ -351,9 +351,18 @@ default-followers (:default-followers env))
       (dbwu/update-user-profile user_id p)
       (index-user-profile user_id p))))
 
+(defn- remove-existing-users
+  "If an email matches an existing user remove the contact from the collection."
+  [contacts]
+  (let [matches (->>
+                  (sql-u/batch-get-users-by-email (map :email contacts))
+                  (map :email) set)]
+    (filter #(not (contains? matches (:email %))) contacts)))
+
 (defn invite-users [user_id payload]
   (when-let [user (get-user-by-id user_id)]
-    (mandril/send-user-invite-email user payload)))
+    (->> (update-in payload [:contacts] remove-existing-users)
+      (mandril/send-user-invite-email user))))
 
 (defn get-account-settings [user_id]
   (-> (get-user-by-id user_id)
