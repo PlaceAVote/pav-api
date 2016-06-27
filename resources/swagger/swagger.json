@@ -1554,6 +1554,27 @@
         }
       }
     },
+    "/user/notification/markall": {
+      "post": {
+        "description": "Mark all notifications for a user",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenParam"
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Not Authorized (Check Authentication Token)"
+          }
+        }
+      }
+    },
     "/user/notifications": {
       "get": {
         "description": "Get the current users notifications",
