@@ -263,6 +263,9 @@ default-followers (:default-followers env))
 (defn mark-notification [id]
   (du/mark-notification id))
 
+(defn mark-all-notifications [user_id]
+  (du/mark-all-notifications user_id))
+
 (defn get-notifications [user from]
   (du/get-notifications user from))
 

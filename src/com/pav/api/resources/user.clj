@@ -156,6 +156,14 @@
   :post! (service/mark-notification id)
   :handle-unauthorized {:error "Not Authorized"})
 
+(defresource mark-all-notifications
+  :service-available? {:representation {:media-type "application/json"}}
+  :authorized? (fn [ctx] (service/is-authenticated? (retrieve-user-details ctx)))
+  :allowed-methods [:post]
+  :available-media-types ["application/json"]
+  :post! (fn [ctx] (service/mark-all-notifications (retrieve-token-user-id ctx)))
+  :handle-unauthorized {:error "Not Authorized"})
+
 (defresource reset-password [email]
   :service-available? {:representation {:media-type "application/json"}}
   :authorized? (service/allowed-to-reset-password? email)

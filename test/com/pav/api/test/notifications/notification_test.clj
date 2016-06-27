@@ -8,7 +8,7 @@
 																									new-pav-user
 																									bootstrap-bills-and-metadata]]))
 
-(against-background [(before :contents (do
+(against-background [(before :facts (do
                                          (flush-redis)
                                          (flush-dynamo-tables)
 																			   (flush-es-indexes)
@@ -62,6 +62,25 @@
 			status => 201
 			last_timestamp => 1446462364297
 			(first results) => (contains {:read true})))
+
+	(fact "Retrieve user notifications, mark all notifications as read"
+    (flush-dynamo-tables)
+		(let [{body :body} (pav-req :put "/user" (new-pav-user))
+					{token :token user_id :user_id} body
+					notification-events [{:type "comment" :bill_id "s1182-114" :user_id user_id :timestamp 1446479124991 :comment_id "comment:1"
+																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+																:score 0 :body "Comment text goes here!!" :notification_id "10"}
+															 {:type "vote" :bill_id "s1182-114" :user_id user_id
+																:bill_title "A bill to exempt application of JSA attribution rule in case of existing agreements."
+																:timestamp 1446462364297 :notification_id "11"}]
+					_ (persist-notification-event notification-events)
+					{status :status} (pav-req :post "/user/notification/markall" token {})
+					{body :body} (pav-req :get "/user/notifications" token {})
+					{last_timestamp :last_timestamp results :results} body]
+			status => 201
+			last_timestamp => 1446462364297
+			(first results) => (contains {:read true})
+			(println body)))
 
 	(fact "Retrieving user notifications without Authentication token, results in 401"
 		(let [{status :status} (pav-req :get "/user/notifications" "token" {})]

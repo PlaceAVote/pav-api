@@ -32,7 +32,7 @@
                                                 update-user-issue feed contact-form validate-user
                                                 update-user-issue-comment delete-user-issue-comment
                                                 like-user-issue-comment dislike-user-issue-comment scrape-link
-                                                invite-users]]
+                                                invite-users mark-all-notifications]]
             [com.pav.api.notifications.ws-handler :refer [ws-notification-handler start-notification-listener]]
             [com.pav.api.resources.docs :refer [swagger-docs]]
             [com.pav.api.authentication.authentication :refer [token-handler]]
@@ -66,6 +66,7 @@
   (GET "/user/notifications" [from] (notifications from))
   (GET "/user/notifications/ws" [_] ws-notification-handler)
   (POST "/user/notification/:notification_id/mark" [notification_id] (mark-notification notification_id))
+  (POST "/user/notification/markall" [] mark-all-notifications)
   (GET "/user/me/timeline" [from] (timeline from))
   (GET "/user/:user_id/timeline" [from] (timeline from))
   (GET "/user/me/following" [] following)

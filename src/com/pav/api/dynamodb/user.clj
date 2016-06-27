@@ -183,6 +183,13 @@
       (far/update-item client-opts dy/notification-table-name notification
         {:update-map {:read [:put true]}}))))
 
+(defn mark-all-notifications [user_id]
+  (when-let [notifcations (->>
+                            (far/query client-opts dy/notification-table-name {:user_id [:eq user_id]})
+                            (map #(update-in % [:read] (fn [_] true))))]
+    (far/batch-write-item client-opts
+      {dy/notification-table-name {:put notifcations}})))
+
 (defn get-user-feed [user_id & [from]]
   (let [opts (merge
                {:limit 10 :span-reqs {:max 1} :order :desc}
