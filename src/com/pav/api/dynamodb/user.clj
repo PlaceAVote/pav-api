@@ -2,6 +2,7 @@
   (:require [taoensso.faraday :as far]
             [environ.core :refer [env]]
             [clojure.tools.logging :as log]
+            [clojure.string :as s]
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.domain.user :refer [convert-to-correct-profile-type]]
             [com.pav.api.dynamodb.db :as dy :refer [client-opts]]
@@ -26,8 +27,10 @@
 
 (defn get-user-by-email [email]
   (try
-    (-> (first (far/query client-opts dy/user-table-name {:email [:eq email]} {:index "user-email-idx"}))
-        convert-to-correct-profile-type)
+    (let [email (s/lower-case email)]
+      (-> (far/query client-opts dy/user-table-name {:email [:eq email]} {:index "user-email-idx"})
+          first
+          convert-to-correct-profile-type))
     (catch Exception e (log/info (str "Error occured retrieving user by email " e)))))
 
 (defn get-user-profile-by-facebook-id [facebook_id]

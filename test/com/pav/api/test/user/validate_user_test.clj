@@ -1,6 +1,7 @@
 (ns com.pav.api.test.user.validate-user-test
   (:use midje.sweet)
-  (:require [com.pav.api.handler :refer [app]]
+  (:require [clojure.string :as s]
+            [com.pav.api.handler :refer [app]]
             [com.pav.api.test.utils.utils :refer [flush-dynamo-tables
                                                   flush-redis
                                                   pav-req
@@ -18,6 +19,22 @@
         status => 400
         errors => {:errors [{:email "This email is currently in use."}]}))
 
+    (fact "Make sure created test user email is recognized, event if account is capitalized"
+      (let [user (new-pav-user)
+            user (update user :email s/capitalize)
+            _ (pav-req :put "/user" user)
+            {status :status errors :body} (pav-req :post "/user/validate" (select-keys user [:email]))]
+        status => 400
+        errors => {:errors [{:email "This email is currently in use."}]}))
+
+    (fact "Make sure created test user email is recognized, event if email is uppercased"
+      (let [user (new-pav-user)
+            user (update user :email s/upper-case)
+            _ (pav-req :put "/user" user)
+            {status :status errors :body} (pav-req :post "/user/validate" (select-keys user [:email]))]
+        status => 400
+        errors => {:errors [{:email "This email is currently in use."}]}))
+
     (fact "Create two new users, When an unrecognised parameter is provided, Then return 400"
       (let [user (new-pav-user)
             _ (pav-req :put "/user" user)
@@ -30,5 +47,3 @@
             _ (pav-req :put "/user" user)
             {status :status} (pav-req :post "/user/validate" {:email "random@placeavote.com"})]
         status => 200))))
-
-

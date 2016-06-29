@@ -5,9 +5,9 @@
            [com.pav.api.services.comments :as comment-service]
            [com.pav.api.services.questions :as q-service]
            [com.pav.api.utils.utils :refer [record-in-ctx retrieve-body
-																								 retrieve-body-param retrieve-user-details
-																								 retrieve-token-user-id retrieve-request-param]]
-					 [com.pav.api.utils.utils :refer [decodeBase64ImageString]]
+                                            retrieve-body-param retrieve-user-details
+                                            retrieve-token-user-id retrieve-request-param]]
+           [com.pav.api.utils.utils :refer [decodeBase64ImageString]]
            [com.pav.api.schema.comment :refer :all]
            [cheshire.core :as ch]))
 

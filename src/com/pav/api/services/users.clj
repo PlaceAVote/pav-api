@@ -196,13 +196,13 @@ default-followers (:default-followers env))
   (let [facebook-user (get-user-by-facebook-id facebook_id)]
     (if (seq facebook-user)
       true
-      (not (empty? (get-user-by-email email))))))
+      (-> email get-user-by-email seq boolean))))
 
 (defn user-exist? [{email :email facebook_id :id}]
   "Check if user exists using there email or facebook ID"
   (if facebook_id
     (facebook-user-exists? email facebook_id)
-    (not (empty? (get-user-by-email email)))))
+    (-> email get-user-by-email seq boolean)))
 
 (defn- assoc-email-error [errors email]
   (cond-> errors
