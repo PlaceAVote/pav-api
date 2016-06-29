@@ -190,8 +190,8 @@
   (when-let [notifcations (->>
                             (far/query client-opts dy/notification-table-name {:user_id [:eq user_id]})
                             (map #(update-in % [:read] (fn [_] true))))]
-    (far/batch-write-item client-opts
-      {dy/notification-table-name {:put notifcations}})))
+    (doseq [b (partition 25 25 nil notifcations)]
+      (far/batch-write-item client-opts {dy/notification-table-name {:put b}}))))
 
 (defn get-user-feed [user_id & [from]]
   (let [opts (merge
