@@ -1,5 +1,6 @@
 (ns com.pav.api.graph.graph-parser
   (:require [net.cgrand.enlive-html :as html]
+            [clojure.core.memoize :as memo]
             [clojure.tools.logging :as log])
   (:import (java.net URL)))
 
@@ -42,6 +43,13 @@ except it's value is used as is."
       (filter-props #{"og:url" "og:title" "og:image"})
       merge-graph-content))
 
+(def ^{:private true
+       :doc "Memoized function to fetch PAV OG image metadata. Memoization will be
+restarted every 24 hours."}
+  pav-image
+  (memo/ttl #(-> "https://placeavote.com" fetch-url extract-open-graph-only :article_img)
+            :ttl/threshold 86400))
+
 (defn- fallback-image-url
   "Retrieve fallback image url. First will contact placeavote.com to retrieve default
 image from OG data and if that fails, fallback to something really hardcoded.
@@ -49,9 +57,8 @@ image from OG data and if that fails, fallback to something really hardcoded.
 This approach may sound weird, but when designers update the logo, consumers (e.g. mobile apps)
 will get it."
   []
-  (if-let [url (-> "https://placeavote.com" fetch-url extract-open-graph-only :article_img)]
-    url
-    "http://s29.postimg.org/v86d7ur2v/og_fb_img.jpg"))
+  (or (pav-image)
+      "http://s29.postimg.org/v86d7ur2v/og_fb_img.jpg"))
 
 (defn- fallback-open-graph-data
   "Return alternative to Open Graph data, so we can have some values."
