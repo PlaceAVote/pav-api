@@ -1,6 +1,5 @@
 (ns com.pav.api.test.utils.utils
-  (require [com.pav.api.services.users :refer [create-user-profile]]
-           [com.pav.api.services.questions :refer [bootstrap-wizard-questions]]
+  (require [com.pav.api.services.questions :refer [bootstrap-wizard-questions]]
            [ring.mock.request :refer [request body content-type header]]
            [com.pav.api.handler :refer [app]]
            [cheshire.core :as ch]

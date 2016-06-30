@@ -21,6 +21,7 @@
             [com.pav.api.facebook.facebook-service :as fb]
             [com.pav.api.events.handler :refer [process-event]]
             [com.pav.api.events.user :refer [create-followinguser-timeline-event]]
+            [com.pav.api.dbwrapper.helpers :refer [bigint->long]]
             [clojure.core.async :refer [thread]]
             [clojure.tools.logging :as log]
             [clojure.core.memoize :as memo]
@@ -557,14 +558,13 @@ so it can be fed to ':malformed?' handler."
 (defn user-dob->age [dob]
   (when dob
     (try
-      (->
-        dob
-        c/from-long
-        find-interval
-        t/in-years)
+      (-> dob
+          bigint->long
+          c/from-long
+          find-interval
+          t/in-years)
       (catch Exception e
-        (log/error "Error occured parsing DOB " dob " with " e)
-        nil))))
+        (log/error "Error occured parsing DOB " dob " with " e)))))
 
 (defn scrape-opengraph-data
   "Given a URL, scrape its open graph data."
@@ -575,4 +575,5 @@ so it can be fed to ':malformed?' handler."
 
 (comment
   (user-dob->age 465782400000) ;; => 31
+  (user-dob->age 465782400000N) ;; => 31
   )
