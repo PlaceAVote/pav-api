@@ -78,8 +78,9 @@ default-followers (:default-followers env))
 (defn- add-default-followers [followers following]
   (du/apply-default-followers (map :user_id followers) following))
 
-(defn- persist-user-profile [{:keys [user_id] :as profile}]
+(defn- persist-user-profile
   "Create new user profile profile to dynamo and redis."
+  [{:keys [user_id] :as profile}]
   (when profile
     (try
       (dbwu/create-user profile)
@@ -92,8 +93,9 @@ default-followers (:default-followers env))
         (log/errorf e "Error occured persisting user profile for '%s'" user_id)))
     profile))
 
-(defn create-user-profile [user & [origin]]
+(defn create-user-profile
   "Create new user profile, specify :facebook as the origin by default all uses are pav"
+  [user & [origin]]
   {:record (->
              (new-user-profile user (or origin :pav))
              persist-user-profile
@@ -103,33 +105,37 @@ default-followers (:default-followers env))
   (du/delete-user user_id)
   (redis-dao/delete-user-profile user_profile))
 
-(defn get-user-by-id [user_id]
+(defn get-user-by-id
   "Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
+  [user_id]
   (if-let [user-from-redis (redis-dao/get-user-profile user_id)]
     user-from-redis
     (when-let [user-from-dynamodb (du/get-user-by-id user_id)]
       (redis-dao/create-user-profile user-from-dynamodb)
       user-from-dynamodb)))
 
-(defn- get-user-by-email [email]
+(defn- get-user-by-email
   "Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
+  [email]
   (if-let [user-from-redis (redis-dao/get-user-profile-by-email email)]
     user-from-redis
     (when-let [user-from-dynamodb (du/get-user-by-email email)]
       (redis-dao/create-user-profile user-from-dynamodb)
       user-from-dynamodb)))
 
-(defn- get-user-by-facebook-id [facebook_id]
+(defn- get-user-by-facebook-id
   "Retrieve user profile from cache.  If this fails then retrieve from dynamo and populate cache"
+  [facebook_id]
   (if-let [user-from-redis (redis-dao/get-user-profile-by-facebook-id facebook_id)]
     user-from-redis
     (when-let [user-from-dynamodb (du/get-user-profile-by-facebook-id facebook_id)]
       (redis-dao/create-user-profile user-from-dynamodb)
       user-from-dynamodb)))
 
-(defn update-user-token [{:keys [email token id]} origin]
+(defn update-user-token
   "Take current users email and token and update these values in databases.  Token can only be passed for facebook
   authentications"
+  [{:keys [email token id]} origin]
   (let [{:keys [user_id facebook_id] :as current-user} (case origin
                                                          :facebook (or (get-user-by-facebook-id id)
                                                                        (get-user-by-email email))
@@ -146,13 +152,14 @@ default-followers (:default-followers env))
                       (redis-dao/assign-facebook-id user_id id))))
     updated-user))
 
-(defn wrap-validation-errors [result]
+(defn wrap-validation-errors
   "Wrap validation errors or return nil"
+  [result]
   (if (seq result)
     {:errors (us/construct-error-msg result)}))
 
 (defn validate-payload
-  "Validate payload with given validator fn.  Specify Optional Origin of request if needed."
+  "Validate payload with given validator fn. Specify Optional Origin of request if needed."
   ([payload fn origin]
      (wrap-validation-errors (fn payload origin)))
   ([payload fn]
@@ -192,15 +199,17 @@ default-followers (:default-followers env))
 (defn validate-password-reset-confirmation-payload [payload]
   (validate-payload payload us/validate-confirm-reset-password-payload))
 
-(defn facebook-user-exists? [email facebook_id]
+(defn facebook-user-exists?
   "Function to aid migration for existing facebook users without a facebook ID."
+  [email facebook_id]
   (let [facebook-user (get-user-by-facebook-id facebook_id)]
     (if (seq facebook-user)
       true
       (-> email get-user-by-email seq boolean))))
 
-(defn user-exist? [{email :email facebook_id :id}]
+(defn user-exist?
   "Check if user exists using there email or facebook ID"
+  [{email :email facebook_id :id}]
   (if facebook_id
     (facebook-user-exists? email facebook_id)
     (-> email get-user-by-email seq boolean)))
@@ -233,8 +242,9 @@ default-followers (:default-followers env))
 (defn check-pwd [attempt encrypted]
   (h/check attempt encrypted))
 
-(defn password-matches? [user_id attempt]
+(defn password-matches?
   "Does the users password match the given password?"
+  [user_id attempt]
   (let [{encrypted :password} (get-user-by-id user_id)]
     (check-pwd attempt encrypted)))
 
@@ -400,16 +410,20 @@ default-followers (:default-followers env))
   (when user_id
     (update-user-password user_id new-password)))
 
-(defn mime-type->file-type [type]
+(defn mime-type->file-type
   "Convert mime content-type to valid file type."
+  [type]
   (case type
     "image/jpeg" ".jpeg"
     "image/png" ".png"
     nil))
 
-(defn valid-image? [file]
+(defn valid-image?
   "Issue file upload a valid image type, e.g. jpeg or png file"
-  (if (or (empty? file) (nil? (mime-type->file-type (file :content-type))) (<= (file :size) 0))
+  [file]
+  (if (or (empty? file)
+          (nil? (mime-type->file-type (file :content-type)))
+          (<= (file :size) 0))
     false
     true))
 
@@ -424,13 +438,14 @@ default-followers (:default-followers env))
         new-img_url
         (catch Exception e (log/error "Error uploading Profile image. " e))))))
 
-(defn- get-issue-graph-data [body]
+(defn- get-issue-graph-data
   "If an article_link is present, then merge open graph data or return original body"
-  (if-let [url (:article_link body)]
-    (gp/extract-open-graph url)))
+  [body]
+  (some-> body :article_link (gp/extract-open-graph true)))
 
-(defn- retrieve-bill-title [bill_id]
+(defn- retrieve-bill-title
   "Given bill_id, Retrieve short_title if it exists or official_title."
+  [bill_id]
   (when bill_id
     (when-let [bill-info (get-bill-info bill_id)]
      {:bill_title (or (:short_title bill-info) (:official_title bill-info))})))

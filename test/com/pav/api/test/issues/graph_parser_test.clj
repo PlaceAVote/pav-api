@@ -22,3 +22,11 @@
                   :article_title "Why Terrorists Love Twitter"
                   :article_img "https://timedotcom.files.wordpress.com/2014/09/e9630acbf2ac43c888eac7253e729608-0.jpg?quality=75&strip=color&w=1012"})
     (some nil? (vals response)) => nil))
+
+(fact "Given a url without OG data, return some 'default' values."
+  (let [response (g/extract-open-graph "http://alink.com" true)]
+    response
+    => (contains {:article_title "AlphaLink"
+                  :article_link "http://alink.com"})
+    ;; image is retrieved from placeavot.com site first, so we aren't going to hardcode the test
+    (contains? response :article_img) => true))
