@@ -8,7 +8,7 @@
                                                   pav-req
                                                   new-pav-user
                                                   new-fb-user]]
-            [com.pav.api.resources.user :refer [existing-user-error-msg login-error-msg]]))
+            [com.pav.api.resources.user :refer [existing-user-error-msg existing-fb-user-error-msg login-error-msg]]))
 
 (against-background [(before :facts (do (flush-dynamo-tables)
                                         (flush-redis)
@@ -62,7 +62,7 @@
               _ (pav-req :put "/user/facebook" user)
               {status :status body :body} (pav-req :put "/user/facebook" (new-fb-user {:email email}))]
           status => 409
-          body => existing-user-error-msg))
+          body => existing-fb-user-error-msg))
 
   (fact "Create a new user, when the payload is empty, return 400 with appropriate error messages"
         (let [{status :status body :body} (pav-req :put "/user" {})]
@@ -112,13 +112,6 @@
       status => 201
       (keys body) => (contains [:token])))
 
-  (fact "Create duplicate user and check error message"
-    (let [user (new-pav-user)
-          _ (pav-req :put "/user" user)
-          {status :status body :body} (pav-req :put "/user" user)]
-      status => 409
-      body => {:error "A User already exists with this email"}))
-
   (fact "Create token for facebook user when logging on"
     (let [{:keys [email id token] :as user} (new-fb-user)
           _ (pav-req :put "/user/facebook" user)
@@ -126,19 +119,12 @@
       status => 201
       (keys body) => (contains [:token])))
 
-  (fact "Create duplicate user with FB and check error message"
-    (let [user (new-fb-user)
-          _ (pav-req :put "/user/facebook" user)
-          {status :status body :body} (pav-req :put "/user/facebook" user)]
-      status => 409
-      body => {:error "A User already exists with this Facebook ID"}))
-
   (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
     (let [{:keys [email] :as user} (new-fb-user)
           _ (pav-req :put "/user/facebook" user)
           {status :status body :body} (pav-req :post "/user/authenticate" {:email email :password "invalid"})]
       status => 401
-      body => {:error "Invalid Login credientials"}))
+      body => login-error-msg))
 
   (fact "Create token for user, when authentication payload doesn't contain an email then returns 400 with suitable error message"
     (let [{status :status body :body} (pav-req :post "/user/authenticate" {:password "stuff2"})]
