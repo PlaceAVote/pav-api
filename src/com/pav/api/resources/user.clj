@@ -11,9 +11,6 @@
            [com.pav.api.schema.comment :refer :all]
            [cheshire.core :as ch]))
 
-(def existing-user-error-msg {:error "A User already exists with this email"})
-(def login-error-msg {:error "Invalid Login credientials"})
-
 (defresource validate-user
   :service-available? {:representation {:media-type "application/json"}}
   :allowed-methods [:post]
@@ -31,7 +28,7 @@
   :conflict? (fn [ctx] (service/user-exist? (retrieve-body ctx)))
   :put! (fn [ctx] (service/create-user-profile (retrieve-body ctx)))
   :handle-created :record
-  :handle-conflict existing-user-error-msg
+  :handle-conflict {:error "A User already exists with this email"}
   :handle-malformed (fn [ctx] (ch/generate-string (get-in ctx [:errors]))))
 
 (defresource create-facebook
@@ -42,7 +39,7 @@
   :conflict? (fn [ctx] (service/user-exist? (retrieve-body ctx)))
   :put! (fn [ctx] (service/create-user-profile (retrieve-body ctx) :facebook))
   :handle-created :record
-  :handle-conflict existing-user-error-msg
+  :handle-conflict {:error "A User already exists with this Facebook ID"}
   :handle-malformed (fn [ctx] (get-in ctx [:errors])))
 
 (defresource authenticate [origin]
@@ -53,7 +50,7 @@
   :available-media-types ["application/json"]
   :post! (fn [ctx] (service/authenticate-user (retrieve-body ctx) origin))
   :handle-created :record
-  :handle-unauthorized login-error-msg
+  :handle-unauthorized {:error "Invalid Login credientials"}
   :handle-malformed (fn [ctx] (get-in ctx [:errors])))
 
 (defresource user

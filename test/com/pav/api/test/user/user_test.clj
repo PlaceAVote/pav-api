@@ -65,9 +65,9 @@
           body => existing-user-error-msg))
 
   (fact "Create a new user, when the payload is empty, return 400 with appropriate error messages"
-		(let [{status :status body :body} (pav-req :put "/user" {})]
-			status => 400
-			body => (contains {:errors [{:email "A valid email address is a required"}
+        (let [{status :status body :body} (pav-req :put "/user" {})]
+            status => 400
+            body => (contains {:errors [{:email "A valid email address is a required"}
                                   {:password "Password must be a minimum of 6 characters in length."}
                                   {:first_name "First Name is a required field"}
                                   {:last_name "Last Name is a required field"}
@@ -77,9 +77,9 @@
                                   {:zipcode "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}]} :in-any-order)))
 
   (future-fact "Create a new facebook user, when the payload is empty, return 400 with appropriate error messages"
-		(let [{status :status body :body} (pav-req :put "/user/facebook" {})]
-			status => 400
-			body => (contains {:errors [{:email "A valid email address is a required"}
+        (let [{status :status body :body} (pav-req :put "/user/facebook" {})]
+            status => 400
+            body => (contains {:errors [{:email "A valid email address is a required"}
                                   {:first_name "First Name is a required field"}
                                   {:last_name "Last Name is a required field"}
                                   {:img_url "A IMG URL is required for social media registerations and logins"}
@@ -112,12 +112,26 @@
       status => 201
       (keys body) => (contains [:token])))
 
+  (fact "Create duplicate user and check error message"
+    (let [user (new-pav-user)
+          _ (pav-req :put "/user" user)
+          {status :status body :body} (pav-req :put "/user" user)]
+      status => 409
+      body => {:error "A User already exists with this email"}))
+
   (fact "Create token for facebook user when logging on"
     (let [{:keys [email id token] :as user} (new-fb-user)
           _ (pav-req :put "/user/facebook" user)
           {status :status body :body} (pav-req :post "/user/facebook/authenticate" {:email email :id id :token token})]
       status => 201
       (keys body) => (contains [:token])))
+
+  (fact "Create duplicate user with FB and check error message"
+    (let [user (new-fb-user)
+          _ (pav-req :put "/user/facebook" user)
+          {status :status body :body} (pav-req :put "/user/facebook" user)]
+      status => 409
+      body => {:error "A User already exists with this Facebook ID"}))
 
   (fact "Create token for user that doesn't exist, returns 401 with suitable error message"
     (let [{:keys [email] :as user} (new-fb-user)
