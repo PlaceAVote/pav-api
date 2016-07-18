@@ -40,7 +40,7 @@
             {body :body} (pav-req :put "/user" user)
             {token :token} body
             changes {:public false :first_name "Ted" :last_name "Baker" :gender "female" :dob "528940800000"
-                     :email  "Johnny5@placeavote.com" :city "New York City" :zipcode "22302"}
+                     :email  "Johnny5@placeavote.com" :zipcode "22302"}
             _ (pav-req :post "/user/me/settings" token changes)
             {status :status body :body} (pav-req :get "/user/me/settings" token {})]
         status => 200
@@ -51,7 +51,7 @@
             {body :body} (pav-req :put "/user" user)
             {token :token} body
             changes {:public false :first_name "Ted" :last_name "Baker" :gender "f" :dob "528940800000"
-                     :email  "Johnny5@placeavote.com" :city "New York City" :zipcode "22302"}
+                     :email  "Johnny5@placeavote.com" :zipcode "22302"}
             {status :status body :body} (pav-req :post "/user/me/settings" token changes)]
         status => 400
         body => {:errors [{:gender "Please specify a valid gender.  Valid values are male, female and they"}]}))
@@ -61,7 +61,7 @@
             {body :body} (pav-req :put "/user/facebook" user)
             {token :token} body
             changes {:public false :first_name "Ted" :last_name "Baker" :gender "female" :dob "528940800000"
-                     :email  "Johnny5@placeavote.com" :city "New York City" :zipcode "22302"}
+                     :email  "Johnny5@placeavote.com" :zipcode "22302"}
             _ (pav-req :post "/user/me/settings" token changes)
             {status :status body :body} (pav-req :get "/user/me/settings" token {})]
         status => 200

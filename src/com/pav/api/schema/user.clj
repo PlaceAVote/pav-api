@@ -60,13 +60,12 @@
      (s/optional-key :article_link) str-schema}))
 
 (def AccountSettingUpdate
-	{(s/optional-key :email)      email-schema
-	 (s/optional-key :first_name) str-schema
-	 (s/optional-key :last_name)  str-schema
-	 (s/optional-key :dob)        dob-schema
-	 (s/optional-key :public)     s/Bool
-	 (s/optional-key :gender)     gender-schema
-	 (s/optional-key :city)     	str-schema
+  {(s/optional-key :email)      email-schema
+   (s/optional-key :first_name) str-schema
+   (s/optional-key :last_name)  str-schema
+   (s/optional-key :dob)        dob-schema
+   (s/optional-key :public)     s/Bool
+   (s/optional-key :gender)     gender-schema
    (s/optional-key :zipcode)    zip-schema})
 
 (def InviteUsersRequest
@@ -129,7 +128,6 @@
         (= :reset_token k) {k "A valid reset token is required"}
         (= :password k) {k "Password must be a minimum of 6 characters in length."}
         (= :country_code k) {k "Country Code is a required field.  Please Specify Country Code"}
-        (= :city k) {k "Please specify a valid city"}
         (= :first_name k) {k "First Name is a required field"}
         (= :last_name k) {k "Last Name is a required field"}
         (= :dob k) {k "Date of birth is a required field"}
