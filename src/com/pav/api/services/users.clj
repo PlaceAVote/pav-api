@@ -234,10 +234,12 @@ default-followers (:default-followers env))
         flatten))))
 
 (defn allowed-to-reset-password? [email]
-  (let [user (get-user-by-email email)]
-    (if user
-      (not (contains? user :facebook_id))
-      false)))
+  (some-> email
+          get-user-by-email
+          (contains? :facebook_id)
+          ;; we are interested in accounts not containing :facebook_id, so
+          ;; here is a small inversion trick
+          not))
 
 (defn check-pwd [attempt encrypted]
   (h/check attempt encrypted))
@@ -245,8 +247,7 @@ default-followers (:default-followers env))
 (defn password-matches?
   "Does the users password match the given password?"
   [user_id attempt]
-  (let [{encrypted :password} (get-user-by-id user_id)]
-    (check-pwd attempt encrypted)))
+  (->> user_id get-user-by-email :password (check-pwd attempt)))
 
 (defn valid-user? [user origin]
   (let [user (update-in user [:email] clojure.string/lower-case)]

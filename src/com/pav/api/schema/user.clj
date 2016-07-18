@@ -136,16 +136,19 @@
         (= :topics k) {k "Please specify a list of topics."}
         (= :token k) {k "A token is required for social media registerations and logins"}
         (= :img_url k) {k "A IMG URL is required for social media registerations and logins"}
-				(= :gender k) {k "Please specify a valid gender.  Valid values are male, female and they"}
-				(= :id k) {k "Please specify a facebook id"}
-				(= :comment k) {k "Please include a comment"}
+        (= :gender k) {k "Please specify a valid gender.  Valid values are male, female and they"}
+        (= :id k) {k "Please specify a facebook id"}
+        (= :comment k) {k "Please include a comment"}
         (= :zipcode k) {k "A valid 5 digit zipcode code is required for US citizens, e.g 90210"}
 
-				:else {k "field is unknown"}))
+        :else {k "field is unknown"}))
 
 (defn validate-user-properties-payload [payload]
-  (map find-suitable-error (s/check ValidateUserProperties payload)))
+  (->> payload
+       (s/check ValidateUserProperties)
+       (map find-suitable-error)))
 
 (defn construct-error-msg [errors]
-  (log/error (str "An Error has occured " errors))
-  {:errors (map find-suitable-error errors)})
+  (log/error "An Error has occured " errors)
+  {:errors
+   (map find-suitable-error errors)})
